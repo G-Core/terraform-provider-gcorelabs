@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -42,56 +41,33 @@ func resourceVolume() *schema.Resource {
 
 
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
-	log.Printf("Start create volume")
+	log.Printf("Start volume creating")
 	// get volume parameters
 	project_id := d.Get("project").(int)
 	region_id := d.Get("region").(int)
 	name := d.Get("name").(string)
 	size := d.Get("size").(int)
-	log.Printf("finish volume params reading")
-	url := fmt.Sprintf("http://localhost:8888/v1/volumes/%d/%d", project_id, region_id)	//"http://localhost:8888/v1/tasks/fbfe516f-b971-496c-bb79-d4dbebba6d24"
+	url := fmt.Sprintf("%svolumes/%d/%d", HOST, project_id, region_id)
 
 	config := m.(*Config)
 	token := fmt.Sprintf("Bearer %s", config.jwt)
-	log.Printf("start create a client")
-	client := &http.Client{Timeout: 20 * time.Second}
-
-	body1 := CreateVolumeBody{
+	body_dict := CreateVolumeBody{
 		Size: size,
 		Source: "new-volume",
 		Name: name,
 	}
-	t, err := json.Marshal(&body1)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("marshalled: %s", t)
-	req, err := http.NewRequest("POST", url, bytes.NewReader(t))
-	log.Printf("do request %s, %s", req, err)
-	req.Header.Set("Content-Type", "application/json")
-
-	req.Header.Add("Authorization", token)
-	log.Printf("do request")
-	resp, err := client.Do(req)
-	log.Printf("HTTP Response Status: %s, %s", resp.StatusCode, http.StatusText(resp.StatusCode))
-	if err != nil {
-		panic(err)
-	}
+	body, err := json.Marshal(&body_dict)
+	check_err(err)
+	log.Printf("marshalled: %s", body)
+	resp := post_request(url, token, body)
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		panic("Create volume failed: %s")
 	}
-	defer resp.Body.Close()
-	log.Printf("get task id")
-	task := new(Task)
-	dec_err := json.NewDecoder(resp.Body).Decode(task)
-	if dec_err != nil {
-		panic(dec_err)
-	}
 
-	task_id := task.Tasks[0]
-	log.Printf("start waiting")
-	volume_data := task_wait(task_id, token)
-	log.Printf("finish waiting")
+	log.Printf("Try to get task id from a response.")
+	volume_data := full_task_wait(resp, token)
+	log.Printf("Finish waiting.")
 	result := &Volumes{}
 	mapstructure.Decode(volume_data, &result)
 	log.Printf("get volume id")
@@ -116,8 +92,7 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	region_id := d.Get("region").(int)
 	volume_id := d.Id()
 
-	url := fmt.Sprintf("http://localhost:8888/v1/volumes/%d/%d/%s", project_id, region_id, volume_id)
-
+	url := fmt.Sprintf("%svolumes/%d/%d/%s", HOST, project_id, region_id, volume_id)
 	config := m.(*Config)
 	token := fmt.Sprintf("Bearer %s", config.jwt)
 
@@ -126,23 +101,13 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	req.Header.Add("Authorization", token)
 	resp, err := client.Do(req)
 	log.Printf("HTTP Response Status: %s, %s", resp.StatusCode, http.StatusText(resp.StatusCode))
-	if err != nil {
-		panic(err)
-	}
+	check_err(err)
 	if resp.StatusCode != 200 {
 		panic("Delete volume failed: %s")
 	}
 	defer resp.Body.Close()
 
-	task := new(Task)
-	dec_err := json.NewDecoder(resp.Body).Decode(task)
-	if dec_err != nil {
-		panic(dec_err)
-	}
-
-	task_id := task.Tasks[0]
-	task_wait(task_id, token)
-	log.Printf("finish volume deleting")
-
+	full_task_wait(resp, token)
+	log.Printf("Finish of volume deleting")
 	return nil
 }
