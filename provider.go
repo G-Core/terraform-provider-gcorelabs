@@ -15,7 +15,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"example_server": resourceVolume(),
+			"gcore_volume": resourceVolume(),
 		},
 	}
 
