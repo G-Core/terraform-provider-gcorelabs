@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/mitchellh/mapstructure"
 	"log"
-	"net/http"
-	"time"
+	//"net/http"
+	//"time"
 )
 
 
@@ -19,13 +19,21 @@ func resourceVolume() *schema.Resource {
 		Delete: resourceVolumeDelete,
 
 		Schema: map[string]*schema.Schema{
-			"project": &schema.Schema{
+			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
 			},
-			"region": &schema.Schema{
+			"region_id": &schema.Schema{
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
+			},
+			"project_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"region_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -43,8 +51,14 @@ func resourceVolume() *schema.Resource {
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("Start volume creating")
 	// get volume parameters
-	project_id := d.Get("project").(int)
-	region_id := d.Get("region").(int)
+	project_id := d.Get("project_id").(int)
+	region_id := d.Get("region_id").(int)
+	log.Printf("name")
+	region_name := d.Get("region_name")
+	if region_name == nil {
+		return fmt.Errorf("fail")
+	}
+	log.Printf("name%s", region_name)
 	name := d.Get("name").(string)
 	size := d.Get("size").(int)
 	url := fmt.Sprintf("%svolumes/%d/%d", HOST, project_id, region_id)
@@ -88,26 +102,26 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
-	project_id := d.Get("project").(int)
-	region_id := d.Get("region").(int)
-	volume_id := d.Id()
-
-	url := fmt.Sprintf("%svolumes/%d/%d/%s", HOST, project_id, region_id, volume_id)
-	config := m.(*Config)
-	token := fmt.Sprintf("Bearer %s", config.jwt)
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	req, err := http.NewRequest("DELETE", url, nil)
-	req.Header.Add("Authorization", token)
-	resp, err := client.Do(req)
-	log.Printf("HTTP Response Status: %s, %s", resp.StatusCode, http.StatusText(resp.StatusCode))
-	check_err(err)
-	if resp.StatusCode != 200 {
-		panic("Delete volume failed: %s")
-	}
-	defer resp.Body.Close()
-
-	full_task_wait(resp, token)
-	log.Printf("Finish of volume deleting")
+	//project_id := d.Get("project_id").(int)
+	//region_id := d.Get("region_id").(int)
+	//volume_id := d.Id()
+	//
+	//url := fmt.Sprintf("%svolumes/%d/%d/%s", HOST, project_id, region_id, volume_id)
+	//config := m.(*Config)
+	//token := fmt.Sprintf("Bearer %s", config.jwt)
+	//
+	//client := &http.Client{Timeout: 10 * time.Second}
+	//req, err := http.NewRequest("DELETE", url, nil)
+	//req.Header.Add("Authorization", token)
+	//resp, err := client.Do(req)
+	//log.Printf("HTTP Response Status: %s, %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	//check_err(err)
+	//if resp.StatusCode != 200 {
+	//	panic("Delete volume failed: %s")
+	//}
+	//defer resp.Body.Close()
+	//
+	//full_task_wait(resp, token)
+	//log.Printf("Finish of volume deleting")
 	return nil
 }

@@ -26,3 +26,7 @@ func post_request(url string, token string, body []byte) (*http.Response) {
 	log.Printf("HTTP Response Status: %s, %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	return resp
 }
+
+//func get_region(region_id int, region_name string, token string) (int, error) {
+//
+//}
