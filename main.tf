@@ -6,5 +6,5 @@ resource "gcore_volume" "crash3" {
   name = 156
   size = 1
   region_id = 1
-  project_id = 345
+  project_id = 1
 }
