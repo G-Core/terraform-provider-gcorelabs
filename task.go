@@ -6,16 +6,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 )
 
 func get_resp(url string, token string) (map[string]interface{}) {
 	// do a request
-	client := &http.Client{Timeout: TIMEOUT_SEC * time.Second}
-	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Add("Authorization", token)
-	log.Printf("do request %s, %s", req, err)
-	resp, err := client.Do(req)
+	resp, err := get_request(url, token)
 	check_err(err)
 
 	// get a response body as text
