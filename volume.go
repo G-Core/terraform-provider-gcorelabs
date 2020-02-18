@@ -1,10 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"git.gcore.com/terraform-provider-gcore/common"
+	"git.gcore.com/terraform-provider-gcore/managers"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/mitchellh/mapstructure"
+	//"github.com/mitchellh/mapstructure"
 	"log"
 )
 
@@ -48,23 +50,22 @@ func resourceVolume() *schema.Resource {
 
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("Start volume creating")
-
 	name := d.Get("name").(string)
 	info_message := fmt.Sprintf("create a %s volume", name)
-	config := m.(*Config)
-	token := config.jwt
+	config := m.(*common.Config)
+	token := config.Jwt
 
-	project_id, err := get_project(d, token, info_message)
+	project_id, err := managers.GetProject(d, token, info_message)
 	if err != nil{
 		return err
 	}
-	region_id, err := get_region(d, token, info_message)
+	region_id, err := managers.GetRegion(d, token, info_message)
 	if err != nil{
 		return err
 	}
 
 	size := d.Get("size").(int)
-	body_dict := CreateVolumeBody{
+	body_dict := common.CreateVolumeBody{
 		Size: size,
 		Source: "new-volume",
 		Name: name,
@@ -74,43 +75,29 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	log.Printf("marshalled: %s", body)
-	resp, _ := post_request(volumes_url(project_id, region_id), token, body)
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Create volume (%s) attempt failed.", name)
-	}
-
-	log.Printf("Try to get task id from a response.")
-	volume_data, err := full_task_wait(resp, token)
+	volume_id, err := managers.CreateVolume(project_id, region_id, name, token, body)
 	if err != nil{
 		return err
 	}
-	log.Printf("Finish waiting.")
-	result := &Volumes{}
-	mapstructure.Decode(volume_data, &result)
-	log.Printf("get volume id")
-	volume_id := result.Volumes[0]
-	log.Printf("Volume %s created.", volume_id)
-
 	d.SetId(volume_id)
 	log.Printf("finish volume creating")
 	return resourceVolumeRead(d, m)
 }
 
 func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
-	config := m.(*Config)
-	token := config.jwt
+	config := m.(*common.Config)
+	token := config.Jwt
 	volume_id := d.Id()
 	info_message := fmt.Sprintf("get a volume %s", volume_id)
-	project_id, err := get_project(d, token, info_message)
+	project_id, err := managers.GetProject(d, token, info_message)
 	if err != nil{
 		return err
 	}
-	region_id, err := get_region(d, token, info_message)
+	region_id, err := managers.GetRegion(d, token, info_message)
 	if err != nil{
 		return err
 	}
-	resp, err := get_request(volume_url(project_id, region_id, volume_id), token)
+	resp, err := common.GetRequest(common.VolumeUrl(project_id, region_id, volume_id), token)
 	if err != nil{
 		return err
 	}
@@ -125,30 +112,21 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
-	config := m.(*Config)
-	token := config.jwt
+	config := m.(*common.Config)
+	token := config.Jwt
 	volume_id := d.Id()
 	info_message := fmt.Sprintf("delete the %s volume", volume_id)
 
-	project_id, err := get_project(d, token, info_message)
+	project_id, err := managers.GetProject(d, token, info_message)
 	if err != nil{
 		return err
 	}
-	region_id, err := get_region(d, token, info_message)
+	region_id, err := managers.GetRegion(d, token, info_message)
 	if err != nil{
 		return err
 	}
 
-	resp, err := delete_request(volume_url(project_id, region_id, volume_id), token)
-	if err != nil{
-		return err
-	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Delete volume failed.")
-	}
-	defer resp.Body.Close()
-
-	_, err = full_task_wait(resp, token)
+	err = managers.DeleteVolume(project_id, region_id, volume_id, token)
 	if err != nil{
 		return err
 	}
