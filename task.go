@@ -8,46 +8,57 @@ import (
 	"net/http"
 )
 
-func get_resp(url string, token string) (map[string]interface{}) {
+func get_task_resp(url string, token string) (map[string]interface{}, error) {
 	// do a request
 	resp, err := get_request(url, token)
-	check_err(err)
-
+	if err != nil{
+		return nil, err
+	}
 	// get a response body as text
 	responseData, err := ioutil.ReadAll(resp.Body)
-	check_err(err)
+	if err != nil{
+		return nil, err
+	}
 	var data map[string]interface{}
 	log.Printf("RD%s", responseData)
 	err = json.Unmarshal([]byte(responseData), &data)
 	log.Printf("RD%s", data)
-	check_err(err)
-	return data
+	if err != nil{
+		return nil, err
+	}
+	return data, nil
 }
 
-func task_wait(task_id string, token string) (interface{}) {
+func task_wait(task_id string, token string) (interface{}, error) {
 	log.Printf("Start of waiting a task %s", task_id)
-	url := fmt.Sprintf("%stasks/%s", HOST, task_id)
 	timeout := 180
 	pause := 5
 	for i := 0; i < timeout / pause; i++{
-		resp_data := get_resp(url, token)
-		if resp_data["state"] == "NEW" || resp_data["state"] == "RUNNING"{
-			log.Printf("The task %s is in progress (state=%s)", resp_data["id"], resp_data["state"])
+		resp_data, err := get_task_resp(task_url(task_id), token)
+		if err != nil{
+			return nil, err
 		}
-		if resp_data["state"] == "FINISHED"{
+		if (resp_data["state"] == "NEW" || resp_data["state"] == "RUNNING"){
+			log.Printf("The task %s is in progress (state=%s)", task_id, resp_data["state"])
+		}else if resp_data["state"] == "FINISHED"{
 			log.Printf("The task %s finished", resp_data["id"])
 			log.Printf("Finish of waiting a task %s", task_id)
-			return resp_data["created_resources"]
+			return resp_data["created_resources"], nil
+		} else{
+			// Error state
+			return nil, fmt.Errorf("Task %s failed and it's in an %s state", task_id, resp_data["state"])
 		}
 	}
 	log.Printf("Start waiting a task %s", task_id)
-	return nil
+	return nil, nil
 }
 
-func full_task_wait(resp *http.Response, token string) (interface{}) {
+func full_task_wait(resp *http.Response, token string) (interface{}, error) {
 	task := new(Task)
 	err := json.NewDecoder(resp.Body).Decode(task)
-	check_err(err)
+	if err != nil{
+		return nil, err
+	}
 	task_id := task.Tasks[0]
 	return task_wait(task_id, token)
 }
