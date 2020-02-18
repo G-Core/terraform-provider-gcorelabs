@@ -1,8 +1,9 @@
-package main
+package managers
 
 import (
 	"encoding/json"
 	"fmt"
+	"git.gcore.com/terraform-provider-gcore/common"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 
 func get_task_resp(url string, token string) (map[string]interface{}, error) {
 	// do a request
-	resp, err := get_request(url, token)
+	resp, err := common.GetRequest(url, token)
 	if err != nil{
 		return nil, err
 	}
@@ -34,7 +35,7 @@ func task_wait(task_id string, token string) (interface{}, error) {
 	timeout := 180
 	pause := 5
 	for i := 0; i < timeout / pause; i++{
-		resp_data, err := get_task_resp(task_url(task_id), token)
+		resp_data, err := get_task_resp(common.TaskUrl(task_id), token)
 		if err != nil{
 			return nil, err
 		}
@@ -54,7 +55,7 @@ func task_wait(task_id string, token string) (interface{}, error) {
 }
 
 func full_task_wait(resp *http.Response, token string) (interface{}, error) {
-	task := new(Task)
+	task := new(common.Task)
 	err := json.NewDecoder(resp.Body).Decode(task)
 	if err != nil{
 		return nil, err

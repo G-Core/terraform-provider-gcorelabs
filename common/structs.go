@@ -1,7 +1,7 @@
-package main
+package common
 
 type Config struct {
-	jwt string
+	Jwt string
 }
 
 type CreateVolumeBody struct{
