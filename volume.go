@@ -30,7 +30,7 @@ func resourceVolume() *schema.Resource {
 				Optional: true,
 			},
 			"region_name": &schema.Schema{
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 			"name": &schema.Schema{
@@ -52,7 +52,7 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
 	info_message := fmt.Sprintf("create a %s volume", name)
 	config := m.(*Config)
-	token := fmt.Sprintf("Bearer %s", config.jwt)
+	token := config.jwt
 
 	project_id, err := get_project(d, token, info_message)
 	if err != nil{
@@ -81,7 +81,10 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	log.Printf("Try to get task id from a response.")
-	volume_data := full_task_wait(resp, token)
+	volume_data, err := full_task_wait(resp, token)
+	if err != nil{
+		return err
+	}
 	log.Printf("Finish waiting.")
 	result := &Volumes{}
 	mapstructure.Decode(volume_data, &result)
@@ -95,6 +98,25 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
+	config := m.(*Config)
+	token := config.jwt
+	volume_id := d.Id()
+	info_message := fmt.Sprintf("get a volume %s", volume_id)
+	project_id, err := get_project(d, token, info_message)
+	if err != nil{
+		return err
+	}
+	region_id, err := get_region(d, token, info_message)
+	if err != nil{
+		return err
+	}
+	resp, err := get_request(volume_url(project_id, region_id, volume_id), token)
+	if err != nil{
+		return err
+	}
+	if resp.StatusCode != 200{
+		return fmt.Errorf("Can't find a volume %s.", volume_id)
+	}
 	return nil
 }
 
@@ -104,7 +126,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	config := m.(*Config)
-	token := fmt.Sprintf("Bearer %s", config.jwt)
+	token := config.jwt
 	volume_id := d.Id()
 	info_message := fmt.Sprintf("delete the %s volume", volume_id)
 
@@ -126,7 +148,10 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	}
 	defer resp.Body.Close()
 
-	full_task_wait(resp, token)
+	_, err = full_task_wait(resp, token)
+	if err != nil{
+		return err
+	}
 	log.Printf("Finish of volume deleting")
 	return nil
 }
