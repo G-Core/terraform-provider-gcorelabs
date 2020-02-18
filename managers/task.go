@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"git.gcore.com/terraform-provider-gcore/common"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -15,15 +14,7 @@ func get_task_resp(url string, token string) (map[string]interface{}, error) {
 	if err != nil{
 		return nil, err
 	}
-	// get a response body as text
-	responseData, err := ioutil.ReadAll(resp.Body)
-	if err != nil{
-		return nil, err
-	}
-	var data map[string]interface{}
-	log.Printf("RD%s", responseData)
-	err = json.Unmarshal([]byte(responseData), &data)
-	log.Printf("RD%s", data)
+	data, err := common.ParseResponse(resp)
 	if err != nil{
 		return nil, err
 	}
@@ -55,11 +46,11 @@ func task_wait(task_id string, token string) (interface{}, error) {
 }
 
 func full_task_wait(resp *http.Response, token string) (interface{}, error) {
-	task := new(common.Task)
-	err := json.NewDecoder(resp.Body).Decode(task)
+	tasks := new(common.TaskIds)
+	err := json.NewDecoder(resp.Body).Decode(tasks)
 	if err != nil{
 		return nil, err
 	}
-	task_id := task.Tasks[0]
+	task_id := tasks.Ids[0]
 	return task_wait(task_id, token)
 }

@@ -41,7 +41,7 @@ func GetProject(d *schema.ResourceData, header string, info_message string) (int
 	if project_id != 0 {
 		return project_id, nil
 	} else {
-		url := fmt.Sprintf("%projects", HOST)
+		url := fmt.Sprintf("%sprojects", HOST)
 		resp, err := common.GetRequest(url, header)
 		if err != nil{
 			return 0, err
@@ -92,7 +92,7 @@ func GetRegion(d *schema.ResourceData, header string, info_message string) (int,
 	if region_id != 0 {
 		return region_id, nil
 	} else {
-		url := fmt.Sprintf("%regions", HOST)
+		url := fmt.Sprintf("%sregions", HOST)
 		resp, err := common.GetRequest(url, header)
 		if err != nil{
 			return 0, err
