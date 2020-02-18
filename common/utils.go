@@ -51,13 +51,12 @@ func DeleteRequest(url string, token string) (*http.Response, error) {
 	return SimpleRequest("DELETE", url, token)
 }
 
-func ResponseJson(resp *http.Response) (map[string]interface{}, error) {
+func ParseResponse(resp *http.Response) (map[string]interface{}, error) {
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil{
 		return nil, err
 	}
 	var data map[string]interface{}
-	log.Printf("Response data: %s", responseData)
 	err = json.Unmarshal([]byte(responseData), &data)
 	if err != nil{
 		return nil, err

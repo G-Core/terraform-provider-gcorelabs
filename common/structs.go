@@ -4,10 +4,9 @@ type Config struct {
 	Jwt string
 }
 
-type CreateVolumeBody struct{
-	Size int `json:"size"`
-	Source string `json:"source"`
-	Name string	`json:"name"`
+
+type InstanceId struct {
+	InstanceId string `json:"instance_id"`
 }
 
 //K
@@ -55,13 +54,45 @@ type Regions struct{
 	Results []Region `json:"results"`
 }
 
+//S
+type Size struct{
+	Size int `json:"size"`
+}
+
 //T
-type Task struct {
-	Tasks []string
+type TaskIds struct {
+	Ids []string
+}
+
+type Type struct {
+	Volume_type string `json:"volume_type"`
 }
 
 //V
-type Volumes struct {
-	Volumes []string
+type Volume struct{
+	Size int `json:"size"`
+	Source string `json:"source"`
+	Name string	`json:"name"`
+	Type_name string `json:"type_name"`
+	Image_id string `json:"image_id"`
+	Snapshot_id string `json:"snapshot_id"`
+	Instance_id_to_attach_to string `json:"instance_id_to_attach_to"`
+}
+
+type VolumeAttachment struct{
+	Server_id string `json:"server_id"`
+	Instance_name string `json:"instance_name"`
+	Attachment_id string `json:"attachment_id"`
+	Volume_id string `json:"volume_id"`
+	Device string `json:"device"`
+	Attached_at string `json:"attached_at"`
+}
+
+type VolumeAttachments struct{
+	Attachments []VolumeAttachment `json:"attachments"`
+}
+
+type VolumeIds struct {
+	Ids []string
 }
 
