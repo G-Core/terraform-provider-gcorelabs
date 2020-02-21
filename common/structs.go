@@ -9,24 +9,10 @@ type InstanceId struct {
 	InstanceId string `json:"instance_id"`
 }
 
-//K
-type Keystone struct{
-	Id int `json:"id"`
-	Keystone_federated_domain_id string `json:"keystone_federated_domain_id"`
-	State string `json:"state"`
-	Admin_password string `json:"admin_password"`
-	Created_on string `json:"created_on"`
-	Url string `json:"url"`
-}
-
 //P
 type Project struct {
 	Id int `json:"id"`
-	Client int `json:"client"`
 	Name string `json:"name"`
-	State string `json:"state"`
-	Task_id int `string:"task_id"`
-	Created_on string `string:"created_on"`
 }
 
 type Projects struct{
@@ -38,15 +24,7 @@ type Projects struct{
 //R
 type Region struct {
 	Id int `json:"id"`
-	Keystone_id int `json:"keystone_id"`
-	State string `json:"state"`
-	External_network_id string `json:"external_network_id"`
-	Created_on string `json:"created_on"`
-	Spice_proxy_url string `json:"spice_proxy_url"`
-	Display_name string `json:"display_name"`
 	Keystone_name string `json:"keystone_name"`
-	Endpoint_type string `json:"endpoint_type"`
-	Keystone_ Keystone `json:"keystone"`
 }
 
 type Regions struct{
@@ -61,7 +39,7 @@ type Size struct{
 
 //T
 type TaskIds struct {
-	Ids []string
+	Ids []string `json:"tasks"`
 }
 
 type Type struct {
@@ -73,10 +51,10 @@ type Volume struct{
 	Size int `json:"size"`
 	Source string `json:"source"`
 	Name string	`json:"name"`
-	Type_name string `json:"type_name"`
-	Image_id string `json:"image_id"`
-	Snapshot_id string `json:"snapshot_id"`
-	Instance_id_to_attach_to string `json:"instance_id_to_attach_to"`
+	Type_name string `json:"type_name,omitempty"`
+	Image_id string `json:"image_id,omitempty"`
+	Snapshot_id string `json:"snapshot_id,omitempty"`
+	Instance_id_to_attach_to string `json:"instance_id_to_attach_to,omitempty"`
 }
 
 type VolumeAttachment struct{
@@ -88,11 +66,7 @@ type VolumeAttachment struct{
 	Attached_at string `json:"attached_at"`
 }
 
-type VolumeAttachments struct{
-	Attachments []VolumeAttachment `json:"attachments"`
-}
-
 type VolumeIds struct {
-	Ids []string
+	Volumes []string `json:"volumes"`
 }
 

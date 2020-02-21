@@ -19,6 +19,8 @@ func PostRequest(url string, token string, body []byte) (*http.Response, error) 
 	client := &http.Client{Timeout: TIMEOUT_SEC * time.Second}
 	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+	//Accept
+	// user-agent: gclou-terraform-provider
 	req.Header.Add("Authorization", ModifyToken(token))
 
 	log.Printf("Try to do request %s, %s", req, err)
@@ -51,7 +53,7 @@ func DeleteRequest(url string, token string) (*http.Response, error) {
 	return SimpleRequest("DELETE", url, token)
 }
 
-func ParseResponse(resp *http.Response) (map[string]interface{}, error) {
+func ParseJsonObject(resp *http.Response) (map[string]interface{}, error) {
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil{
 		return nil, err
