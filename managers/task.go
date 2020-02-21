@@ -14,7 +14,7 @@ func get_task_resp(url string, token string) (map[string]interface{}, error) {
 	if err != nil{
 		return nil, err
 	}
-	data, err := common.ParseResponse(resp)
+	data, err := common.ParseJsonObject(resp)
 	if err != nil{
 		return nil, err
 	}
@@ -35,8 +35,9 @@ func task_wait(task_id string, token string) (interface{}, error) {
 		}else if resp_data["state"] == "FINISHED"{
 			log.Printf("The task %s finished", resp_data["id"])
 			log.Printf("Finish of waiting a task %s", task_id)
+			log.Printf("created resources %s", resp_data["created_resources"])
 			return resp_data["created_resources"], nil
-		} else{
+		}else{
 			// Error state
 			return nil, fmt.Errorf("Task %s failed and it's in an %s state", task_id, resp_data["state"])
 		}

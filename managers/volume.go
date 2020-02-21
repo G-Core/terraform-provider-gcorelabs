@@ -25,9 +25,10 @@ func CreateVolume(project_id int, region_id int, name string, token string, body
 	}
 	log.Printf("Finish waiting.")
 	result := &common.VolumeIds{}
+	log.Printf("get volume id from %s", volume_data)
 	mapstructure.Decode(volume_data, &result)
-	log.Printf("get volume id")
-	volume_id := result.Ids[0]
+	log.Printf("get volume id from %s", result)
+	volume_id := result.Volumes[0]
 	log.Printf("Volume %s created.", volume_id)
 	return volume_id, nil
 }
@@ -57,7 +58,7 @@ func GetVolume(project_id int, region_id int, volume_id string, token string) (m
 	if resp.StatusCode != 200{
 		return nil, fmt.Errorf("Can't find a volume %s.", volume_id)
 	}
-	current_volume_data, err := common.ParseResponse(resp)
+	current_volume_data, err := common.ParseJsonObject(resp)
 	if err != nil{
 		return nil, err
 	}
@@ -154,7 +155,7 @@ func RetypeVolume(project_id int, region_id int, volume_id string, new_type stri
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("Retype volume (%s) attempt failed.", volume_id)
 	}
-	current_volume_data, err := common.ParseResponse(resp)
+	current_volume_data, err := common.ParseJsonObject(resp)
 	if err != nil{
 		return nil, err
 	}

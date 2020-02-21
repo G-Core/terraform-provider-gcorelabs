@@ -62,6 +62,33 @@ func resourceVolume() *schema.Resource {
 	}
 }
 
+func get_volume_data_v2(d *schema.ResourceData) (map[string]string) {
+	volume_data := make(map[string]string)
+	name := d.Get("name").(string)
+	size := d.Get("size").(int)
+	type_name := d.Get("type_name").(string)
+	image_id := d.Get("image_id").(string)
+	snapshot_id := d.Get("snapshot_id").(string)
+	instance_id_to_attach_to := d.Get("instance_id_to_attach_to").(string)
+
+	volume_data["size"] = fmt.Sprintf("%d", size)
+	volume_data["source"] = "new-volume"
+	volume_data["name"] = name
+	if image_id != ""{
+		volume_data["image_id"] = image_id
+	}
+	if type_name != ""{
+		volume_data["type_name"] = type_name
+	}
+	if snapshot_id != ""{
+		volume_data["snapshot_id"]  = snapshot_id
+	}
+	if instance_id_to_attach_to != ""{
+		volume_data["instance_id_to_attach_to"] = instance_id_to_attach_to
+	}
+	return volume_data
+}
+
 func get_volume_data(d *schema.ResourceData) (common.Volume) {
 	name := d.Get("name").(string)
 	size := d.Get("size").(int)
@@ -91,7 +118,7 @@ func get_volume_data(d *schema.ResourceData) (common.Volume) {
 }
 
 func get_volume_body(d *schema.ResourceData) ([]byte, error) {
-	volume_data := get_volume_data(d)
+	volume_data := get_volume_data_v2(d)
 	body, err := json.Marshal(&volume_data)
 	if err != nil{
 		return nil, err
