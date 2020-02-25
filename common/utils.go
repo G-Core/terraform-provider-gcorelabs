@@ -26,6 +26,8 @@ func PostRequest(url string, token string, body []byte) (*http.Response, error) 
 	log.Printf("Try to do request %s, %s", req, err)
 	resp, err := client.Do(req)
 	log.Printf("HTTP Response Status: %s, %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	//r, _ := ioutil.ReadAll(resp.Body)
+	//log.Printf("HTTP Response info: %s", r)
 	return resp, err
 }
 

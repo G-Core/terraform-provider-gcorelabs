@@ -8,9 +8,5 @@ import (
 var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 
 type Session struct {
-	header string
-}
-
-func (s Session) Get() string {
-
+	Jwt string
 }

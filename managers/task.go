@@ -8,6 +8,10 @@ import (
 	"net/http"
 )
 
+func TaskUrl(task_id string) string {
+	return fmt.Sprintf("%stasks/%s", HOST, task_id)
+}
+
 func get_task_resp(url string, token string) (map[string]interface{}, error) {
 	// do a request
 	resp, err := common.GetRequest(url, token)
@@ -26,7 +30,7 @@ func task_wait(task_id string, token string) (interface{}, error) {
 	timeout := 180
 	pause := 5
 	for i := 0; i < timeout / pause; i++{
-		resp_data, err := get_task_resp(common.TaskUrl(task_id), token)
+		resp_data, err := get_task_resp(TaskUrl(task_id), token)
 		if err != nil{
 			return nil, err
 		}

@@ -57,6 +57,12 @@ type Volume struct{
 	Instance_id_to_attach_to string `json:"instance_id_to_attach_to,omitempty"`
 }
 
+type OpenstackVolume struct{
+	Size int `json:"size"`
+	Type_name string `json:"type_name,omitempty"`
+	Attachments []interface{} `json:"attachments,omitempty"`
+}
+
 type VolumeAttachment struct{
 	Server_id string `json:"server_id"`
 	Instance_name string `json:"instance_name"`
