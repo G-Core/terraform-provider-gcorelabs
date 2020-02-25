@@ -168,7 +168,7 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil{
 		return err
 	}
-	resp, err := common.GetRequest(common.VolumeUrl(project_id, region_id, volume_id), token)
+	resp, err := common.GetRequest(common.ObjectUrl("volumes", project_id, region_id, volume_id), token)
 	if err != nil{
 		return err
 	}
