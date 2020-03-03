@@ -1,0 +1,2 @@
+// gcorecloud
+package testing
