@@ -2,6 +2,7 @@ package testing
 
 import (
 	"encoding/json"
+	"gcloud/gcorecloud-go"
 	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"time"
 )
@@ -40,7 +41,7 @@ const ListResponse = `
       "user_id": 3,
       "finished_on": null,
       "project_id": 444,
-      "created_on": "2019-06-25T08:42:42Z",
+      "created_on": "2019-06-25T08:42:42",
       "created_resources": null
     }
   ]
@@ -78,21 +79,22 @@ const GetResponse = `
   "user_id": 3,
   "finished_on": null,
   "project_id": 444,
-  "created_on": "2019-06-25T08:42:42Z",
+  "created_on": "2019-06-25T08:42:42",
   "created_resources": null
 }
 `
 
 var (
-	createdTimeString = "2019-06-25T08:42:42Z"
-	taskID            = "26986bc0-748a-4448-b836-0a2aa465eb06"
-	taskType          = "create_vm"
-	projectID         = 444
-	clientID          = 2
-	userClientID      = 2
-	userID            = 3
-	createdTime, _    = time.Parse(time.RFC3339, createdTimeString)
-	taskData          = []byte(`
+	createdTimeString    = "2019-06-25T08:42:42"
+	taskID               = "26986bc0-748a-4448-b836-0a2aa465eb06"
+	taskType             = "create_vm"
+	projectID            = 444
+	clientID             = 2
+	userClientID         = 2
+	userID               = 3
+	createdTimeAsTime, _ = time.Parse(gcorecloud.RFC3339NoZ, createdTimeString)
+	createdTime          = gcorecloud.JSONRFC3339NoZ(createdTimeAsTime)
+	taskData             = []byte(`
 		{
 			"name": "cirroz1",
 			"reservation_id": "01d4925e-f5db-414a-9808-74e08aa4a741",
@@ -124,7 +126,7 @@ var (
 		UserID:           userID,
 		UserClientID:     userClientID,
 		State:            tasks.TaskStateNew,
-		CreatedOn:        createdTime,
+		CreatedOn:        gcorecloud.JSONRFC3339NoZ(createdTime),
 		UpdatedOn:        nil,
 		FinishedOn:       nil,
 		AcknowledgedAt:   nil,

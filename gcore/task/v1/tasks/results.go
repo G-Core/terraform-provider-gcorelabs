@@ -3,7 +3,6 @@ package tasks
 import (
 	"gcloud/gcorecloud-go"
 	"gcloud/gcorecloud-go/pagination"
-	"time"
 )
 
 type commonResult struct {
@@ -72,23 +71,23 @@ type TaskResults struct {
 }
 
 type Task struct {
-	ID               string                  `json:"id"`
-	TaskType         string                  `json:"task_type"`
-	ProjectID        int                     `json:"project_id,omitempty"`
-	ClientID         int                     `json:"client_id"`
-	RegionID         *int                    `json:"region_id"`
-	UserID           int                     `json:"user_id"`
-	UserClientID     int                     `json:"user_client_id"`
-	State            TaskState               `json:"state"`
-	CreatedOn        time.Time               `json:"created_on"`
-	UpdatedOn        *time.Time              `json:"updated_on"`
-	FinishedOn       *time.Time              `json:"finished_on"`
-	AcknowledgedAt   *time.Time              `json:"acknowledged_at"`
-	AcknowledgedBy   *int                    `json:"acknowledged_by"`
-	CreatedResources *string                 `json:"created_resources"`
-	RequestID        *string                 `json:"request_id"`
-	Error            *string                 `json:"error"`
-	Data             *map[string]interface{} `json:"data"`
+	ID               string                     `json:"id"`
+	TaskType         string                     `json:"task_type"`
+	ProjectID        int                        `json:"project_id,omitempty"`
+	ClientID         int                        `json:"client_id"`
+	RegionID         *int                       `json:"region_id"`
+	UserID           int                        `json:"user_id"`
+	UserClientID     int                        `json:"user_client_id"`
+	State            TaskState                  `json:"state"`
+	CreatedOn        gcorecloud.JSONRFC3339NoZ  `json:"created_on"`
+	UpdatedOn        *gcorecloud.JSONRFC3339NoZ `json:"updated_on"`
+	FinishedOn       *gcorecloud.JSONRFC3339NoZ `json:"finished_on"`
+	AcknowledgedAt   *gcorecloud.JSONRFC3339NoZ `json:"acknowledged_at"`
+	AcknowledgedBy   *int                       `json:"acknowledged_by"`
+	CreatedResources *string                    `json:"created_resources"`
+	RequestID        *string                    `json:"request_id"`
+	Error            *string                    `json:"error"`
+	Data             *map[string]interface{}    `json:"data"`
 }
 
 type Tasks []Task

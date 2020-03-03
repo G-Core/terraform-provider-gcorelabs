@@ -13,8 +13,8 @@ type ListOptsBuilder interface {
 
 // ListOpts allows the filtering and sorting of paginated collections through
 // the API. Filtering is achieved by passing in struct field values that map to
-// the cluster templates attributes you want to see returned. SortKey allows you to sort
-// by a particular cluster templates attribute. SortDir sets the direction, and is either
+// the clusters attributes you want to see returned. SortKey allows you to sort
+// by a particular clusters attribute. SortDir sets the direction, and is either
 // `asc' or `desc'. Marker and Limit are used for pagination.
 type ListOpts struct {
 	Limit   int    `q:"limit"`
@@ -34,7 +34,7 @@ func (opts ListOpts) ToClusterListQuery() (string, error) {
 }
 
 // List returns a Pager which allows you to iterate over a collection of
-// cluster templates. It accepts a ListOpts struct, which allows you to filter and sort
+// clusters. It accepts a ListOpts struct, which allows you to filter and sort
 // the returned collection for greater efficiency.
 func List(c *gcorecloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 	url := listURL(c)
@@ -50,9 +50,10 @@ func List(c *gcorecloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 	})
 }
 
-// Get retrieves a specific cluster template based on its unique ID.
+// Get retrieves a specific cluster based on its unique ID.
 func Get(c *gcorecloud.ServiceClient, id string) (r GetResult) {
-	_, r.Err = c.Get(getURL(c, id), &r.Body, nil)
+	url := getURL(c, id)
+	_, r.Err = c.Get(url, &r.Body, nil)
 	return
 }
 
@@ -62,7 +63,7 @@ type CreateOptsBuilder interface {
 	ToClusterCreateMap() (map[string]interface{}, error)
 }
 
-// CreateOpts represents options used to create a cluster template.
+// CreateOpts represents options used to create a cluster.
 type CreateOpts struct {
 	Name              string             `json:"name"`
 	ClusterTemplateId string             `json:"cluster_template_id"`
@@ -84,13 +85,7 @@ func (opts CreateOpts) ToClusterCreateMap() (map[string]interface{}, error) {
 	return gcorecloud.BuildRequestBody(opts, "")
 }
 
-// Create accepts a CreateOpts struct and creates a new cluster template using the values
-// provided. This operation does not actually require a request body, i.e. the
-// CreateOpts struct argument can be empty.
-//
-// The tenant ID that is contained in the URI is the tenant that creates the
-// cluster template. An admin user, however, has the option of specifying another tenant
-// ID in the CreateOpts struct.
+// Create accepts a CreateOpts struct and creates a new cluster using the values provided.
 func Create(c *gcorecloud.ServiceClient, opts CreateOptsBuilder) (r CreateResult) {
 	b, err := opts.ToClusterCreateMap()
 	if err != nil {
@@ -115,7 +110,7 @@ func (opts UpdateOpts) ToClusterUpdateMap() (map[string]interface{}, error) {
 	return gcorecloud.BuildRequestBody(opts, "")
 }
 
-// Update accepts a UpdateOpts struct and updates an existing network using the
+// Update accepts a UpdateOpts struct and updates an existing cluster using the
 // values provided. For more information, see the Create function.
 func Update(c *gcorecloud.ServiceClient, clusterID string, opts UpdateOptsBuilder) (r UpdateResult) {
 	b, err := opts.ToClusterUpdateMap()
@@ -129,7 +124,7 @@ func Update(c *gcorecloud.ServiceClient, clusterID string, opts UpdateOptsBuilde
 	return
 }
 
-// Delete accepts a unique ID and deletes the cluster template associated with it.
+// Delete accepts a unique ID and deletes the cluster associated with it.
 func Delete(c *gcorecloud.ServiceClient, clusterID string) (r DeleteResult) {
 	_, r.Err = c.Delete(deleteURL(c, clusterID), nil)
 	return
@@ -161,10 +156,10 @@ func IDFromName(client *gcorecloud.ServiceClient, name string) (string, error) {
 
 	switch count {
 	case 0:
-		return "", gcorecloud.ErrResourceNotFound{Name: name, ResourceType: "clustertemplates"}
+		return "", gcorecloud.ErrResourceNotFound{Name: name, ResourceType: "clusters"}
 	case 1:
 		return id, nil
 	default:
-		return "", gcorecloud.ErrMultipleResourcesFound{Name: name, Count: count, ResourceType: "clustertemplates"}
+		return "", gcorecloud.ErrMultipleResourcesFound{Name: name, Count: count, ResourceType: "clusters"}
 	}
 }

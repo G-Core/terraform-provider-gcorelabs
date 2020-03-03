@@ -47,10 +47,9 @@ type UpdateResult struct {
 	commonResult
 }
 
-// DeleteResult represents the result of a delete operation. Call its
-// ExtractErr method to determine if the request succeeded or failed.
+// DeleteResult represents the result of a delete operation
 type DeleteResult struct {
-	gcorecloud.ErrResult
+	commonResult
 }
 
 // Cluster represents a cluster structure.
@@ -70,6 +69,7 @@ type Cluster struct {
 	FloatingIpEnabled  bool              `json:"floating_ip_enabled"`
 	CreatedAt          time.Time         `json:"created_at"`
 	UpdatedAt          *time.Time        `json:"updated_at"`
+	Faults             map[string]string `json:"faults"`
 	*ClusterList
 }
 

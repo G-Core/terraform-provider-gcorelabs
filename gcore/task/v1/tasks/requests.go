@@ -17,6 +17,7 @@ func List(c *gcorecloud.ServiceClient) pagination.Pager {
 
 // Get retrieves a specific cluster template based on its unique ID.
 func Get(c *gcorecloud.ServiceClient, id string) (r GetResult) {
-	_, r.Err = c.Get(getURL(c, id), &r.Body, nil)
+	url := getURL(c, id)
+	_, r.Err = c.Get(url, &r.Body, nil)
 	return
 }
