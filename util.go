@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 // WaitFor polls a predicate function, once per second, up to a timeout limit.
@@ -96,4 +98,35 @@ func NormalizePathURL(basePath, rawPath string) (string, error) {
 	u.Scheme = "file"
 	return u.String(), nil
 
+}
+
+// Remove last slash symbols from url
+func StripLastSlashURL(url string) string {
+	if len(url) == 0 {
+		return url
+	}
+	i := len(url) - 1
+	for i >= 0 && url[i] == '/' {
+		i--
+	}
+	return url[:i+1]
+}
+
+func NativeMapToStruct(nativeMap interface{}, obj interface{}) error {
+
+	var md mapstructure.Metadata
+	config := &mapstructure.DecoderConfig{
+		Metadata: &md,
+		Result:   obj,
+	}
+
+	decoder, err := mapstructure.NewDecoder(config)
+	if err != nil {
+		return err
+	}
+
+	if err := decoder.Decode(nativeMap); err != nil {
+		return err
+	}
+	return nil
 }

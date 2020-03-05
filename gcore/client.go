@@ -18,7 +18,7 @@ service that's used for authentication explicitly, for example.
 A basic example of using this would be:
 
 	ao, err := gcore.AuthOptionsFromEnv()
-	provider, err := gcore.NewClient(ao.IdentityEndpoint)
+	provider, err := gcore.NewClient(ao.ApiURL)
 	client, err := gcore.NewIdentity(provider, gcorecloud.EndpointOpts{})
 */
 func NewClient(endpoint string) (*gcorecloud.ProviderClient, error) {
@@ -67,7 +67,7 @@ Example:
 	client, err := gcore.NewMagnumV1(client, gcorecloud.EndpointOpts{})
 */
 func AuthenticatedClient(options gcorecloud.AuthOptions) (*gcorecloud.ProviderClient, error) {
-	client, err := NewGCoreClient(options.IdentityEndpoint)
+	client, err := NewGCoreClient(options.ApiURL)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func AuthenticatedClient(options gcorecloud.AuthOptions) (*gcorecloud.ProviderCl
 }
 
 func TokenClient(options gcorecloud.TokenOptions) (*gcorecloud.ProviderClient, error) {
-	client, err := NewGCoreClient(options.IdentityEndpoint)
+	client, err := NewGCoreClient(options.ApiURL)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +291,12 @@ func initClientOpts(client *gcorecloud.ProviderClient, eo gcorecloud.EndpointOpt
 		return sc, err
 	}
 	sc.ProviderClient = client
-	sc.Endpoint = url
+	endpoint, err := utils.BaseVersionEndpoint(url)
+	if err != nil {
+		return sc, err
+	}
+	sc.Endpoint = endpoint
+	sc.ResourceBase = url
 	sc.Type = clientType
 	return sc, nil
 }

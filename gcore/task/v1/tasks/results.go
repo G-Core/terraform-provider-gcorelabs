@@ -84,7 +84,7 @@ type Task struct {
 	FinishedOn       *gcorecloud.JSONRFC3339NoZ `json:"finished_on"`
 	AcknowledgedAt   *gcorecloud.JSONRFC3339NoZ `json:"acknowledged_at"`
 	AcknowledgedBy   *int                       `json:"acknowledged_by"`
-	CreatedResources *string                    `json:"created_resources"`
+	CreatedResources *map[string]interface{}    `json:"created_resources"`
 	RequestID        *string                    `json:"request_id"`
 	Error            *string                    `json:"error"`
 	Data             *map[string]interface{}    `json:"data"`

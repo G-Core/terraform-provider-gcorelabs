@@ -52,7 +52,7 @@ type ProviderClient struct {
 	// identity version.
 	IdentityBase string
 
-	// IdentityEndpoint is the identity endpoint. This may be a specific version
+	// ApiURL is the identity endpoint. This may be a specific version
 	// of the identity service. If this is the case, this endpoint is used rather
 	// than querying versions first.
 	IdentityEndpoint string
@@ -95,6 +95,8 @@ type ProviderClient struct {
 	reauthmut *reauthlock
 
 	authResult AuthResult
+
+	debug bool
 }
 
 // reauthlock represents a set of attributes used to help in the reauthentication process.
@@ -289,6 +291,17 @@ func (client *ProviderClient) Reauthenticate(previousToken string) error {
 	return err
 }
 
+func (client *ProviderClient) SetDebug(debug bool) {
+	client.debug = debug
+	log.SetLevel(log.DebugLevel)
+}
+
+func (client *ProviderClient) LogForDebug(args ...interface{}) {
+	if client.debug {
+		log.Debug(args...)
+	}
+}
+
 // RequestOpts customizes the behavior of the provider.Request() method.
 type RequestOpts struct {
 	// JSONBody, if provided, will be encoded as JSON and used as the body of the HTTP request. The
@@ -394,6 +407,8 @@ func (client *ProviderClient) doRequest(method, url string, options *RequestOpts
 	req.Close = true
 
 	preReqToken := client.AccessToken()
+
+	client.LogForDebug(req)
 
 	// Issue the request.
 	resp, err := client.HTTPClient.Do(req)
@@ -540,10 +555,10 @@ func (client *ProviderClient) doRequest(method, url string, options *RequestOpts
 
 func (client ProviderClient) ToTokenOptions() TokenOptions {
 	return TokenOptions{
-		RefreshToken:     client.RefreshToken(),
-		AccessToken:      client.AccessToken(),
-		AllowReauth:      false,
-		IdentityEndpoint: client.IdentityEndpoint,
+		RefreshToken: client.RefreshToken(),
+		AccessToken:  client.AccessToken(),
+		AllowReauth:  false,
+		ApiURL:       client.IdentityEndpoint,
 	}
 }
 
@@ -558,7 +573,7 @@ func defaultOkCodes(method string) []int {
 	case method == "PATCH":
 		return []int{200, 202, 204}
 	case method == "DELETE":
-		return []int{202, 204}
+		return []int{200, 202, 204}
 	}
 
 	return []int{}

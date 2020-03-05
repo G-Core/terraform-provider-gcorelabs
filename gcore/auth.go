@@ -44,9 +44,9 @@ func AuthOptionsFromEnv() (gcorecloud.AuthOptions, error) {
 	}
 
 	ao := gcorecloud.AuthOptions{
-		IdentityEndpoint: authURL,
-		Username:         username,
-		Password:         password,
+		ApiURL:   authURL,
+		Username: username,
+		Password: password,
 	}
 
 	return ao, nil
@@ -80,26 +80,31 @@ func TokenOptionsFromEnv() (gcorecloud.TokenOptions, error) {
 	}
 
 	to := gcorecloud.TokenOptions{
-		IdentityEndpoint: apiURL,
-		AccessToken:      accessToken,
-		RefreshToken:     refreshToken,
-		AllowReauth:      true,
+		ApiURL:       apiURL,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		AllowReauth:  true,
 	}
 
 	return to, nil
 }
 
-func NewGCloudTokenApiSettingsFromEnv() (*gcorecloud.GCloudTokenApiSettings, error) {
+func NewGCloudPasswordApiSettingsFromEnv() (*gcorecloud.GCloudPasswordApiSettings, error) {
+	authURL := os.Getenv("GCLOUD_AUTH_URL")
 	apiURL := os.Getenv("GCLOUD_API_URL")
+	username := os.Getenv("GCLOUD_USERNAME")
+	password := os.Getenv("GCLOUD_PASSWORD")
 	apiVersion := os.Getenv("GCLOUD_API_VERSION")
-	accessToken := os.Getenv("GCLOUD_ACCESS_TOKEN")
-	refreshToken := os.Getenv("GCLOUD_REFRESH_TOKEN")
 	region := os.Getenv("GCLOUD_REGION")
 	project := os.Getenv("GCLOUD_PROJECT")
+	debugEnv := os.Getenv("GCLOUD_DEBUG")
 
-	var projectInt, regionInt int
-	var err error
-	var version = "v1"
+	var (
+		projectInt, regionInt int
+		err                   error
+		version               = "v1"
+		debug                 = false
+	)
 
 	if project != "" {
 		projectInt, err = strconv.Atoi(project)
@@ -119,13 +124,71 @@ func NewGCloudTokenApiSettingsFromEnv() (*gcorecloud.GCloudTokenApiSettings, err
 		version = apiVersion
 	}
 
+	debug, err = strconv.ParseBool(debugEnv)
+	if err != nil {
+		debug = false
+	}
+
+	return &gcorecloud.GCloudPasswordApiSettings{
+		Version:     version,
+		ApiURL:      apiURL,
+		AuthURL:     authURL,
+		Username:    username,
+		Password:    password,
+		Region:      regionInt,
+		Project:     projectInt,
+		AllowReauth: true,
+		Debug:       debug,
+	}, nil
+}
+
+func NewGCloudTokenApiSettingsFromEnv() (*gcorecloud.GCloudTokenApiSettings, error) {
+	apiURL := os.Getenv("GCLOUD_API_URL")
+	apiVersion := os.Getenv("GCLOUD_API_VERSION")
+	accessToken := os.Getenv("GCLOUD_ACCESS_TOKEN")
+	refreshToken := os.Getenv("GCLOUD_REFRESH_TOKEN")
+	region := os.Getenv("GCLOUD_REGION")
+	project := os.Getenv("GCLOUD_PROJECT")
+	debugEnv := os.Getenv("GCLOUD_DEBUG")
+
+	var (
+		projectInt, regionInt int
+		err                   error
+		version               = "v1"
+		debug                 = false
+	)
+
+	if project != "" {
+		projectInt, err = strconv.Atoi(project)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if region != "" {
+		regionInt, err = strconv.Atoi(region)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if apiVersion != "" {
+		version = apiVersion
+	}
+
+	debug, err = strconv.ParseBool(debugEnv)
+	if err != nil {
+		debug = false
+	}
+
 	return &gcorecloud.GCloudTokenApiSettings{
-		Version:          version,
-		IdentityEndpoint: apiURL,
-		AccessToken:      accessToken,
-		RefreshToken:     refreshToken,
-		Region:           regionInt,
-		Project:          projectInt,
-		AllowReauth:      true,
+		Version:      version,
+		ApiURL:       apiURL,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		Region:       regionInt,
+		Project:      projectInt,
+		AllowReauth:  true,
+		Debug:        debug,
 	}, nil
 }

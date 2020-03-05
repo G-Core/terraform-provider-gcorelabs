@@ -375,6 +375,27 @@ func (jt *JSONRFC3339NoZ) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// RFC3339Z is the time format used in Heat (Orchestration).
+const RFC3339Z = "2006-01-02T15:04:05-0700"
+
+type JSONRFC3339Z time.Time
+
+func (jt *JSONRFC3339Z) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	if s == "" {
+		return nil
+	}
+	t, err := time.Parse(RFC3339Z, s)
+	if err != nil {
+		return err
+	}
+	*jt = JSONRFC3339Z(t)
+	return nil
+}
+
 // RFC3339ZNoT is the time format used in Zun (Containers Service).
 const RFC3339ZNoT = "2006-01-02 15:04:05-07:00"
 

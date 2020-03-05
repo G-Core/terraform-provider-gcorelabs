@@ -11,11 +11,11 @@ type TokenOptionsBuilder interface {
 }
 
 type AuthOptions struct {
-	IdentityEndpoint     string `json:"-"`
-	RefreshTokenEndpoint string `json:"-"`
-	Username             string `json:"username,omitempty"`
-	Password             string `json:"password,omitempty"`
-	AllowReauth          bool   `json:"-"`
+	ApiURL      string `json:"-"`
+	AuthURL     string `json:"-"`
+	Username    string `json:"username,omitempty"`
+	Password    string `json:"password,omitempty"`
+	AllowReauth bool   `json:"-"`
 }
 
 func (ao AuthOptions) ToMap() map[string]interface{} {
@@ -26,10 +26,10 @@ func (ao AuthOptions) ToMap() map[string]interface{} {
 }
 
 type TokenOptions struct {
-	IdentityEndpoint string `json:"-"`
-	AccessToken      string `json:"access,omitempty"`
-	RefreshToken     string `json:"refresh,omitempty"`
-	AllowReauth      bool   `json:"-"`
+	ApiURL       string `json:"-"`
+	AccessToken  string `json:"access,omitempty"`
+	RefreshToken string `json:"refresh,omitempty"`
+	AllowReauth  bool   `json:"-"`
 }
 
 func (to TokenOptions) ExtractAccessToken() (string, error) {
@@ -49,23 +49,24 @@ func (to TokenOptions) ToMap() map[string]interface{} {
 }
 
 type GCloudTokenApiSettings struct {
-	IdentityEndpoint string `json:"url,omitempty"`
-	AccessToken      string `json:"access,omitempty"`
-	RefreshToken     string `json:"refresh,omitempty"`
-	AllowReauth      bool   `json:"-"`
-	Type             string `json:"type,omitempty"`
-	Name             string `json:"name,omitempty"`
-	Region           int    `json:"region,omitempty"`
-	Project          int    `json:"project,omitempty"`
-	Version          string `json:"version,omitempty"`
+	ApiURL       string `json:"url,omitempty"`
+	AccessToken  string `json:"access,omitempty"`
+	RefreshToken string `json:"refresh,omitempty"`
+	AllowReauth  bool   `json:"-"`
+	Type         string `json:"type,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Region       int    `json:"region,omitempty"`
+	Project      int    `json:"project,omitempty"`
+	Version      string `json:"version,omitempty"`
+	Debug        bool   `json:"debug,omitempty"`
 }
 
 func (gs GCloudTokenApiSettings) ToTokenOptions() TokenOptions {
 	return TokenOptions{
-		IdentityEndpoint: gs.IdentityEndpoint,
-		AccessToken:      gs.AccessToken,
-		RefreshToken:     gs.RefreshToken,
-		AllowReauth:      gs.AllowReauth,
+		ApiURL:       gs.ApiURL,
+		AccessToken:  gs.AccessToken,
+		RefreshToken: gs.RefreshToken,
+		AllowReauth:  gs.AllowReauth,
 	}
 }
 
@@ -80,14 +81,73 @@ func (gs GCloudTokenApiSettings) ToEndpointOptions() EndpointOpts {
 }
 
 func (gs GCloudTokenApiSettings) Validate() error {
+	if gs.ApiURL == "" {
+		return fmt.Errorf("api-url endpoint required")
+	}
 	if gs.AccessToken == "" {
 		return fmt.Errorf("access token required")
 	}
 	if gs.RefreshToken == "" {
 		return fmt.Errorf("refresh token required")
 	}
-	if gs.IdentityEndpoint == "" {
-		return fmt.Errorf("api url required. IdentityEndpoint")
+	if gs.ApiURL == "" {
+		return fmt.Errorf("api url required. ApiURL")
+	}
+	if gs.Name == "" {
+		return fmt.Errorf("name required")
+	}
+	return nil
+}
+
+type GCloudPasswordApiSettings struct {
+	ApiURL      string `json:"api-url,omitempty"`
+	AuthURL     string `json:"auth-url,omitempty"`
+	Username    string `json:"username,omitempty"`
+	Password    string `json:"password,omitempty"`
+	AllowReauth bool   `json:"-"`
+	Type        string `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Region      int    `json:"region,omitempty"`
+	Project     int    `json:"project,omitempty"`
+	Version     string `json:"version,omitempty"`
+	Debug       bool   `json:"debug,omitempty"`
+}
+
+func (gs GCloudPasswordApiSettings) ToAuthOptions() AuthOptions {
+	return AuthOptions{
+		ApiURL:      gs.ApiURL,
+		AuthURL:     gs.AuthURL,
+		Username:    gs.Username,
+		Password:    gs.Password,
+		AllowReauth: gs.AllowReauth,
+	}
+}
+
+func (gs GCloudPasswordApiSettings) ToEndpointOptions() EndpointOpts {
+	return EndpointOpts{
+		Region:  gs.Region,
+		Project: gs.Project,
+		Version: gs.Version,
+		Name:    gs.Name,
+		Type:    gs.Type,
+	}
+}
+
+func (gs GCloudPasswordApiSettings) Validate() error {
+	if gs.AuthURL == "" {
+		return fmt.Errorf("auth-url endpoint required")
+	}
+	if gs.ApiURL == "" {
+		return fmt.Errorf("api-url endpoint required")
+	}
+	if gs.Username == "" {
+		return fmt.Errorf("username required")
+	}
+	if gs.Password == "" {
+		return fmt.Errorf("password required")
+	}
+	if gs.ApiURL == "" {
+		return fmt.Errorf("api url required. ApiURL")
 	}
 	if gs.Name == "" {
 		return fmt.Errorf("name required")

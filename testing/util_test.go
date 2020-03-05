@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"gcloud/gcorecloud-go"
 	th "gcloud/gcorecloud-go/testhelper"
 )
@@ -119,4 +121,38 @@ func TestNormalizePathURL(t *testing.T) {
 	expected = strings.Join([]string{"file:/", filepath.ToSlash(baseDir), "only/file/even/more/very/nested/file.yaml"}, "/")
 	th.CheckEquals(t, expected, result)
 
+}
+
+func TestStripLastSlashURL(t *testing.T) {
+
+	testCase := []map[string]string{
+		{
+			"url":    "http://test.com/1/1//////",
+			"result": "http://test.com/1/1",
+		},
+		{
+			"url":    "http://test.com/1/1",
+			"result": "http://test.com/1/1",
+		},
+		{
+			"url":    "http://test.com/1/1/",
+			"result": "http://test.com/1/1",
+		},
+		{
+			"url":    "",
+			"result": "",
+		},
+		{
+			"url":    "/",
+			"result": "",
+		},
+		{
+			"url":    "///////",
+			"result": "",
+		},
+	}
+
+	for _, m := range testCase {
+		require.Equal(t, m["result"], gcorecloud.StripLastSlashURL(m["url"]))
+	}
 }

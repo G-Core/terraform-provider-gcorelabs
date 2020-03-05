@@ -17,13 +17,13 @@ client per OpenStack cloud.
 	the below and presents it in an easier and more flexible way.
 
 Use your OpenStack credentials to create a Provider client.  The
-IdentityEndpoint is typically refered to as "auth_url" or "OS_AUTH_URL" in
+ApiURL is typically refered to as "auth_url" or "OS_AUTH_URL" in
 information provided by the cloud operator. Additionally, the cloud may refer to
 TenantID or TenantName as project_id and project_name. Credentials are
 specified like so:
 
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "https://openstack.example.com:5000/v2.0",
+		ApiURL: "https://openstack.example.com:5000/v2.0",
 		Username: "{username}",
 		Password: "{password}",
 		TenantID: "{tenant_id}",
@@ -34,7 +34,7 @@ specified like so:
 You can authenticate with a token by doing:
 
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "https://openstack.example.com:5000/v2.0",
+		ApiURL: "https://openstack.example.com:5000/v2.0",
 		AccessTokenID:  "{token_id}",
 		TenantID: "{tenant_id}",
 	}

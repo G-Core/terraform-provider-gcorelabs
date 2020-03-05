@@ -11,7 +11,7 @@ Example to List Cluster
 		panic(err)
 	}
 
-	allNetworks, err := clusters.ExtractClusterTemplates(allPages)
+	allNetworks, err := clusters.ExtractClusters(allPages)
 	if err != nil {
 		panic(err)
 	}

@@ -13,7 +13,7 @@ const RefreshToken = "tbc36478b0bd8e67e89469c7749d4127"
 const Username = "username"
 const Password = "password"
 const RegionID = 1
-const ProjectID = 11
+const ProjectID = 1
 
 // ServiceClient returns a generic service client for use in tests.
 func ServiceClient() *gcorecloud.ServiceClient {
@@ -28,10 +28,10 @@ func ServiceClient() *gcorecloud.ServiceClient {
 
 func ServiceTokenClient(name string, version string) *gcorecloud.ServiceClient {
 	options := gcorecloud.TokenOptions{
-		IdentityEndpoint: testhelper.GCloudRefreshTokenIdentifyEndpoint(),
-		AccessToken:      AccessToken,
-		RefreshToken:     RefreshToken,
-		AllowReauth:      true,
+		ApiURL:       testhelper.GCloudRefreshTokenIdentifyEndpoint(),
+		AccessToken:  AccessToken,
+		RefreshToken: RefreshToken,
+		AllowReauth:  true,
 	}
 	endpointOpts := gcorecloud.EndpointOpts{
 		Name:    name,
@@ -48,10 +48,10 @@ func ServiceTokenClient(name string, version string) *gcorecloud.ServiceClient {
 
 func TaskTokenClient() *gcorecloud.ServiceClient {
 	options := gcorecloud.TokenOptions{
-		IdentityEndpoint: testhelper.GCloudRefreshTokenIdentifyEndpoint(),
-		AccessToken:      AccessToken,
-		RefreshToken:     RefreshToken,
-		AllowReauth:      true,
+		ApiURL:       testhelper.GCloudRefreshTokenIdentifyEndpoint(),
+		AccessToken:  AccessToken,
+		RefreshToken: RefreshToken,
+		AllowReauth:  true,
 	}
 	client, err := gcore.TaskTokenClient(options)
 	if err != nil {
@@ -62,11 +62,11 @@ func TaskTokenClient() *gcorecloud.ServiceClient {
 
 func ServiceAuthClient(name string, version string) *gcorecloud.ServiceClient {
 	options := gcorecloud.AuthOptions{
-		IdentityEndpoint:     testhelper.GCoreIdentifyEndpoint(),
-		RefreshTokenEndpoint: testhelper.GCoreRefreshTokenIdentifyEndpoint(),
-		Username:             Username,
-		Password:             Password,
-		AllowReauth:          true,
+		ApiURL:      testhelper.GCoreIdentifyEndpoint(),
+		AuthURL:     testhelper.GCoreRefreshTokenIdentifyEndpoint(),
+		Username:    Username,
+		Password:    Password,
+		AllowReauth: true,
 	}
 	endpointOpts := gcorecloud.EndpointOpts{
 		Name:    name,

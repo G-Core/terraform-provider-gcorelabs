@@ -28,6 +28,18 @@ func BaseEndpoint(endpoint string) (string, error) {
 	return u.String(), nil
 }
 
+// BaseVersionEndpoint will return a URL with the /vX.Y starting portion of the URL.
+func BaseVersionEndpoint(endpoint string) (string, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return "", err
+	}
+
+	u.RawQuery, u.Fragment = "", ""
+	u.Path = gcorecloud.NormalizeURL(strings.Join(strings.Split(u.Path, "/")[:2], "/"))
+	return u.String(), nil
+}
+
 func BaseRootEndpoint(endpoint string) (string, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil {

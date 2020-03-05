@@ -126,7 +126,7 @@ var (
 		UserID:           userID,
 		UserClientID:     userClientID,
 		State:            tasks.TaskStateNew,
-		CreatedOn:        gcorecloud.JSONRFC3339NoZ(createdTime),
+		CreatedOn:        createdTime,
 		UpdatedOn:        nil,
 		FinishedOn:       nil,
 		AcknowledgedAt:   nil,

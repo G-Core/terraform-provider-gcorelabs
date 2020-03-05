@@ -5,7 +5,7 @@ import (
 )
 
 func resourceURL(c *gcorecloud.ServiceClient, id string) string {
-	return c.ServiceURL(id)
+	return c.BaseServiceURL("tasks", id)
 }
 
 func rootURL(c *gcorecloud.ServiceClient) string {

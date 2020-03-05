@@ -29,10 +29,10 @@ func TestAuthenticatedClient(t *testing.T) {
 	})
 
 	options := gcorecloud.AuthOptions{
-		Username:             "me",
-		Password:             "secret",
-		IdentityEndpoint:     th.GCoreIdentifyEndpoint(),
-		RefreshTokenEndpoint: th.GCoreRefreshTokenIdentifyEndpoint(),
+		Username: "me",
+		Password: "secret",
+		ApiURL:   th.GCoreIdentifyEndpoint(),
+		AuthURL:  th.GCoreRefreshTokenIdentifyEndpoint(),
 	}
 	provider, err := gcore.AuthenticatedClient(options)
 	require.NoError(t, err)

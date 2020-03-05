@@ -41,7 +41,11 @@ func (client *ServiceClient) ResourceBaseURL() string {
 
 // ServiceURL constructs a URL for a resource belonging to this provider.
 func (client *ServiceClient) ServiceURL(parts ...string) string {
-	return client.ResourceBaseURL() + strings.Join(parts, "/")
+	return StripLastSlashURL(client.ResourceBaseURL() + strings.Join(parts, "/"))
+}
+
+func (client *ServiceClient) BaseServiceURL(parts ...string) string {
+	return StripLastSlashURL(client.Endpoint + strings.Join(parts, "/"))
 }
 
 func (client *ServiceClient) initReqOpts(url string, JSONBody interface{}, JSONResponse interface{}, opts *RequestOpts) {
@@ -103,6 +107,15 @@ func (client *ServiceClient) Delete(url string, opts *RequestOpts) (*http.Respon
 		opts = new(RequestOpts)
 	}
 	client.initReqOpts(url, nil, nil, opts)
+	return client.Request("DELETE", url, opts)
+}
+
+// DeleteWithResponse calls `Request` with the "DELETE" HTTP verb.
+func (client *ServiceClient) DeleteWithResponse(url string, JSONResponse interface{}, opts *RequestOpts) (*http.Response, error) {
+	if opts == nil {
+		opts = new(RequestOpts)
+	}
+	client.initReqOpts(url, nil, JSONResponse, opts)
 	return client.Request("DELETE", url, opts)
 }
 
