@@ -121,6 +121,50 @@ const CreateResponse = `
   ]
 }
 `
+const DeleteResponse = `
+{
+  "tasks": [
+    "50f53a35-42ed-40c4-82b2-5a37fb3e00bc"
+  ]
+}
+`
+
+const CreateClusterTask = `
+{
+  "id": "dc066a00-9931-496b-9bc9-ba4938568716",
+  "task_type": "create_magnum_cluster",
+  "project_id": 15,
+  "client_id": 1,
+  "region_id": 1,
+  "user_id": 1,
+  "user_client_id": 1,
+  "state": "RUNNING",
+  "created_on": "2020-03-08T15:54:23",
+  "updated_on": "2020-03-08T15:54:23",
+  "finished_on": null,
+  "acknowledged_at": null,
+  "acknowledged_by": null,
+  "created_resources": null,
+  "request_id": "91d08fee-d3dd-4120-a428-4bf7ad554729",
+  "error": null,
+  "data": {
+    "cluster_template_id": "75588db1-3f2e-4db5-8913-e501a647d373",
+    "create_timeout": 7200,
+    "floating_ip_enabled": false,
+    "keypair": "keypair",
+    "labels": {
+      "gcloud_access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNTg4ODY2ODYzLCJqdGkiOiJiNWUwMjBiNmU0NDJjMTY3MGFlNTY4OTdjOWU3MWM3YSIsInVzZXJfdHlwZSI6ImNvbW1vbiIsInVzZXJfZ3JvdXBzIjpbIlVzZXJzIl0sImNsaWVudF9pZCI6MSwicmVnaW9uX2lkIjoxLCJwcm9qZWN0X2lkIjoxNSwidXNlcl9pZCI6MSwiaXNfYWRtaW4iOmZhbHNlfQ.fiXGzdcBtJve22_ysi-8iuXPrv5aILOLdw3FLH5QeAI",
+      "gcloud_project_id": "15",
+      "gcloud_refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTg5OTA0Mjg2MywianRpIjoiYjVlMDIwYjZlNDQyYzE2NzBhZTU2ODk3YzllNzFjN2EiLCJ1c2VyX3R5cGUiOiJjb21tb24iLCJ1c2VyX2dyb3VwcyI6WyJVc2VycyJdLCJjbGllbnRfaWQiOjEsInJlZ2lvbl9pZCI6MSwicHJvamVjdF9pZCI6MTUsInVzZXJfaWQiOjEsImlzX2FkbWluIjpmYWxzZX0.OvxkdfY7BHb3JJHDLBdkpCN-ANNVUpPiKeiZHOLPWAU",
+      "gcloud_region_id": "1"
+    },
+    "master_count": 1,
+    "name": "test",
+    "node_count": 1,
+    "reservation_id": "3302b3d0-a597-4321-bd41-9f57bdff8891"
+  }
+}
+`
 
 var createdTimeString = "2020-03-02T12:20:43+00:00"
 var updatedTimeString = "2020-03-02T12:20:47+00:00"

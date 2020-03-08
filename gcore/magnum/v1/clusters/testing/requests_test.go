@@ -118,17 +118,18 @@ func TestCreate(t *testing.T) {
 	})
 
 	timeout := 360
+	keypair := "keypair"
 
 	options := clusters.CreateOpts{
 		Name:              Cluster1.Name,
 		ClusterTemplateId: Cluster1.ClusterTemplateID,
 		NodeCount:         1,
 		MasterCount:       1,
-		KeyPair:           "keypair",
-		FlavorId:          Cluster1.FlavorID,
+		KeyPair:           &keypair,
+		FlavorId:          &Cluster1.FlavorID,
 		DiscoveryUrl:      nil,
 		CreateTimeout:     &timeout,
-		MasterFlavorId:    Cluster1.MasterFlavorID,
+		MasterFlavorId:    &Cluster1.MasterFlavorID,
 		Labels:            &map[string]string{},
 		FixedSubnet:       nil,
 	}
@@ -146,10 +147,15 @@ func TestDelete(t *testing.T) {
 	th.Mux.HandleFunc(prepareGetTestURL(Cluster1.UUID), func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "DELETE")
 		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintf(w, DeleteResponse)
+		if err != nil {
+			log.Error(err)
+		}
 	})
 
 	client := fake.ServiceTokenClient("magnum", "v1")
-	res := clusters.Delete(client, Cluster1.UUID)
-	th.AssertNoErr(t, res.Err)
+	tasks, err := clusters.Delete(client, Cluster1.UUID).ExtractTasks()
+	require.NoError(t, err)
+	require.Equal(t, Tasks1, *tasks)
 }

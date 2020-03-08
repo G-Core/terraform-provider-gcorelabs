@@ -80,9 +80,9 @@ const DeleteResponse = `
 var createdTimeString = "2020-03-05T12:03:24+0000"
 var updatedTimeString = "2020-03-05T12:03:25+0000"
 var createdTimeParsed, _ = time.Parse(gcorecloud.RFC3339Z, createdTimeString)
-var createdTime = gcorecloud.JSONRFC3339Z(createdTimeParsed)
+var createdTime = gcorecloud.JSONRFC3339Z{Time: createdTimeParsed}
 var updatedTimeParsed, _ = time.Parse(gcorecloud.RFC3339Z, updatedTimeString)
-var updatedTime = gcorecloud.JSONRFC3339Z(updatedTimeParsed)
+var updatedTime = gcorecloud.JSONRFC3339Z{Time: updatedTimeParsed}
 
 var (
 	Network1 = networks.Network{

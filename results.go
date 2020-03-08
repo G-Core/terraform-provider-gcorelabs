@@ -357,7 +357,9 @@ func (jt *JSONUnix) UnmarshalJSON(data []byte) error {
 // RFC3339NoZ is the time format used in Heat (Orchestration).
 const RFC3339NoZ = "2006-01-02T15:04:05"
 
-type JSONRFC3339NoZ time.Time
+type JSONRFC3339NoZ struct {
+	time.Time
+}
 
 func (jt *JSONRFC3339NoZ) UnmarshalJSON(data []byte) error {
 	var s string
@@ -371,14 +373,24 @@ func (jt *JSONRFC3339NoZ) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	*jt = JSONRFC3339NoZ(t)
+	jt.Time = t
 	return nil
+}
+
+func (jt *JSONRFC3339NoZ) String() string {
+	return jt.Format(RFC3339NoZ)
+}
+
+func (jt *JSONRFC3339NoZ) MarshalJSON() ([]byte, error) {
+	return json.Marshal(jt.Format(RFC3339NoZ))
 }
 
 // RFC3339Z is the time format used in Heat (Orchestration).
 const RFC3339Z = "2006-01-02T15:04:05-0700"
 
-type JSONRFC3339Z time.Time
+type JSONRFC3339Z struct {
+	time.Time
+}
 
 func (jt *JSONRFC3339Z) UnmarshalJSON(data []byte) error {
 	var s string
@@ -392,8 +404,12 @@ func (jt *JSONRFC3339Z) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	*jt = JSONRFC3339Z(t)
+	jt.Time = t
 	return nil
+}
+
+func (jt *JSONRFC3339Z) MarshalJSON() ([]byte, error) {
+	return json.Marshal(jt.Format(RFC3339Z))
 }
 
 // RFC3339ZNoT is the time format used in Zun (Containers Service).

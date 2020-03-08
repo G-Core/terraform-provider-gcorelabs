@@ -101,14 +101,14 @@ var WaitCommandFlags = []cli.Flag{
 	&cli.BoolFlag{
 		Name:     "wait",
 		Aliases:  []string{"w"},
-		Usage:    "Wait till cluster is being deleted",
+		Usage:    "Wait while command is being processed ",
 		Value:    false,
 		Required: false,
 	},
 	&cli.IntFlag{
 		Name:     "wait-seconds",
-		Usage:    "Required amount of time is seconds till cluster is being deleted",
-		Value:    300,
+		Usage:    "Required amount of time in seconds to wait while command is being processed",
+		Value:    3600,
 		Required: false,
 	},
 }

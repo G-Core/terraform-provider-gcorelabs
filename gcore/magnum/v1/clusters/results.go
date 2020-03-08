@@ -1,6 +1,7 @@
 package clusters
 
 import (
+	"fmt"
 	"gcloud/gcorecloud-go"
 	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"gcloud/gcorecloud-go/pagination"
@@ -129,4 +130,21 @@ func ExtractClusters(r pagination.Page) ([]ClusterList, error) {
 
 func ExtractClustersInto(r pagination.Page, v interface{}) error {
 	return r.(ClusterPage).Result.ExtractIntoSlicePtr(v, "clusters")
+}
+
+type ClusterTaskResult struct {
+	Networks []string `json:"networks"`
+	Routers  []string `json:"routers"`
+}
+
+func ExtractClusterIDFromTask(task *tasks.Task) (string, error) {
+	var result ClusterTaskResult
+	err := gcorecloud.NativeMapToStruct(task.CreatedResources, &result)
+	if err != nil {
+		return "", fmt.Errorf("cannot decode cluster information in task structure: %w", err)
+	}
+	if len(result.Networks) == 0 {
+		return "", fmt.Errorf("cannot decode cluster information in task structure: %w", err)
+	}
+	return result.Networks[0], nil
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http/httputil"
 
 	log "github.com/sirupsen/logrus"
 
@@ -296,9 +297,25 @@ func (client *ProviderClient) SetDebug(debug bool) {
 	log.SetLevel(log.DebugLevel)
 }
 
-func (client *ProviderClient) LogForDebug(args ...interface{}) {
+func (client *ProviderClient) debugRequest(request *http.Request) {
 	if client.debug {
-		log.Debug(args...)
+		dump, err := httputil.DumpRequestOut(request, true)
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Debug(string(dump))
+		}
+	}
+}
+
+func (client *ProviderClient) debugResponse(response *http.Response) {
+	if client.debug {
+		dump, err := httputil.DumpResponse(response, true)
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Debug(string(dump))
+		}
 	}
 }
 
@@ -408,13 +425,15 @@ func (client *ProviderClient) doRequest(method, url string, options *RequestOpts
 
 	preReqToken := client.AccessToken()
 
-	client.LogForDebug(req)
+	client.debugRequest(req)
 
 	// Issue the request.
 	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
+
+	client.debugResponse(resp)
 
 	// Allow default OkCodes if none explicitly set
 	okc := options.OkCodes

@@ -10,6 +10,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+var defaultSleepTimeout = 1
+
 // WaitFor polls a predicate function, once per second, up to a timeout limit.
 // This is useful to wait for a resource to transition to a certain state.
 // To handle situations when the predicate might hang indefinitely, the
@@ -30,7 +32,7 @@ func WaitFor(timeout int, predicate func() (bool, error)) error {
 			return fmt.Errorf("A timeout occurred")
 		}
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Duration(defaultSleepTimeout) * time.Second)
 
 		var result WaitForResult
 		ch := make(chan bool, 1)

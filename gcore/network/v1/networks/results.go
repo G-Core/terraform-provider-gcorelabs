@@ -119,5 +119,8 @@ func ExtractNetworkIDFromTask(task *tasks.Task) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot decode network information in task structure: %w", err)
 	}
+	if len(result.Networks) == 0 {
+		return "", fmt.Errorf("cannot decode network information in task structure: %w", err)
+	}
 	return result.Networks[0], nil
 }

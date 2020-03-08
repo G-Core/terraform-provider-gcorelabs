@@ -64,7 +64,6 @@ type CreateOptsBuilder interface {
 
 // CreateOpts represents options used to create a cluster template.
 type CreateOpts struct {
-	ExternalNetworkId   string             `json:"external_network_id"`
 	ImageId             string             `json:"image_id"`
 	KeyPairID           string             `json:"keypair_id"`
 	Name                string             `json:"name"`

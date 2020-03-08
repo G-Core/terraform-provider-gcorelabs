@@ -22,11 +22,6 @@ var clusterTemplateCreateSubCommand = cli.Command{
 			Required: true,
 		},
 		&cli.StringFlag{
-			Name:     "external-network",
-			Usage:    "The name or network ID of a Neutron network to provide connectivity to the external internet for the cluster.",
-			Required: true,
-		},
-		&cli.StringFlag{
 			Name:     "keypair",
 			Aliases:  []string{"k"},
 			Usage:    "The name of the SSH keypair",
@@ -45,14 +40,16 @@ var clusterTemplateCreateSubCommand = cli.Command{
 			Required: false,
 		},
 		&cli.StringFlag{
-			Name:     "fixed-subnet",
-			Usage:    "Fixed subnet that are using to allocate network address for nodes in cluster.",
-			Required: false,
+			Name:        "fixed-subnet",
+			Usage:       "Fixed subnet that are using to allocate network address for nodes in cluster.",
+			DefaultText: "nil",
+			Required:    false,
 		},
 		&cli.StringFlag{
-			Name:     "master-flavor",
-			Usage:    "The flavor of the master node for this cluster template",
-			Required: false,
+			Name:        "master-flavor",
+			Usage:       "The flavor of the master node for this cluster template",
+			DefaultText: "nil",
+			Required:    false,
 		},
 		&cli.StringFlag{
 			Name:     "flavor",
@@ -60,9 +57,10 @@ var clusterTemplateCreateSubCommand = cli.Command{
 			Required: true,
 		},
 		&cli.StringSliceFlag{
-			Name:     "labels",
-			Usage:    "Arbitrary labels. The accepted keys and valid values are defined in the cluster drivers. --labels one=two --labels three=four ",
-			Required: false,
+			Name:        "labels",
+			Usage:       "Arbitrary labels. The accepted keys and valid values are defined in the cluster drivers. --labels one=two --labels three=four ",
+			DefaultText: "nil",
+			Required:    false,
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -77,15 +75,14 @@ var clusterTemplateCreateSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		opts := clustertemplates.CreateOpts{
-			ExternalNetworkId: c.String("external-network"),
-			ImageId:           c.String("image"),
-			KeyPairID:         c.String("keypair"),
-			Name:              c.String("name"),
-			DockerVolumeSize:  c.Int("docker-volume-size"),
-			Labels:            &labels,
-			FixedSubnet:       utils.StringToPointer(c.String("fixed-subnet")),
-			MasterFlavorID:    utils.StringToPointer(c.String("master-flavor")),
-			FlavorID:          utils.StringToPointer(c.String("flavor")),
+			ImageId:          c.String("image"),
+			KeyPairID:        c.String("keypair"),
+			Name:             c.String("name"),
+			DockerVolumeSize: c.Int("docker-volume-size"),
+			Labels:           &labels,
+			FixedSubnet:      utils.StringToPointer(c.String("fixed-subnet")),
+			MasterFlavorID:   utils.StringToPointer(c.String("master-flavor")),
+			FlavorID:         utils.StringToPointer(c.String("flavor")),
 		}
 		result, err := clustertemplates.Create(client, opts).Extract()
 		if err != nil {

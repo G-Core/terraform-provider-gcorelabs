@@ -110,7 +110,6 @@ const CreateRequest = `
 {
   "docker_volume_size": 5,
   "name": "riswuwudlp",
-  "external_network_id": "3a1d8f88-6020-4d11-9f9f-f815fe69ea40",
   "keypair_id": "keypair",
   "image_id": "fedora-coreos"
 }

@@ -93,7 +93,7 @@ var (
 	userClientID         = 2
 	userID               = 3
 	createdTimeAsTime, _ = time.Parse(gcorecloud.RFC3339NoZ, createdTimeString)
-	createdTime          = gcorecloud.JSONRFC3339NoZ(createdTimeAsTime)
+	createdTime          = gcorecloud.JSONRFC3339NoZ{Time: createdTimeAsTime}
 	taskData             = []byte(`
 		{
 			"name": "cirroz1",

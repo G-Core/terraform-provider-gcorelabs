@@ -69,11 +69,11 @@ type CreateOpts struct {
 	ClusterTemplateId string             `json:"cluster_template_id"`
 	NodeCount         int                `json:"node_count"`
 	MasterCount       int                `json:"master_count"`
-	KeyPair           string             `json:"keypair,omitempty"`
-	FlavorId          string             `json:"flavor_id,omitempty"`
+	KeyPair           *string            `json:"keypair,omitempty"`
+	FlavorId          *string            `json:"flavor_id,omitempty"`
+	MasterFlavorId    *string            `json:"master_flavor_id,omitempty"`
 	DiscoveryUrl      *string            `json:"discovery_url,omitempty"`
-	CreateTimeout     *int               `json:"create_timeout"`
-	MasterFlavorId    string             `json:"master_flavor_id,omitempty"`
+	CreateTimeout     *int               `json:"create_timeout,omitempty"`
 	Labels            *map[string]string `json:"labels,omitempty"`
 	FixedNetwork      *string            `json:"fixed_network,omitempty"`
 	FixedSubnet       *string            `json:"fixed_subnet,omitempty"`
@@ -126,7 +126,7 @@ func Update(c *gcorecloud.ServiceClient, clusterID string, opts UpdateOptsBuilde
 
 // Delete accepts a unique ID and deletes the cluster associated with it.
 func Delete(c *gcorecloud.ServiceClient, clusterID string) (r DeleteResult) {
-	_, r.Err = c.Delete(deleteURL(c, clusterID), nil)
+	_, r.Err = c.DeleteWithResponse(deleteURL(c, clusterID), &r.Body, nil)
 	return
 }
 

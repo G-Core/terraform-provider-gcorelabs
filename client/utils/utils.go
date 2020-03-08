@@ -216,12 +216,16 @@ func interfaceToSlice(input interface{}) []interface{} {
 	return records
 }
 
-func renderJSON(input interface{}) {
+func renderJSON(input interface{}) error {
 	if input == nil || (reflect.TypeOf(input).Kind() == reflect.Slice && reflect.ValueOf(input).Len() == 0) {
-		return
+		return nil
 	}
-	res, _ := json.MarshalIndent(input, "", "  ")
+	res, err := json.MarshalIndent(input, "", "  ")
+	if err != nil {
+		return err
+	}
 	fmt.Println(string(res))
+	return nil
 }
 
 func renderYAML(input interface{}) {
@@ -235,7 +239,10 @@ func renderYAML(input interface{}) {
 func ShowResults(input interface{}, format string) {
 	switch format {
 	case "json":
-		renderJSON(input)
+		err := renderJSON(input)
+		if err != nil {
+			fmt.Println(err)
+		}
 	case "table":
 		renderTable(input)
 	case "yaml":
@@ -278,6 +285,9 @@ func StringSliceToMap(slice []string) (map[string]string, error) {
 
 func WaitTaskAndShowResult(c *cli.Context, client *gcorecloud.ServiceClient, results *tasks.TaskResults, infoRetriever tasks.RetrieveTaskResult) error {
 	if c.Bool("wait") {
+		if len(results.Tasks) == 0 {
+			return cli.NewExitError(fmt.Errorf("wrong task response"), 1)
+		}
 		task := results.Tasks[0]
 		waitSeconds := c.Int("wait-seconds")
 		err := tasks.WaitForStatus(client, string(task), tasks.TaskStateFinished, waitSeconds)

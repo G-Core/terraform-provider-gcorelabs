@@ -119,11 +119,10 @@ func TestCreate(t *testing.T) {
 	})
 
 	options := clustertemplates.CreateOpts{
-		Name:              ClusterTemplate1.Name,
-		ExternalNetworkId: ClusterTemplate1.ExternalNetworkId,
-		ImageId:           ClusterTemplate1.ImageId,
-		KeyPairID:         ClusterTemplate1.KeyPairID,
-		DockerVolumeSize:  ClusterTemplate1.DockerVolumeSize,
+		Name:             ClusterTemplate1.Name,
+		ImageId:          ClusterTemplate1.ImageId,
+		KeyPairID:        ClusterTemplate1.KeyPairID,
+		DockerVolumeSize: ClusterTemplate1.DockerVolumeSize,
 	}
 
 	client := fake.ServiceTokenClient("magnum", "v1")
