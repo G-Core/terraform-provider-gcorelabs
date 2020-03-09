@@ -597,3 +597,8 @@ func defaultOkCodes(method string) []int {
 
 	return []int{}
 }
+
+func NewProviderClient() *ProviderClient {
+	client := new(ProviderClient)
+	return client
+}

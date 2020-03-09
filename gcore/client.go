@@ -30,7 +30,7 @@ func NewClient(endpoint string) (*gcorecloud.ProviderClient, error) {
 	endpoint = gcorecloud.NormalizeURL(endpoint)
 	base = gcorecloud.NormalizeURL(base)
 
-	p := new(gcorecloud.ProviderClient)
+	p := gcorecloud.NewProviderClient()
 	p.IdentityBase = base
 	p.IdentityEndpoint = endpoint
 	p.UseTokenLock()
@@ -47,7 +47,7 @@ func NewGCoreClient(endpoint string) (*gcorecloud.ProviderClient, error) {
 	endpoint = gcorecloud.NormalizeURL(endpoint)
 	base = gcorecloud.NormalizeURL(base)
 
-	p := new(gcorecloud.ProviderClient)
+	p := gcorecloud.NewProviderClient()
 	p.IdentityBase = base
 	p.IdentityEndpoint = endpoint
 	p.UseTokenLock()

@@ -67,6 +67,15 @@ var commonFlags = []cli.Flag{
 	},
 }
 
+var DebugFlags = []cli.Flag{
+	&cli.BoolFlag{
+		Name:     "debug",
+		Aliases:  []string{"d"},
+		Usage:    "debug API requests",
+		Required: false,
+	},
+}
+
 var tokenFlags = []cli.Flag{
 	&cli.StringFlag{
 		Name:     "access",
@@ -152,3 +161,18 @@ var PasswordClientHelpText = `
    GCLOUD_REGION=
    GCLOUD_PROJECT=
 `
+
+func AddFlags(commands []*cli.Command, flags ...cli.Flag) {
+	for _, cmd := range commands {
+		sunCommands := cmd.Subcommands
+		if len(sunCommands) != 0 {
+			AddFlags(sunCommands, flags...)
+		} else {
+			cmd.Flags = append(cmd.Flags, flags...)
+		}
+	}
+}
+
+func AddDebugFlags(commands []*cli.Command) {
+	AddFlags(commands, DebugFlags...)
+}

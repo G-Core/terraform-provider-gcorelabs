@@ -133,8 +133,7 @@ func ExtractClustersInto(r pagination.Page, v interface{}) error {
 }
 
 type ClusterTaskResult struct {
-	Networks []string `json:"networks"`
-	Routers  []string `json:"routers"`
+	Clusters []string `json:"clusters"`
 }
 
 func ExtractClusterIDFromTask(task *tasks.Task) (string, error) {
@@ -143,8 +142,8 @@ func ExtractClusterIDFromTask(task *tasks.Task) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot decode cluster information in task structure: %w", err)
 	}
-	if len(result.Networks) == 0 {
+	if len(result.Clusters) == 0 {
 		return "", fmt.Errorf("cannot decode cluster information in task structure: %w", err)
 	}
-	return result.Networks[0], nil
+	return result.Clusters[0], nil
 }
