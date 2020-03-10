@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go/client/flags"
-	"gcloud/gcorecloud-go/client/keypairs"
-	"gcloud/gcorecloud-go/client/magnum/clusters"
-	"gcloud/gcorecloud-go/client/magnum/nodegroups"
-	"gcloud/gcorecloud-go/client/magnum/templates"
-	"gcloud/gcorecloud-go/client/networks"
-	"gcloud/gcorecloud-go/client/tasks"
+	"gcloud/gcorecloud-go/gcoreclient/flags"
+	"gcloud/gcorecloud-go/gcoreclient/keypairs"
+	"gcloud/gcorecloud-go/gcoreclient/magnum/clusters"
+	"gcloud/gcorecloud-go/gcoreclient/magnum/nodegroups"
+	"gcloud/gcorecloud-go/gcoreclient/magnum/templates"
+	"gcloud/gcorecloud-go/gcoreclient/networks"
+	"gcloud/gcorecloud-go/gcoreclient/tasks"
 	"os"
 
 	"github.com/sirupsen/logrus"

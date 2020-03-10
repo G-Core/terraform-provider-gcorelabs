@@ -1,9 +1,9 @@
 package keypairs
 
 import (
-	"gcloud/gcorecloud-go/client/flags"
-	"gcloud/gcorecloud-go/client/utils"
 	"gcloud/gcorecloud-go/gcore/keypair/v1/keypairs"
+	"gcloud/gcorecloud-go/gcoreclient/flags"
+	"gcloud/gcorecloud-go/gcoreclient/utils"
 	"io/ioutil"
 
 	"github.com/urfave/cli/v2"

@@ -2,7 +2,7 @@ package flags
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go/client/utils"
+	"gcloud/gcorecloud-go/gcoreclient/utils"
 
 	"github.com/urfave/cli/v2"
 )
