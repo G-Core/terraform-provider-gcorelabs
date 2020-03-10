@@ -71,6 +71,78 @@ var clusterDeleteSubCommand = cli.Command{
 	},
 }
 
+var clusterResizeSubCommand = cli.Command{
+	Name:      "resize",
+	Usage:     "Magnum resize cluster",
+	ArgsUsage: "<cluster_id>",
+	Category:  "cluster",
+	Flags: append([]cli.Flag{
+		&cli.IntFlag{
+			Name:     "node-count",
+			Usage:    "Cluster nodes count",
+			Required: true,
+		},
+		&cli.StringSliceFlag{
+			Name:        "nodes-to-remove",
+			Usage:       "Cluster nodes chose to remove",
+			DefaultText: "nil",
+			Required:    false,
+		},
+		&cli.StringFlag{
+			Name:        "nodegroup",
+			Usage:       "Cluster nodegroup",
+			DefaultText: "nil",
+			Required:    false,
+		},
+	}, flags.WaitCommandFlags...),
+	Action: func(c *cli.Context) error {
+		clusterId, err := flags.GetFirstArg(c, clusterIDText)
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "resize")
+			return err
+		}
+		client, err := utils.BuildClient(c, "magnum", "")
+		if err != nil {
+			_ = cli.ShowAppHelp(c)
+			return cli.NewExitError(err, 1)
+		}
+
+		nodes := c.StringSlice("nodes-to-remove")
+		if len(nodes) == 0 {
+			nodes = nil
+		}
+
+		opts := clusters.ResizeOpts{
+			NodeCount:     c.Int("node-count"),
+			NodesToRemove: nodes,
+			NodeGroup:     utils.StringToPointer(c.String("nodegroup")),
+		}
+
+		results, err := clusters.Resize(client, clusterId, opts).ExtractTasks()
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+
+		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+			taskInfo, err := tasks.Get(client, string(task)).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+			}
+			clusterID, err := clusters.ExtractClusterIDFromTask(taskInfo)
+			if err != nil {
+				return nil, fmt.Errorf("cannot retrieve cluster ID from task info: %w", err)
+			}
+			network, err := clusters.Get(client, clusterID).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get cluster with ID: %s. Error: %w", clusterID, err)
+			}
+			utils.ShowResults(network, c.String("format"))
+			return nil, nil
+		})
+
+	},
+}
+
 var clusterGetSubCommand = cli.Command{
 	Name:      "show",
 	Usage:     "Magnum get cluster",
@@ -239,5 +311,6 @@ var ClusterCommands = cli.Command{
 		&clusterDeleteSubCommand,
 		&clusterGetSubCommand,
 		&clusterCreateSubCommand,
+		&clusterResizeSubCommand,
 	},
 }

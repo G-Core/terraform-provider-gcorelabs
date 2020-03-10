@@ -75,7 +75,7 @@ type CreateOpts struct {
 	DiscoveryUrl      *string            `json:"discovery_url,omitempty"`
 	CreateTimeout     *int               `json:"create_timeout,omitempty"`
 	Labels            *map[string]string `json:"labels,omitempty"`
-	FixedNetwork      *string            `json:"fixed_network,omitempty"`
+	FixedNetwork      *string            `json:"fixed_cluster,omitempty"`
 	FixedSubnet       *string            `json:"fixed_subnet,omitempty"`
 	FloatingIpEnabled bool               `json:"floating_ip_enabled"`
 }
@@ -96,29 +96,31 @@ func Create(c *gcorecloud.ServiceClient, opts CreateOptsBuilder) (r CreateResult
 	return
 }
 
-// UpdateOptsBuilder allows extensions to add additional parameters to the Update request.
-type UpdateOptsBuilder interface {
-	ToClusterUpdateMap() (map[string]interface{}, error)
+// ResizeOptsBuilder allows extensions to add additional parameters to the Resize request.
+type ResizeOptsBuilder interface {
+	ToClusterResizeMap() (map[string]interface{}, error)
 }
 
-// UpdateOpts represents options used to update a network.
-type UpdateOpts struct {
+// ResizeOpts represents options used to update a cluster.
+type ResizeOpts struct {
+	NodeCount     int      `json:"node_count"`
+	NodesToRemove []string `json:"nodes_to_remove,omitempty"`
+	NodeGroup     *string  `json:"nodegroup,omitempty"`
 }
 
-// ToClusterUpdateMap builds a request body from UpdateOpts.
-func (opts UpdateOpts) ToClusterUpdateMap() (map[string]interface{}, error) {
+// ToClusterResizeMap builds a request body from ResizeOpts.
+func (opts ResizeOpts) ToClusterResizeMap() (map[string]interface{}, error) {
 	return gcorecloud.BuildRequestBody(opts, "")
 }
 
-// Update accepts a UpdateOpts struct and updates an existing cluster using the
-// values provided. For more information, see the Create function.
-func Update(c *gcorecloud.ServiceClient, clusterID string, opts UpdateOptsBuilder) (r UpdateResult) {
-	b, err := opts.ToClusterUpdateMap()
+// Resize accepts a ResizeOpts struct and updates an existing cluster using the values provided.
+func Resize(c *gcorecloud.ServiceClient, clusterID string, opts ResizeOptsBuilder) (r ResizeResult) {
+	b, err := opts.ToClusterResizeMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Patch(updateURL(c, clusterID), b, &r.Body, &gcorecloud.RequestOpts{
+	_, r.Err = c.Post(resizeURL(c, clusterID), b, &r.Body, &gcorecloud.RequestOpts{
 		OkCodes: []int{200, 201},
 	})
 	return

@@ -23,12 +23,20 @@ func prepareGetTestURLParams(projectID int, regionID int, id string) string {
 	return fmt.Sprintf("/v1/magnum/%d/%d/clusters/%s", projectID, regionID, id)
 }
 
+func prepareActionTestURLParams(projectID int, regionID int, id, action string) string {
+	return fmt.Sprintf("/v1/magnum/%d/%d/clusters/%s/actions/%s", projectID, regionID, id, action)
+}
+
 func prepareListTestURL() string {
 	return prepareListTestURLParams(fake.ProjectID, fake.RegionID)
 }
 
 func prepareGetTestURL(id string) string {
 	return prepareGetTestURLParams(fake.ProjectID, fake.RegionID, id)
+}
+
+func prepareResizeTestURL(id string) string {
+	return prepareActionTestURLParams(fake.ProjectID, fake.RegionID, id, "resize")
 }
 
 func TestList(t *testing.T) {
@@ -158,4 +166,38 @@ func TestDelete(t *testing.T) {
 	tasks, err := clusters.Delete(client, Cluster1.UUID).ExtractTasks()
 	require.NoError(t, err)
 	require.Equal(t, Tasks1, *tasks)
+}
+
+func TestResize(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+
+	th.Mux.HandleFunc(prepareResizeTestURL(Cluster1.UUID), func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "POST")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+		th.TestHeader(t, r, "Content-Type", "application/json")
+		th.TestHeader(t, r, "Accept", "application/json")
+		th.TestJSONRequest(t, r, ResizeRequest)
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+
+		_, err := fmt.Fprintf(w, ResizeResponse)
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	nodeGroup := "test"
+
+	options := clusters.ResizeOpts{
+		NodeCount:     2,
+		NodesToRemove: nil,
+		NodeGroup:     &nodeGroup,
+	}
+
+	client := fake.ServiceTokenClient("magnum", "v1")
+	tasks, err := clusters.Resize(client, Cluster1.UUID, options).ExtractTasks()
+	require.NoError(t, err)
+	require.Equal(t, Tasks1, *tasks)
+
 }

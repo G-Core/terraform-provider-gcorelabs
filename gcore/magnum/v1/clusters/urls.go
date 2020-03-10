@@ -12,6 +12,14 @@ func rootURL(c *gcorecloud.ServiceClient) string {
 	return c.ServiceURL("clusters")
 }
 
+func resourceActionURL(c *gcorecloud.ServiceClient, id, action string) string {
+	return c.ServiceURL("clusters", id, "actions", action)
+}
+
+func resizeURL(c *gcorecloud.ServiceClient, id string) string {
+	return resourceActionURL(c, id, "resize")
+}
+
 func getURL(c *gcorecloud.ServiceClient, id string) string {
 	return resourceURL(c, id)
 }

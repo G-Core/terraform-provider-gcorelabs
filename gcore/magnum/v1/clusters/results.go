@@ -31,20 +31,24 @@ func (r commonResult) ExtractInto(v interface{}) error {
 }
 
 // CreateResult represents the result of a create operation. Call its Extract
-// method to interpret it as a Network.
+// method to interpret it as a Cluster.
 type CreateResult struct {
 	commonResult
 }
 
 // GetResult represents the result of a get operation. Call its Extract
-// method to interpret it as a Network.
+// method to interpret it as a Cluster.
 type GetResult struct {
 	commonResult
 }
 
-// UpdateResult represents the result of an update operation. Call its Extract
-// method to interpret it as a Network.
+// UpdateResult represents the result of an update operation. Call its Extract method to interpret it as a Cluster.
 type UpdateResult struct {
+	commonResult
+}
+
+// ResizeResult represents the result of an resizing operation. Call its Extract method to interpret it as a Cluster.
+type ResizeResult struct {
 	commonResult
 }
 

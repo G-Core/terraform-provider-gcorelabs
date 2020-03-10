@@ -114,6 +114,13 @@ const CreateRequest = `
 }
 `
 
+const ResizeRequest = `
+{
+    "node_count": 2,
+    "nodegroup": "test"
+}
+`
+
 const CreateResponse = `
 {
   "tasks": [
@@ -122,6 +129,13 @@ const CreateResponse = `
 }
 `
 const DeleteResponse = `
+{
+  "tasks": [
+    "50f53a35-42ed-40c4-82b2-5a37fb3e00bc"
+  ]
+}
+`
+const ResizeResponse = `
 {
   "tasks": [
     "50f53a35-42ed-40c4-82b2-5a37fb3e00bc"

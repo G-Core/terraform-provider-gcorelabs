@@ -20,7 +20,7 @@ Example to List Cluster Nodegroups
 		fmt.Printf("%+v", nodegroups)
 	}
 
-Example to Create a Cluster Nodegroup
+Example to Create a Cluster NodeGroup
 
 	iTrue := true
 	createOpts := nodegroups.CreateOpts{
@@ -31,7 +31,7 @@ Example to Create a Cluster Nodegroup
 		panic(err)
 	}
 
-Example to Delete a Nodegroup
+Example to Delete a NodeGroup
 
 	nodegroupID := "484cda0e-106f-4f4b-bb3f-d413710bbe78"
 	err := nodegroups.Delete(client, nodegroupID).ExtractErr()
