@@ -20,7 +20,7 @@ var nodegroupListSubCommand = cli.Command{
 	Category:  "nodegroup",
 	ArgsUsage: "<cluster_id>",
 	Action: func(c *cli.Context) error {
-		clusterID, err := utils.GetFirstArg(c, clusterIDText)
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "list")
 			return err
@@ -54,7 +54,7 @@ var nodegroupDeleteSubCommand = cli.Command{
 		},
 	}, flags.WaitCommandFlags...),
 	Action: func(c *cli.Context) error {
-		nodeGroupID, err := utils.GetFirstArg(c, nodeGroupIDText)
+		nodeGroupID, err := flags.GetFirstArg(c, nodeGroupIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "delete")
 			return err
@@ -114,7 +114,7 @@ var nodegroupUpdateSubCommand = cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		nodeGroupID, err := utils.GetFirstArg(c, nodeGroupIDText)
+		nodeGroupID, err := flags.GetFirstArg(c, nodeGroupIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "update")
 			return err
@@ -153,7 +153,7 @@ var nodegroupGetSubCommand = cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		nodeGroupID, err := utils.GetFirstArg(c, nodeGroupIDText)
+		nodeGroupID, err := flags.GetFirstArg(c, nodeGroupIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "show")
 			return err
@@ -228,7 +228,7 @@ var nodegroupCreateSubCommand = cli.Command{
 	}, flags.WaitCommandFlags...,
 	),
 	Action: func(c *cli.Context) error {
-		clusterID, err := utils.GetFirstArg(c, clusterIDText)
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "create")
 			return err

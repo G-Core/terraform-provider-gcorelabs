@@ -39,10 +39,10 @@ var networkGetCommand = cli.Command{
 	ArgsUsage: "<network_id>",
 	Category:  "network",
 	Action: func(c *cli.Context) error {
-		networkID := c.Args().First()
-		if networkID == "" {
+		networkID, err := flags.GetFirstArg(c, networkIDText)
+		if err != nil {
 			_ = cli.ShowCommandHelp(c, "show")
-			return cli.NewExitError(fmt.Errorf(networkIDText), 1)
+			return err
 		}
 		client, err := utils.BuildClient(c, "networks", "")
 		if err != nil {
@@ -68,10 +68,10 @@ var networkDeleteCommand = cli.Command{
 	Category:  "network",
 	Flags:     flags.WaitCommandFlags,
 	Action: func(c *cli.Context) error {
-		networkID := c.Args().First()
-		if networkID == "" {
-			_ = cli.ShowCommandHelp(c, "show")
-			return cli.NewExitError(fmt.Errorf(networkIDText), 1)
+		networkID, err := flags.GetFirstArg(c, networkIDText)
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "delete")
+			return err
 		}
 		client, err := utils.BuildClient(c, "networks", "")
 		if err != nil {

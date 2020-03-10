@@ -79,17 +79,6 @@ type ClusterTemplate struct {
 	Links               []gcorecloud.Link `json:"links"`
 }
 
-/*
-func (r *ClusterTemplate) UnmarshalJSON(b []byte) error {
-	var ct ClusterTemplate
-	err := json.Unmarshal(b, &ct)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-*/
-
 // ClusterTemplatePage is the page returned by a pager when traversing over a
 // collection of networks.
 type ClusterTemplatePage struct {

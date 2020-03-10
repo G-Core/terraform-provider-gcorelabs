@@ -1,2 +1,2 @@
-// cluster unit tests
+// networks unit tests
 package testing

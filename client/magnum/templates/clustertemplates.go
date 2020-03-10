@@ -1,7 +1,7 @@
 package templates
 
 import (
-	"fmt"
+	"gcloud/gcorecloud-go/client/flags"
 	"gcloud/gcorecloud-go/client/utils"
 	"gcloud/gcorecloud-go/gcore/magnum/v1/clustertemplates"
 
@@ -119,11 +119,10 @@ var clusterTemplateDeleteDubCommand = cli.Command{
 	ArgsUsage: "<clustertemplate_id>",
 	Category:  "clustertemplate",
 	Action: func(c *cli.Context) error {
-		clusterTemplateID := c.Args().First()
-		if clusterTemplateID == "" {
-			fmt.Println(clusterTemplateIDText)
+		clusterTemplateID, err := flags.GetFirstArg(c, clusterTemplateIDText)
+		if err != nil {
 			_ = cli.ShowCommandHelp(c, "delete")
-			return cli.NewExitError(fmt.Errorf(clusterTemplateIDText), 1)
+			return err
 		}
 		client, err := utils.BuildClient(c, "magnum", "")
 		if err != nil {
@@ -144,18 +143,17 @@ var clusterTemplateGetSubCommand = cli.Command{
 	ArgsUsage: "<clustertemplate_id>",
 	Category:  "clustertemplate",
 	Action: func(c *cli.Context) error {
-		clusterId := c.Args().First()
-		if clusterId == "" {
-			fmt.Println(clusterTemplateIDText)
+		clusterTemplateID, err := flags.GetFirstArg(c, clusterTemplateIDText)
+		if err != nil {
 			_ = cli.ShowCommandHelp(c, "show")
-			return cli.NewExitError(fmt.Errorf(clusterTemplateIDText), 1)
+			return err
 		}
 		client, err := utils.BuildClient(c, "magnum", "")
 		if err != nil {
 			_ = cli.ShowAppHelp(c)
 			return cli.NewExitError(err, 1)
 		}
-		result, err := clustertemplates.Get(client, clusterId).Extract()
+		result, err := clustertemplates.Get(client, clusterTemplateID).Extract()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}

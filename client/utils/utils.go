@@ -41,14 +41,6 @@ func (e EnumValue) String() string {
 	return e.selected
 }
 
-func GetFirstArg(c *cli.Context, errorText string) (string, error) {
-	arg := c.Args().First()
-	if arg == "" {
-		return "", cli.NewExitError(fmt.Errorf(errorText), 1)
-	}
-	return arg, nil
-}
-
 func BuildTokenClient(c *cli.Context, endpointName, endpointType string) (*gcorecloud.ServiceClient, error) {
 	settings, err := gcore.NewGCloudTokenApiSettingsFromEnv()
 	if err != nil {

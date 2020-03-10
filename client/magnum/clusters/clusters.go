@@ -40,11 +40,10 @@ var clusterDeleteSubCommand = cli.Command{
 	Category:  "cluster",
 	Flags:     flags.WaitCommandFlags,
 	Action: func(c *cli.Context) error {
-		clusterId := c.Args().First()
-		if clusterId == "" {
-			fmt.Println(clusterIDText)
+		clusterId, err := flags.GetFirstArg(c, clusterIDText)
+		if err != nil {
 			_ = cli.ShowCommandHelp(c, "delete")
-			return cli.NewExitError(fmt.Errorf(clusterIDText), 1)
+			return err
 		}
 		client, err := utils.BuildClient(c, "magnum", "")
 		if err != nil {
@@ -78,11 +77,10 @@ var clusterGetSubCommand = cli.Command{
 	ArgsUsage: "<cluster_id>",
 	Category:  "cluster",
 	Action: func(c *cli.Context) error {
-		clusterId := c.Args().First()
-		if clusterId == "" {
-			fmt.Println(clusterIDText)
+		clusterId, err := flags.GetFirstArg(c, clusterIDText)
+		if err != nil {
 			_ = cli.ShowCommandHelp(c, "show")
-			return cli.NewExitError(fmt.Errorf(clusterIDText), 1)
+			return err
 		}
 		client, err := utils.BuildClient(c, "magnum", "")
 		if err != nil {

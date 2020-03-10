@@ -1,6 +1,7 @@
 package flags
 
 import (
+	"fmt"
 	"gcloud/gcorecloud-go/client/utils"
 
 	"github.com/urfave/cli/v2"
@@ -122,7 +123,7 @@ var WaitCommandFlags = []cli.Flag{
 	},
 }
 
-func buildTokenClientFlags(...cli.Flag) []cli.Flag {
+func buildTokenClientFlags() []cli.Flag {
 	var flags []cli.Flag
 	flags = append(flags, commonFlags...)
 	flags = append(flags, tokenFlags...)
@@ -175,4 +176,12 @@ func AddFlags(commands []*cli.Command, flags ...cli.Flag) {
 
 func AddDebugFlags(commands []*cli.Command) {
 	AddFlags(commands, DebugFlags...)
+}
+
+func GetFirstArg(c *cli.Context, errorText string) (string, error) {
+	arg := c.Args().First()
+	if arg == "" {
+		return "", cli.NewExitError(fmt.Errorf(errorText), 1)
+	}
+	return arg, nil
 }

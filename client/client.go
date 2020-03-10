@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gcloud/gcorecloud-go/client/flags"
+	"gcloud/gcorecloud-go/client/keypairs"
 	"gcloud/gcorecloud-go/client/magnum/clusters"
 	"gcloud/gcorecloud-go/client/magnum/nodegroups"
 	"gcloud/gcorecloud-go/client/magnum/templates"
@@ -17,6 +18,7 @@ import (
 var commands = []*cli.Command{
 	&networks.NetworkCommands,
 	&tasks.TaskCommands,
+	&keypairs.KeypairCommands,
 	{
 		Name:  "magnum",
 		Usage: "Magnum commands",
