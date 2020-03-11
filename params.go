@@ -32,7 +32,10 @@ BuildRequestBody is used within GCore cloud to more fully understand how it
 fits within the request process as a whole rather than use it directly as shown
 above.
 */
-func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, error) {
+
+var trueTag = "true"
+
+func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, error) { // nolint: gocyclo
 	optsValue := reflect.ValueOf(opts)
 	if optsValue.Kind() == reflect.Ptr {
 		optsValue = optsValue.Elem()
@@ -60,7 +63,7 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 			//fmt.Printf("v is zero?: %v\n", zero)
 
 			// if the field has a required tag that's set to "true"
-			if requiredTag := f.Tag.Get("required"); requiredTag == "true" {
+			if requiredTag := f.Tag.Get("required"); requiredTag == trueTag {
 				//fmt.Printf("Checking required field [%s]:\n\tv: %+v\n\tisZero:%v\n", f.Name, v.Interface(), zero)
 				// if the field's value is zero, return a missing-argument error
 				if zero {
@@ -185,7 +188,7 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 		return optsMap, nil
 	}
 	// Return an error if the underlying type of 'opts' isn't a struct.
-	return nil, fmt.Errorf("Options type is not a struct.")
+	return nil, fmt.Errorf("options type is not a struct")
 }
 
 // EnabledState is a convenience type, mostly used in Create and Update
@@ -281,10 +284,7 @@ func isZero(v reflect.Value) bool {
 		return z
 	case reflect.Struct:
 		if v.Type() == reflect.TypeOf(t) {
-			if v.Interface().(time.Time).IsZero() {
-				return true
-			}
-			return false
+			return v.Interface().(time.Time).IsZero()
 		}
 		z := true
 		for i := 0; i < v.NumField(); i++ {
@@ -377,10 +377,10 @@ func BuildQueryString(opts interface{}) (*url.URL, error) {
 							params.Add(tags[0], fmt.Sprintf("{%s}", strings.Join(s, ", ")))
 						}
 					}
-				} else {
+				} else { // nolint: gocritic
 					// if the field has a 'required' tag, it can't have a zero-value
-					if requiredTag := f.Tag.Get("required"); requiredTag == "true" {
-						return &url.URL{}, fmt.Errorf("Required query parameter [%s] not set.", f.Name)
+					if requiredTag := f.Tag.Get("required"); requiredTag == trueTag {
+						return &url.URL{}, fmt.Errorf("required query parameter [%s] not set", f.Name)
 					}
 				}
 			}
@@ -389,7 +389,7 @@ func BuildQueryString(opts interface{}) (*url.URL, error) {
 		return &url.URL{RawQuery: params.Encode()}, nil
 	}
 	// Return an error if the underlying type of 'opts' isn't a struct.
-	return nil, fmt.Errorf("Options type is not a struct.")
+	return nil, fmt.Errorf("options type is not a struct")
 }
 
 /*
@@ -454,10 +454,11 @@ func BuildHeaders(opts interface{}) (map[string]string, error) {
 					case reflect.Bool:
 						optsMap[tags[0]] = strconv.FormatBool(v.Bool())
 					}
-				} else {
+				} else { // nolint: gocritic
+
 					// if the field has a 'required' tag, it can't have a zero-value
-					if requiredTag := f.Tag.Get("required"); requiredTag == "true" {
-						return optsMap, fmt.Errorf("Required header [%s] not set.", f.Name)
+					if requiredTag := f.Tag.Get("required"); requiredTag == trueTag {
+						return optsMap, fmt.Errorf("required header [%s] not set", f.Name)
 					}
 				}
 			}

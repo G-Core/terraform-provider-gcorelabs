@@ -26,6 +26,9 @@ var keypairListCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		results, err := keypairs.ExtractKeyPairs(pages)
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
 		utils.ShowResults(results, c.String("format"))
 		return nil
 	},

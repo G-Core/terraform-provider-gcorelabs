@@ -15,6 +15,8 @@ import (
 	th "gcloud/gcorecloud-go/testhelper"
 )
 
+var testURL = "/v1/magnum/"
+
 func TestAuthenticatedClient(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
@@ -31,7 +33,7 @@ func TestAuthenticatedClient(t *testing.T) {
 	options := gcorecloud.AuthOptions{
 		Username: "me",
 		Password: "secret",
-		ApiURL:   th.GCoreIdentifyEndpoint(),
+		APIURL:   th.GCoreIdentifyEndpoint(),
 		AuthURL:  th.GCoreRefreshTokenIdentifyEndpoint(),
 	}
 	provider, err := gcore.AuthenticatedClient(options)
@@ -57,7 +59,7 @@ func TestReauthAuthenticatedServiceClient(t *testing.T) {
 	})
 
 	th.Mux.HandleFunc("/auth/jwt/refresh", func(w http.ResponseWriter, r *http.Request) {
-		reauthCount += 1
+		reauthCount++
 		th.TestHeader(t, r, "Authorization", "")
 		w.WriteHeader(http.StatusOK)
 		_, err := fmt.Fprintf(w, `{ "access": "%s", "refresh": "%s"}`, updatedAccessToken, client.RefreshToken)
@@ -67,10 +69,9 @@ func TestReauthAuthenticatedServiceClient(t *testing.T) {
 	})
 
 	serviceClient := client.ServiceAuthClient("magnum", "v1")
-	testUrl := "/v1/magnum/"
-	fullTestUrl := serviceClient.ResourceBaseURL()
+	fullTestURL := serviceClient.ResourceBaseURL()
 
-	th.Mux.HandleFunc(testUrl, func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc(testURL, func(w http.ResponseWriter, r *http.Request) {
 		header := strings.Split(r.Header.Get("Authorization"), " ")[1]
 		require.Contains(t, []string{client.AccessToken, updatedAccessToken}, header)
 		if header == client.AccessToken {
@@ -88,8 +89,16 @@ func TestReauthAuthenticatedServiceClient(t *testing.T) {
 	require.Equal(t, client.RefreshToken, serviceClient.RefreshToken())
 	r := gcorecloud.Result{}
 
-	resp, err := serviceClient.Get(fullTestUrl, &r.Body, nil)
+	resp, err := serviceClient.Get(fullTestURL, &r.Body, nil)
 	require.NoError(t, err)
+
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
 	require.Equal(t, resp.StatusCode, 200)
 
 	require.Equal(t, updatedAccessToken, serviceClient.AccessToken())
@@ -99,7 +108,7 @@ func TestReauthAuthenticatedServiceClient(t *testing.T) {
 	serviceClient.AccessTokenID = client.AccessToken
 	require.Equal(t, client.AccessToken, serviceClient.AccessToken())
 
-	resp, err = serviceClient.Get(fullTestUrl, &r.Body, nil)
+	resp, err = serviceClient.Get(fullTestURL, &r.Body, nil)
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
@@ -119,7 +128,7 @@ func TestReauthAuthenticatedServiceClientWithBadRefreshToken(t *testing.T) {
 	authCount := 0
 
 	th.Mux.HandleFunc("/auth/jwt/login", func(w http.ResponseWriter, r *http.Request) {
-		authCount += 1
+		authCount++
 		th.TestHeader(t, r, "Authorization", "")
 		token := client.AccessToken
 		if authCount > 1 {
@@ -133,7 +142,7 @@ func TestReauthAuthenticatedServiceClientWithBadRefreshToken(t *testing.T) {
 	})
 
 	th.Mux.HandleFunc("/auth/jwt/refresh", func(w http.ResponseWriter, r *http.Request) {
-		reauthCount += 1
+		reauthCount++
 		th.TestHeader(t, r, "Authorization", "")
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := fmt.Fprintf(w, `{ "access": "%s", "refresh": "%s"}`, updatedAccessToken, client.RefreshToken)
@@ -143,10 +152,9 @@ func TestReauthAuthenticatedServiceClientWithBadRefreshToken(t *testing.T) {
 	})
 
 	serviceClient := client.ServiceAuthClient("magnum", "v1")
-	testUrl := "/v1/magnum/"
-	fullTestUrl := serviceClient.ResourceBaseURL()
+	fullTestURL := serviceClient.ResourceBaseURL()
 
-	th.Mux.HandleFunc(testUrl, func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc(testURL, func(w http.ResponseWriter, r *http.Request) {
 		header := strings.Split(r.Header.Get("Authorization"), " ")[1]
 		require.Contains(t, []string{client.AccessToken, updatedAccessToken}, header)
 		if header == client.AccessToken {
@@ -164,7 +172,7 @@ func TestReauthAuthenticatedServiceClientWithBadRefreshToken(t *testing.T) {
 	require.Equal(t, client.RefreshToken, serviceClient.RefreshToken())
 	r := gcorecloud.Result{}
 
-	resp, err := serviceClient.Get(fullTestUrl, &r.Body, nil)
+	resp, err := serviceClient.Get(fullTestURL, &r.Body, nil) // nolint
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
@@ -185,7 +193,7 @@ func TestReauthTokenServiceClient(t *testing.T) {
 
 	th.Mux.HandleFunc("/v1/token/refresh", func(w http.ResponseWriter, r *http.Request) {
 		th.TestHeader(t, r, "Authorization", "")
-		reauthCount += 1
+		reauthCount++
 		w.WriteHeader(http.StatusOK)
 		_, err := fmt.Fprintf(w, `{ "access": "%s", "refresh": "%s"}`, updatedAccessToken, client.RefreshToken)
 		if err != nil {
@@ -194,10 +202,9 @@ func TestReauthTokenServiceClient(t *testing.T) {
 	})
 
 	serviceClient := client.ServiceTokenClient("magnum", "v1")
-	testUrl := "/v1/magnum/"
-	fullTestUrl := serviceClient.ResourceBaseURL()
+	fullTestURL := serviceClient.ResourceBaseURL()
 
-	th.Mux.HandleFunc(testUrl, func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc(testURL, func(w http.ResponseWriter, r *http.Request) {
 		header := strings.Split(r.Header.Get("Authorization"), " ")[1]
 		require.Contains(t, []string{client.AccessToken, updatedAccessToken}, header)
 		if header == client.AccessToken {
@@ -215,7 +222,7 @@ func TestReauthTokenServiceClient(t *testing.T) {
 	require.Equal(t, client.RefreshToken, serviceClient.RefreshToken())
 	r := gcorecloud.Result{}
 
-	resp, err := serviceClient.Get(fullTestUrl, &r.Body, nil)
+	resp, err := serviceClient.Get(fullTestURL, &r.Body, nil) // nolint
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
@@ -226,7 +233,7 @@ func TestReauthTokenServiceClient(t *testing.T) {
 	serviceClient.AccessTokenID = client.AccessToken
 	require.Equal(t, client.AccessToken, serviceClient.AccessToken())
 
-	resp, err = serviceClient.Get(fullTestUrl, &r.Body, nil)
+	resp, err = serviceClient.Get(fullTestURL, &r.Body, nil) // nolint
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 

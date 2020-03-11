@@ -7,13 +7,13 @@ import (
 )
 
 // Fake token to use.
-const TokenID = "cbc36478b0bd8e67e89469c7749d4127"
-const AccessToken = "cbc36478b0bd8e67e89469c7749d4127"
-const RefreshToken = "tbc36478b0bd8e67e89469c7749d4127"
-const Username = "username"
-const Password = "password"
-const RegionID = 1
-const ProjectID = 1
+const TokenID = "cbc36478b0bd8e67e89469c7749d4127"      // nolint
+const AccessToken = "cbc36478b0bd8e67e89469c7749d4127"  // nolint
+const RefreshToken = "tbc36478b0bd8e67e89469c7749d4127" // nolint
+const Username = "username"                             // nolint
+const Password = "password"                             // nolint
+const RegionID = 1                                      // nolint
+const ProjectID = 1                                     // nolint
 
 // ServiceClient returns a generic service client for use in tests.
 func ServiceClient() *gcorecloud.ServiceClient {
@@ -28,7 +28,7 @@ func ServiceClient() *gcorecloud.ServiceClient {
 
 func ServiceTokenClient(name string, version string) *gcorecloud.ServiceClient {
 	options := gcorecloud.TokenOptions{
-		ApiURL:       testhelper.GCloudRefreshTokenIdentifyEndpoint(),
+		APIURL:       testhelper.GCloudRefreshTokenIdentifyEndpoint(),
 		AccessToken:  AccessToken,
 		RefreshToken: RefreshToken,
 		AllowReauth:  true,
@@ -48,7 +48,7 @@ func ServiceTokenClient(name string, version string) *gcorecloud.ServiceClient {
 
 func TaskTokenClient() *gcorecloud.ServiceClient {
 	options := gcorecloud.TokenOptions{
-		ApiURL:       testhelper.GCloudRefreshTokenIdentifyEndpoint(),
+		APIURL:       testhelper.GCloudRefreshTokenIdentifyEndpoint(),
 		AccessToken:  AccessToken,
 		RefreshToken: RefreshToken,
 		AllowReauth:  true,
@@ -62,7 +62,7 @@ func TaskTokenClient() *gcorecloud.ServiceClient {
 
 func ServiceAuthClient(name string, version string) *gcorecloud.ServiceClient {
 	options := gcorecloud.AuthOptions{
-		ApiURL:      testhelper.GCoreIdentifyEndpoint(),
+		APIURL:      testhelper.GCoreIdentifyEndpoint(),
 		AuthURL:     testhelper.GCoreRefreshTokenIdentifyEndpoint(),
 		Username:    Username,
 		Password:    Password,

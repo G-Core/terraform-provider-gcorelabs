@@ -1,6 +1,6 @@
 /*
-Package gophercloud provides a multi-vendor interface to OpenStack-compatible
-clouds. The library has a three-level hierarchy: providers, services, and
+Package gcorecloud provides a multi-vendor interface to GCore cloud.
+The library has a three-level hierarchy: providers, services, and
 resources.
 
 Authenticating with Providers
@@ -17,13 +17,13 @@ client per OpenStack cloud.
 	the below and presents it in an easier and more flexible way.
 
 Use your OpenStack credentials to create a Provider client.  The
-ApiURL is typically refered to as "auth_url" or "OS_AUTH_URL" in
+APIURL is typically referred to as "auth_url" or "OS_AUTH_URL" in
 information provided by the cloud operator. Additionally, the cloud may refer to
 TenantID or TenantName as project_id and project_name. Credentials are
 specified like so:
 
 	opts := gophercloud.AuthOptions{
-		ApiURL: "https://openstack.example.com:5000/v2.0",
+		APIURL: "https://openstack.example.com:5000/v2.0",
 		Username: "{username}",
 		Password: "{password}",
 		TenantID: "{tenant_id}",
@@ -34,7 +34,7 @@ specified like so:
 You can authenticate with a token by doing:
 
 	opts := gophercloud.AuthOptions{
-		ApiURL: "https://openstack.example.com:5000/v2.0",
+		APIURL: "https://openstack.example.com:5000/v2.0",
 		AccessTokenID:  "{token_id}",
 		TenantID: "{tenant_id}",
 	}
@@ -65,7 +65,7 @@ Resources
 Resource structs are the domain models that services make use of in order
 to work with and represent the state of API resources:
 
-	server, err := servers.Get(client, "{serverId}").Extract()
+	server, err := servers.Get(client, "{serverID}").Extract()
 
 Intermediate Result structs are returned for API operations, which allow
 generic access to the HTTP headers, response body, and any errors associated
@@ -73,7 +73,7 @@ with the network transaction. To turn a result into a usable resource struct,
 you must call the Extract method which is chained to the response, or an
 Extract function from an applicable extension:
 
-	result := servers.Get(client, "{serverId}")
+	result := servers.Get(client, "{serverID}")
 
 	// Attempt to extract the disk configuration from the OS-DCF disk config
 	// extension:

@@ -53,7 +53,7 @@ type ProviderClient struct {
 	// identity version.
 	IdentityBase string
 
-	// ApiURL is the identity endpoint. This may be a specific version
+	// APIURL is the identity endpoint. This may be a specific version
 	// of the identity service. If this is the case, this endpoint is used rather
 	// than querying versions first.
 	IdentityEndpoint string
@@ -123,7 +123,7 @@ func (client *ProviderClient) AuthenticatedHeaders() (m map[string]string) {
 		if ongoing != nil {
 			responseChannel := make(chan error)
 			ongoing <- responseChannel
-			_ = <-responseChannel
+			<-responseChannel
 		}
 	}
 	t := client.AccessToken()
@@ -292,6 +292,7 @@ func (client *ProviderClient) Reauthenticate(previousToken string) error {
 	return err
 }
 
+// SetDebug for request and response
 func (client *ProviderClient) SetDebug(debug bool) {
 	client.debug = debug
 	log.SetLevel(log.DebugLevel)
@@ -362,7 +363,7 @@ func (client *ProviderClient) Request(method, url string, options *RequestOpts) 
 	})
 }
 
-func (client *ProviderClient) doRequest(method, url string, options *RequestOpts, state *requestState) (*http.Response, error) {
+func (client *ProviderClient) doRequest(method, url string, options *RequestOpts, state *requestState) (*http.Response, error) { // nolint: gocyclo
 	var body io.Reader
 	var contentType *string
 
@@ -490,10 +491,10 @@ func (client *ProviderClient) doRequest(method, url string, options *RequestOpts
 				state.hasReauthenticated = true
 				resp, err = client.doRequest(method, url, options, state)
 				if err != nil {
-					switch err.(type) {
+					switch err := err.(type) {
 					case *ErrUnexpectedResponseCode:
 						e := &ErrErrorAfterReauthentication{}
-						e.ErrOriginal = err.(*ErrUnexpectedResponseCode)
+						e.ErrOriginal = err
 						return nil, e
 					default:
 						e := &ErrErrorAfterReauthentication{}
@@ -572,12 +573,13 @@ func (client *ProviderClient) doRequest(method, url string, options *RequestOpts
 	return resp, nil
 }
 
+// ToTokenOptions - TokenOptions from ProviderClient
 func (client ProviderClient) ToTokenOptions() TokenOptions {
 	return TokenOptions{
 		RefreshToken: client.RefreshToken(),
 		AccessToken:  client.AccessToken(),
 		AllowReauth:  false,
-		ApiURL:       client.IdentityEndpoint,
+		APIURL:       client.IdentityEndpoint,
 	}
 }
 
@@ -598,6 +600,7 @@ func defaultOkCodes(method string) []int {
 	return []int{}
 }
 
+// NewProviderClient - Default constructor
 func NewProviderClient() *ProviderClient {
 	client := new(ProviderClient)
 	return client

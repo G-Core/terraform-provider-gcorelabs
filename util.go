@@ -29,7 +29,7 @@ func WaitFor(timeout int, predicate func() (bool, error)) error {
 	for {
 		// If a timeout is set, and that's been exceeded, shut it down.
 		if timeout >= 0 && time.Now().Unix()-start >= int64(timeout) {
-			return fmt.Errorf("A timeout occurred")
+			return fmt.Errorf("a timeout occurred")
 		}
 
 		time.Sleep(time.Duration(defaultSleepTimeout) * time.Second)
@@ -53,7 +53,7 @@ func WaitFor(timeout int, predicate func() (bool, error)) error {
 			}
 		// If the predicate has not finished by the timeout, cancel it.
 		case <-time.After(time.Duration(timeout) * time.Second):
-			return fmt.Errorf("A timeout occurred")
+			return fmt.Errorf("a timeout occurred")
 		}
 	}
 }
@@ -102,7 +102,7 @@ func NormalizePathURL(basePath, rawPath string) (string, error) {
 
 }
 
-// Remove last slash symbols from url
+// StripLastSlashURL removes last slash symbols from url
 func StripLastSlashURL(url string) string {
 	if len(url) == 0 {
 		return url
@@ -114,6 +114,7 @@ func StripLastSlashURL(url string) string {
 	return url[:i+1]
 }
 
+// NativeMapToStruct converts from map to struct
 func NativeMapToStruct(nativeMap interface{}, obj interface{}) error {
 
 	var md mapstructure.Metadata

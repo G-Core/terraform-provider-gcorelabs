@@ -29,7 +29,8 @@ func TestWaitForTimeout(t *testing.T) {
 	err := gcorecloud.WaitFor(1, func() (bool, error) {
 		return false, nil
 	})
-	th.AssertEquals(t, "A timeout occurred", err.Error())
+	require.Error(t, err)
+	th.AssertEquals(t, "a timeout occurred", err.Error())
 }
 
 func TestWaitForError(t *testing.T) {
@@ -38,9 +39,10 @@ func TestWaitForError(t *testing.T) {
 	}
 
 	err := gcorecloud.WaitFor(2, func() (bool, error) {
-		return false, errors.New("Error has occurred")
+		return false, errors.New("error has occurred")
 	})
-	th.AssertEquals(t, "Error has occurred", err.Error())
+	require.Error(t, err)
+	th.AssertEquals(t, "error has occurred", err.Error())
 }
 
 func TestWaitForPredicateExceed(t *testing.T) {
@@ -50,9 +52,10 @@ func TestWaitForPredicateExceed(t *testing.T) {
 
 	err := gcorecloud.WaitFor(1, func() (bool, error) {
 		time.Sleep(4 * time.Second)
-		return false, errors.New("Just wasting time")
+		return false, errors.New("just wasting time")
 	})
-	th.AssertEquals(t, "A timeout occurred", err.Error())
+	require.Error(t, err)
+	th.AssertEquals(t, "a timeout occurred", err.Error())
 }
 
 func TestNormalizeURL(t *testing.T) {
@@ -67,7 +70,6 @@ func TestNormalizeURL(t *testing.T) {
 	for i := 0; i < len(expected); i++ {
 		th.CheckEquals(t, expected[i], gcorecloud.NormalizeURL(urls[i]))
 	}
-
 }
 
 func TestNormalizePathURL(t *testing.T) {
@@ -79,20 +81,23 @@ func TestNormalizePathURL(t *testing.T) {
 	expected := strings.Join([]string{"file:/", filepath.ToSlash(baseDir), "template.yaml"}, "/")
 	th.CheckEquals(t, expected, result)
 
-	rawPath = "http://www.google.com"
+	googleURL := "http://www.google.com"
+	testPath := "very/nested/file.yaml"
+
+	rawPath = googleURL
 	basePath, _ = filepath.Abs(".")
 	result, _ = gcorecloud.NormalizePathURL(basePath, rawPath)
-	expected = "http://www.google.com"
+	expected = googleURL
 	th.CheckEquals(t, expected, result)
 
-	rawPath = "very/nested/file.yaml"
+	rawPath = testPath
 	basePath, _ = filepath.Abs(".")
 	result, _ = gcorecloud.NormalizePathURL(basePath, rawPath)
 	expected = strings.Join([]string{"file:/", filepath.ToSlash(baseDir), "very/nested/file.yaml"}, "/")
 	th.CheckEquals(t, expected, result)
 
-	rawPath = "very/nested/file.yaml"
-	basePath = "http://www.google.com"
+	rawPath = testPath
+	basePath = googleURL
 	result, _ = gcorecloud.NormalizePathURL(basePath, rawPath)
 	expected = "http://www.google.com/very/nested/file.yaml"
 	th.CheckEquals(t, expected, result)
@@ -103,13 +108,13 @@ func TestNormalizePathURL(t *testing.T) {
 	expected = "http://www.google.com/very/nested/file.yaml"
 	th.CheckEquals(t, expected, result)
 
-	rawPath = "very/nested/file.yaml"
+	rawPath = testPath
 	basePath = "http://www.google.com/even/more"
 	result, _ = gcorecloud.NormalizePathURL(basePath, rawPath)
 	expected = "http://www.google.com/even/more/very/nested/file.yaml"
 	th.CheckEquals(t, expected, result)
 
-	rawPath = "very/nested/file.yaml"
+	rawPath = testPath
 	basePath = strings.Join([]string{"file:/", filepath.ToSlash(baseDir), "only/file/even/more"}, "/")
 	result, _ = gcorecloud.NormalizePathURL(basePath, rawPath)
 	expected = strings.Join([]string{"file:/", filepath.ToSlash(baseDir), "only/file/even/more/very/nested/file.yaml"}, "/")
@@ -120,11 +125,9 @@ func TestNormalizePathURL(t *testing.T) {
 	result, _ = gcorecloud.NormalizePathURL(basePath, rawPath)
 	expected = strings.Join([]string{"file:/", filepath.ToSlash(baseDir), "only/file/even/more/very/nested/file.yaml"}, "/")
 	th.CheckEquals(t, expected, result)
-
 }
 
 func TestStripLastSlashURL(t *testing.T) {
-
 	testCase := []map[string]string{
 		{
 			"url":    "http://test.com/1/1//////",

@@ -24,8 +24,8 @@ Example to Create a Cluster
 
 	createOpts := clusters.CreateOpts{
 		Name:         		 "cluster_1",
-		ExternalNetworkId:   "id",
-		ImageId:             "image_id"
+		ExternalNetworkID:   "id",
+		ImageID:             "image_id"
 		KeyPairID:           "keypair_id",
 		Name:                "name",
 		DockerVolumeSize:    10,

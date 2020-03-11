@@ -12,7 +12,7 @@ import (
 
 var (
 	// ErrPageNotAvailable is returned from a Pager when a next or previous page is requested, but does not exist.
-	ErrPageNotAvailable = errors.New("The requested page does not exist.")
+	ErrPageNotAvailable = errors.New("the requested page does not exist")
 )
 
 // Page must be satisfied by the result type of any resource collection.
@@ -169,7 +169,7 @@ func (p Pager) AllPages() (Page, error) {
 				// If it's a linked page, we don't want the `links`, we want the other one.
 				if !strings.HasSuffix(k, "links") {
 					// check the field's type. we only want []interface{} (which is really []map[string]interface{})
-					switch vt := v.(type) {
+					switch vt := v.(type) { // nolint: gocritic
 					case []interface{}:
 						key = k
 						pagesSlice = append(pagesSlice, vt...)
@@ -189,7 +189,7 @@ func (p Pager) AllPages() (Page, error) {
 		err = p.EachPage(func(page Page) (bool, error) {
 			b := page.GetBody().([]byte)
 			pagesSlice = append(pagesSlice, b)
-			// seperate pages with a comma
+			// separate pages with a comma
 			pagesSlice = append(pagesSlice, []byte{10})
 			return true, nil
 		})
@@ -238,7 +238,7 @@ func (p Pager) AllPages() (Page, error) {
 	page := reflect.New(pageType)
 	// Set the page body to be the concatenated pages.
 	page.Elem().FieldByName("Body").Set(body)
-	// Set any additional headers that were pass along. The `objectstorage` pacakge,
+	// Set any additional headers that were pass along. The `objectstorage` package,
 	// for example, passes a Content-Type header.
 	h := make(http.Header)
 	for k, v := range p.Headers {

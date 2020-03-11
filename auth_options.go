@@ -2,22 +2,26 @@ package gcorecloud
 
 import "fmt"
 
+// AuthOptionsBuilder build auth options to map
 type AuthOptionsBuilder interface {
 	ToMap() map[string]interface{}
 }
 
+// TokenOptionsBuilder build token options to map
 type TokenOptionsBuilder interface {
 	ToMap() map[string]interface{}
 }
 
+// AuthOptions gcore API
 type AuthOptions struct {
-	ApiURL      string `json:"-"`
+	APIURL      string `json:"-"`
 	AuthURL     string `json:"-"`
 	Username    string `json:"username,omitempty"`
 	Password    string `json:"password,omitempty"`
 	AllowReauth bool   `json:"-"`
 }
 
+// ToMap implements AuthOptionsBuilder
 func (ao AuthOptions) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"username": ao.Username,
@@ -25,31 +29,53 @@ func (ao AuthOptions) ToMap() map[string]interface{} {
 	}
 }
 
+// TokenOptions gcore API
 type TokenOptions struct {
-	ApiURL       string `json:"-"`
+	APIURL       string `json:"-"`
 	AccessToken  string `json:"access,omitempty"`
 	RefreshToken string `json:"refresh,omitempty"`
 	AllowReauth  bool   `json:"-"`
 }
 
+// ExtractAccessToken implements AuthResult
 func (to TokenOptions) ExtractAccessToken() (string, error) {
 	return to.AccessToken, nil
 }
+
+// ExtractRefreshToken implements AuthResult
 func (to TokenOptions) ExtractRefreshToken() (string, error) {
 	return to.RefreshToken, nil
 }
+
+// ExtractTokensPair implements AuthResult
 func (to TokenOptions) ExtractTokensPair() (string, string, error) {
 	return to.AccessToken, to.RefreshToken, nil
 }
 
+// ToMap implements TokenOptionsBuilder
 func (to TokenOptions) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"token": to.RefreshToken,
 	}
 }
 
-type GCloudTokenApiSettings struct {
-	ApiURL       string `json:"url,omitempty"`
+// TokenClientSettings interface
+type TokenClientSettings interface {
+	ToTokenOptions() TokenOptions
+	ToEndpointOptions() EndpointOpts
+	Validate() error
+}
+
+// AuthClientSettings interface
+type AuthClientSettings interface {
+	ToAuthOptions() AuthOptions
+	ToEndpointOptions() EndpointOpts
+	Validate() error
+}
+
+// TokenAPISettings - settings for token client building
+type TokenAPISettings struct {
+	APIURL       string `json:"url,omitempty"`
 	AccessToken  string `json:"access,omitempty"`
 	RefreshToken string `json:"refresh,omitempty"`
 	AllowReauth  bool   `json:"-"`
@@ -61,16 +87,18 @@ type GCloudTokenApiSettings struct {
 	Debug        bool   `json:"debug,omitempty"`
 }
 
-func (gs GCloudTokenApiSettings) ToTokenOptions() TokenOptions {
+// ToTokenOptions implements TokenClientSettings interface
+func (gs TokenAPISettings) ToTokenOptions() TokenOptions {
 	return TokenOptions{
-		ApiURL:       gs.ApiURL,
+		APIURL:       gs.APIURL,
 		AccessToken:  gs.AccessToken,
 		RefreshToken: gs.RefreshToken,
 		AllowReauth:  gs.AllowReauth,
 	}
 }
 
-func (gs GCloudTokenApiSettings) ToEndpointOptions() EndpointOpts {
+// ToEndpointOptions implements TokenClientSettings interface
+func (gs TokenAPISettings) ToEndpointOptions() EndpointOpts {
 	return EndpointOpts{
 		Region:  gs.Region,
 		Project: gs.Project,
@@ -80,8 +108,9 @@ func (gs GCloudTokenApiSettings) ToEndpointOptions() EndpointOpts {
 	}
 }
 
-func (gs GCloudTokenApiSettings) Validate() error {
-	if gs.ApiURL == "" {
+// Validate implements TokenClientSettings interface
+func (gs TokenAPISettings) Validate() error {
+	if gs.APIURL == "" {
 		return fmt.Errorf("api-url endpoint required")
 	}
 	if gs.AccessToken == "" {
@@ -90,8 +119,8 @@ func (gs GCloudTokenApiSettings) Validate() error {
 	if gs.RefreshToken == "" {
 		return fmt.Errorf("refresh token required")
 	}
-	if gs.ApiURL == "" {
-		return fmt.Errorf("api url required. ApiURL")
+	if gs.APIURL == "" {
+		return fmt.Errorf("api url required. APIURL")
 	}
 	if gs.Name == "" {
 		return fmt.Errorf("name required")
@@ -99,8 +128,9 @@ func (gs GCloudTokenApiSettings) Validate() error {
 	return nil
 }
 
-type GCloudPasswordApiSettings struct {
-	ApiURL      string `json:"api-url,omitempty"`
+// PasswordAPISettings - settings for password client building
+type PasswordAPISettings struct {
+	APIURL      string `json:"api-url,omitempty"`
 	AuthURL     string `json:"auth-url,omitempty"`
 	Username    string `json:"username,omitempty"`
 	Password    string `json:"password,omitempty"`
@@ -113,9 +143,10 @@ type GCloudPasswordApiSettings struct {
 	Debug       bool   `json:"debug,omitempty"`
 }
 
-func (gs GCloudPasswordApiSettings) ToAuthOptions() AuthOptions {
+// ToAuthOptions implements AuthClientSettings interface
+func (gs PasswordAPISettings) ToAuthOptions() AuthOptions {
 	return AuthOptions{
-		ApiURL:      gs.ApiURL,
+		APIURL:      gs.APIURL,
 		AuthURL:     gs.AuthURL,
 		Username:    gs.Username,
 		Password:    gs.Password,
@@ -123,7 +154,8 @@ func (gs GCloudPasswordApiSettings) ToAuthOptions() AuthOptions {
 	}
 }
 
-func (gs GCloudPasswordApiSettings) ToEndpointOptions() EndpointOpts {
+// ToEndpointOptions implements AuthClientSettings interface
+func (gs PasswordAPISettings) ToEndpointOptions() EndpointOpts {
 	return EndpointOpts{
 		Region:  gs.Region,
 		Project: gs.Project,
@@ -133,11 +165,12 @@ func (gs GCloudPasswordApiSettings) ToEndpointOptions() EndpointOpts {
 	}
 }
 
-func (gs GCloudPasswordApiSettings) Validate() error {
+// Validate implements AuthClientSettings interface
+func (gs PasswordAPISettings) Validate() error {
 	if gs.AuthURL == "" {
 		return fmt.Errorf("auth-url endpoint required")
 	}
-	if gs.ApiURL == "" {
+	if gs.APIURL == "" {
 		return fmt.Errorf("api-url endpoint required")
 	}
 	if gs.Username == "" {
@@ -146,8 +179,8 @@ func (gs GCloudPasswordApiSettings) Validate() error {
 	if gs.Password == "" {
 		return fmt.Errorf("password required")
 	}
-	if gs.ApiURL == "" {
-		return fmt.Errorf("api url required. ApiURL")
+	if gs.APIURL == "" {
+		return fmt.Errorf("api url required. APIURL")
 	}
 	if gs.Name == "" {
 		return fmt.Errorf("name required")

@@ -1,5 +1,6 @@
 package gcorecloud
 
+// AuthResult interface
 type AuthResult interface {
 	ExtractAccessToken() (string, error)
 	ExtractRefreshToken() (string, error)

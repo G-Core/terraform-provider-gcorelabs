@@ -29,7 +29,7 @@ func ExtractLinkedInts(r pagination.Page) ([]int, error) {
 	return s.Ints, err
 }
 
-func createLinked(t *testing.T) pagination.Pager {
+func createLinked(_ *testing.T) pagination.Pager {
 	testhelper.SetupHTTP()
 
 	testhelper.Mux.HandleFunc("/page1", func(w http.ResponseWriter, r *http.Request) {

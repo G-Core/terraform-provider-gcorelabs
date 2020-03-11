@@ -105,7 +105,7 @@ func TestNormalizePath(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := utils.NormalizeUrlPath(test.URL)
+		actual, err := utils.NormalizeURLPath(test.URL)
 		th.AssertNoErr(t, err)
 		th.AssertEquals(t, test.NormURL, actual)
 	}

@@ -75,7 +75,7 @@ var clusterTemplateCreateSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		opts := clustertemplates.CreateOpts{
-			ImageId:          c.String("image"),
+			ImageID:          c.String("image"),
 			KeyPairID:        c.String("keypair"),
 			Name:             c.String("name"),
 			DockerVolumeSize: c.Int("docker-volume-size"),
@@ -108,6 +108,9 @@ var clusterTemplateListSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		results, err := clustertemplates.ExtractClusterTemplates(pages)
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
 		utils.ShowResults(results, c.String("format"))
 		return nil
 	},

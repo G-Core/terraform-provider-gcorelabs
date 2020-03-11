@@ -41,7 +41,7 @@ func TestList(t *testing.T) {
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, ListResponse)
+		_, err := fmt.Fprint(w, ListResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -72,16 +72,16 @@ func TestGet(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	testUrl := prepareGetTestURL(KeyPair1.ID)
+	testURL := prepareGetTestURL(KeyPair1.ID)
 
-	th.Mux.HandleFunc(testUrl, func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc(testURL, func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "GET")
 		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprintf(w, GetResponse)
+		_, err := fmt.Fprint(w, GetResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -109,7 +109,7 @@ func TestCreate(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
-		_, err := fmt.Fprintf(w, CreateResponse)
+		_, err := fmt.Fprint(w, CreateResponse)
 		if err != nil {
 			log.Error(err)
 		}

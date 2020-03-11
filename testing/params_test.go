@@ -153,10 +153,10 @@ func TestBuildRequestBody(t *testing.T) {
 		PasswordCredentials *PasswordCredentials `json:"passwordCredentials,omitempty" xor:"TokenCredentials"`
 
 		// The TenantID and TenantName fields are optional for the Identity V2 API.
-		// Some providers allow you to specify a TenantName instead of the TenantId.
+		// Some providers allow you to specify a TenantName instead of the TenantID.
 		// Some require both. Your provider's authentication policies will determine
 		// how these fields influence authentication.
-		TenantID   string `json:"tenantId,omitempty"`
+		TenantID   string `json:"tenantID,omitempty"`
 		TenantName string `json:"tenantName,omitempty"`
 
 		// TokenCredentials allows users to authenticate (possibly as another user) with an

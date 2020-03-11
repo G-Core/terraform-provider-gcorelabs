@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
+
 	"gcloud/gcorecloud-go"
 	th "gcloud/gcorecloud-go/testhelper"
 )
@@ -31,4 +33,10 @@ func TestMoreHeaders(t *testing.T) {
 	resp, err := c.Get(fmt.Sprintf("%s/route", th.Endpoint()), nil, nil)
 	th.AssertNoErr(t, err)
 	th.AssertEquals(t, resp.Request.Header.Get("custom"), "header")
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 }

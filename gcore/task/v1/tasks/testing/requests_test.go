@@ -41,7 +41,7 @@ func TestList(t *testing.T) {
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, ListResponse)
+		_, err := fmt.Fprint(w, ListResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -80,7 +80,7 @@ func TestGet(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprintf(w, GetResponse)
+		_, err := fmt.Fprint(w, GetResponse)
 		if err != nil {
 			log.Error(err)
 		}

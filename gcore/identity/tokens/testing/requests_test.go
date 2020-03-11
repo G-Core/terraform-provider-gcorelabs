@@ -33,7 +33,7 @@ func authTokenPost(t *testing.T, options gcorecloud.AuthOptions, requestJSON str
 		testhelper.TestJSONRequest(t, r, requestJSON)
 
 		w.WriteHeader(http.StatusCreated)
-		_, err := fmt.Fprintf(w, TokenOutput)
+		_, err := fmt.Fprint(w, TokenOutput)
 		if err != nil {
 			log.Error(err)
 		}
@@ -65,7 +65,7 @@ func authTokenPostErr(t *testing.T, options gcorecloud.AuthOptions, includeToken
 		testhelper.TestHeader(t, r, "Accept", "application/json")
 
 		w.WriteHeader(http.StatusBadRequest)
-		_, err := fmt.Fprintf(w, `{"error": ""}`)
+		_, err := fmt.Fprint(w, `{"error": ""}`)
 		if err != nil {
 			log.Error(err)
 		}

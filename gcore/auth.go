@@ -44,7 +44,7 @@ func AuthOptionsFromEnv() (gcorecloud.AuthOptions, error) {
 	}
 
 	ao := gcorecloud.AuthOptions{
-		ApiURL:   authURL,
+		APIURL:   authURL,
 		Username: username,
 		Password: password,
 	}
@@ -80,7 +80,7 @@ func TokenOptionsFromEnv() (gcorecloud.TokenOptions, error) {
 	}
 
 	to := gcorecloud.TokenOptions{
-		ApiURL:       apiURL,
+		APIURL:       apiURL,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		AllowReauth:  true,
@@ -89,7 +89,7 @@ func TokenOptionsFromEnv() (gcorecloud.TokenOptions, error) {
 	return to, nil
 }
 
-func NewGCloudPasswordApiSettingsFromEnv() (*gcorecloud.GCloudPasswordApiSettings, error) {
+func NewGCloudPasswordAPISettingsFromEnv() (*gcorecloud.PasswordAPISettings, error) {
 	authURL := os.Getenv("GCLOUD_AUTH_URL")
 	apiURL := os.Getenv("GCLOUD_API_URL")
 	username := os.Getenv("GCLOUD_USERNAME")
@@ -103,7 +103,7 @@ func NewGCloudPasswordApiSettingsFromEnv() (*gcorecloud.GCloudPasswordApiSetting
 		projectInt, regionInt int
 		err                   error
 		version               = "v1"
-		debug                 = false
+		debug                 bool
 	)
 
 	if project != "" {
@@ -129,9 +129,9 @@ func NewGCloudPasswordApiSettingsFromEnv() (*gcorecloud.GCloudPasswordApiSetting
 		debug = false
 	}
 
-	return &gcorecloud.GCloudPasswordApiSettings{
+	return &gcorecloud.PasswordAPISettings{
 		Version:     version,
-		ApiURL:      apiURL,
+		APIURL:      apiURL,
 		AuthURL:     authURL,
 		Username:    username,
 		Password:    password,
@@ -142,7 +142,7 @@ func NewGCloudPasswordApiSettingsFromEnv() (*gcorecloud.GCloudPasswordApiSetting
 	}, nil
 }
 
-func NewGCloudTokenApiSettingsFromEnv() (*gcorecloud.GCloudTokenApiSettings, error) {
+func NewGCloudTokenAPISettingsFromEnv() (*gcorecloud.TokenAPISettings, error) {
 	apiURL := os.Getenv("GCLOUD_API_URL")
 	apiVersion := os.Getenv("GCLOUD_API_VERSION")
 	accessToken := os.Getenv("GCLOUD_ACCESS_TOKEN")
@@ -155,7 +155,7 @@ func NewGCloudTokenApiSettingsFromEnv() (*gcorecloud.GCloudTokenApiSettings, err
 		projectInt, regionInt int
 		err                   error
 		version               = "v1"
-		debug                 = false
+		debug                 bool
 	)
 
 	if project != "" {
@@ -181,9 +181,9 @@ func NewGCloudTokenApiSettingsFromEnv() (*gcorecloud.GCloudTokenApiSettings, err
 		debug = false
 	}
 
-	return &gcorecloud.GCloudTokenApiSettings{
+	return &gcorecloud.TokenAPISettings{
 		Version:      version,
-		ApiURL:       apiURL,
+		APIURL:       apiURL,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Region:       regionInt,

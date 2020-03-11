@@ -7,6 +7,8 @@ import (
 	"gcloud/gcorecloud-go"
 )
 
+var expectedInterfaceLiteral = "[]interface{}"
+
 // LinkedPageBase may be embedded to implement a page that provides navigational "Next" and "Previous" links within its result.
 type LinkedPageBase struct {
 	PageResult
@@ -40,7 +42,7 @@ func (current LinkedPageBase) NextPageURL() (string, error) {
 	}
 
 	for {
-		key, path = path[0], path[1:len(path)]
+		key, path = path[0], path[1:]
 
 		value, ok := submap[key]
 		if !ok {
@@ -74,13 +76,13 @@ func (current LinkedPageBase) NextPageURL() (string, error) {
 	}
 }
 
-// IsEmpty satisifies the IsEmpty method of the Page interface
+// IsEmpty satisfies the IsEmpty method of the Page interface
 func (current LinkedPageBase) IsEmpty() (bool, error) {
 	if b, ok := current.Body.([]interface{}); ok {
 		return len(b) == 0, nil
 	}
 	err := gcorecloud.ErrUnexpectedType{}
-	err.Expected = "[]interface{}"
+	err.Expected = expectedInterfaceLiteral
 	err.Actual = fmt.Sprintf("%v", reflect.TypeOf(current.Body))
 	return true, err
 }

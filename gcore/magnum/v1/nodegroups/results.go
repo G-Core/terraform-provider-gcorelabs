@@ -56,7 +56,7 @@ type DeleteResult struct {
 // ClusterNodeGroup represents a cluster nodegroup.
 type ClusterNodeGroup struct {
 	ClusterID        string            `json:"cluster_id"`
-	ProjectId        string            `json:"project_id"`
+	ProjectID        string            `json:"project_id"`
 	DockerVolumeSize int               `json:"docker_volume_size"`
 	Labels           map[string]string `json:"labels"`
 	NodeAddresses    []net.IP          `json:"node_addresses"`
@@ -73,7 +73,7 @@ type ClusterListNodeGroup struct {
 	UUID      string `json:"uuid"`
 	Name      string `json:"name"`
 	FlavorID  string `json:"flavor_id"`
-	ImageId   string `json:"image_id"`
+	ImageID   string `json:"image_id"`
 	NodeCount int    `json:"node_count"`
 	Status    string `json:"status"`
 	Role      string `json:"role"`

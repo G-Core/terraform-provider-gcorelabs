@@ -44,19 +44,20 @@ func (client *ServiceClient) ServiceURL(parts ...string) string {
 	return StripLastSlashURL(client.ResourceBaseURL() + strings.Join(parts, "/"))
 }
 
+// BaseServiceURL constructs a URL for a resource belonging to this provider
 func (client *ServiceClient) BaseServiceURL(parts ...string) string {
 	return StripLastSlashURL(client.Endpoint + strings.Join(parts, "/"))
 }
 
-func (client *ServiceClient) initReqOpts(url string, JSONBody interface{}, JSONResponse interface{}, opts *RequestOpts) {
-	if v, ok := (JSONBody).(io.Reader); ok {
+func (client *ServiceClient) initReqOpts(_ string, jsonBody interface{}, jsonResponse interface{}, opts *RequestOpts) {
+	if v, ok := (jsonBody).(io.Reader); ok {
 		opts.RawBody = v
-	} else if JSONBody != nil {
-		opts.JSONBody = JSONBody
+	} else if jsonBody != nil {
+		opts.JSONBody = jsonBody
 	}
 
-	if JSONResponse != nil {
-		opts.JSONResponse = JSONResponse
+	if jsonResponse != nil {
+		opts.JSONResponse = jsonResponse
 	}
 
 	if opts.MoreHeaders == nil {
@@ -66,38 +67,38 @@ func (client *ServiceClient) initReqOpts(url string, JSONBody interface{}, JSONR
 }
 
 // Get calls `Request` with the "GET" HTTP verb.
-func (client *ServiceClient) Get(url string, JSONResponse interface{}, opts *RequestOpts) (*http.Response, error) {
+func (client *ServiceClient) Get(url string, jsonResponse interface{}, opts *RequestOpts) (*http.Response, error) {
 	if opts == nil {
 		opts = new(RequestOpts)
 	}
-	client.initReqOpts(url, nil, JSONResponse, opts)
+	client.initReqOpts(url, nil, jsonResponse, opts)
 	return client.Request("GET", url, opts)
 }
 
 // Post calls `Request` with the "POST" HTTP verb.
-func (client *ServiceClient) Post(url string, JSONBody interface{}, JSONResponse interface{}, opts *RequestOpts) (*http.Response, error) {
+func (client *ServiceClient) Post(url string, jsonBody interface{}, jsonResponse interface{}, opts *RequestOpts) (*http.Response, error) {
 	if opts == nil {
 		opts = new(RequestOpts)
 	}
-	client.initReqOpts(url, JSONBody, JSONResponse, opts)
+	client.initReqOpts(url, jsonBody, jsonResponse, opts)
 	return client.Request("POST", url, opts)
 }
 
 // Put calls `Request` with the "PUT" HTTP verb.
-func (client *ServiceClient) Put(url string, JSONBody interface{}, JSONResponse interface{}, opts *RequestOpts) (*http.Response, error) {
+func (client *ServiceClient) Put(url string, jsonBody interface{}, jsonResponse interface{}, opts *RequestOpts) (*http.Response, error) {
 	if opts == nil {
 		opts = new(RequestOpts)
 	}
-	client.initReqOpts(url, JSONBody, JSONResponse, opts)
+	client.initReqOpts(url, jsonBody, jsonResponse, opts)
 	return client.Request("PUT", url, opts)
 }
 
 // Patch calls `Request` with the "PATCH" HTTP verb.
-func (client *ServiceClient) Patch(url string, JSONBody interface{}, JSONResponse interface{}, opts *RequestOpts) (*http.Response, error) {
+func (client *ServiceClient) Patch(url string, jsonBody interface{}, jsonResponse interface{}, opts *RequestOpts) (*http.Response, error) {
 	if opts == nil {
 		opts = new(RequestOpts)
 	}
-	client.initReqOpts(url, JSONBody, JSONResponse, opts)
+	client.initReqOpts(url, jsonBody, jsonResponse, opts)
 	return client.Request("PATCH", url, opts)
 }
 
@@ -111,11 +112,11 @@ func (client *ServiceClient) Delete(url string, opts *RequestOpts) (*http.Respon
 }
 
 // DeleteWithResponse calls `Request` with the "DELETE" HTTP verb.
-func (client *ServiceClient) DeleteWithResponse(url string, JSONResponse interface{}, opts *RequestOpts) (*http.Response, error) {
+func (client *ServiceClient) DeleteWithResponse(url string, jsonResponse interface{}, opts *RequestOpts) (*http.Response, error) {
 	if opts == nil {
 		opts = new(RequestOpts)
 	}
-	client.initReqOpts(url, nil, JSONResponse, opts)
+	client.initReqOpts(url, nil, jsonResponse, opts)
 	return client.Request("DELETE", url, opts)
 }
 

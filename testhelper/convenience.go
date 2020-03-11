@@ -50,7 +50,7 @@ type visit struct {
 // Recursively visits the structures of "expected" and "actual". The diffLogger function will be
 // invoked with each different value encountered, including the reference path that was followed
 // to get there.
-func deepDiffEqual(expected, actual reflect.Value, visited map[visit]bool, path []string, logDifference diffLogger) {
+func deepDiffEqual(expected, actual reflect.Value, visited map[visit]bool, path []string, logDifference diffLogger) { // nolint: gocyclo
 	defer func() {
 		// Fall back to the regular reflect.DeepEquals function.
 		if r := recover(); r != nil {
@@ -257,7 +257,7 @@ func CheckDeepEquals(t *testing.T, expected, actual interface{}) {
 	})
 }
 
-func isByteArrayEquals(t *testing.T, expectedBytes []byte, actualBytes []byte) bool {
+func isByteArrayEquals(_ *testing.T, expectedBytes []byte, actualBytes []byte) bool {
 	return bytes.Equal(expectedBytes, actualBytes)
 }
 

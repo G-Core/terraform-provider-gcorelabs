@@ -130,7 +130,7 @@ var (
 	}
 	NodeGroupList1 = nodegroups.ClusterListNodeGroup{
 		FlavorID:  "g1-standard-1-2",
-		ImageId:   "fedora-coreos",
+		ImageID:   "fedora-coreos",
 		NodeCount: 1,
 		Name:      "default-master",
 		UUID:      "3eda6b46-58d9-4abc-8a11-6045b791a35b",
@@ -139,7 +139,7 @@ var (
 	}
 	NodeGroupList2 = nodegroups.ClusterListNodeGroup{
 		FlavorID:  "g1-standard-1-2",
-		ImageId:   "fedora-coreos",
+		ImageID:   "fedora-coreos",
 		NodeCount: 1,
 		Name:      "default-worker",
 		UUID:      "467fc654-2d1c-48e8-9d59-489e8fcf8c17",
@@ -148,7 +148,7 @@ var (
 	}
 	NodeGroup1 = nodegroups.ClusterNodeGroup{
 		ClusterID:            "c94f38cc-dc78-4715-8939-68de082bd5e3",
-		ProjectId:            "46beed3938e6474390b530fefd6173d2",
+		ProjectID:            "46beed3938e6474390b530fefd6173d2",
 		DockerVolumeSize:     10,
 		Labels:               labels,
 		NodeAddresses:        []net.IP{},
@@ -161,7 +161,7 @@ var (
 	}
 	UpdatedNodeGroup1 = nodegroups.ClusterNodeGroup{
 		ClusterID:            "c94f38cc-dc78-4715-8939-68de082bd5e3",
-		ProjectId:            "46beed3938e6474390b530fefd6173d2",
+		ProjectID:            "46beed3938e6474390b530fefd6173d2",
 		DockerVolumeSize:     10,
 		Labels:               labels,
 		NodeAddresses:        []net.IP{},

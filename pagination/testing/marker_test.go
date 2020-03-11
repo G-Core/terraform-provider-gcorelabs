@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
+
 	"gcloud/gcorecloud-go/pagination"
 	"gcloud/gcorecloud-go/testhelper"
 )
@@ -39,19 +41,27 @@ func createMarkerPaged(t *testing.T) pagination.Pager {
 	testhelper.SetupHTTP()
 
 	testhelper.Mux.HandleFunc("/page", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
+		var err error
+		err = r.ParseForm()
+		if err != nil {
+			log.Error(err)
+			err = nil
+		}
 		ms := r.Form["marker"]
 		switch {
 		case len(ms) == 0:
-			fmt.Fprintf(w, "aaa\nbbb\nccc")
+			_, err = fmt.Fprintf(w, "aaa\nbbb\nccc")
 		case len(ms) == 1 && ms[0] == "ccc":
-			fmt.Fprintf(w, "ddd\neee\nfff")
+			_, err = fmt.Fprintf(w, "ddd\neee\nfff")
 		case len(ms) == 1 && ms[0] == "fff":
-			fmt.Fprintf(w, "ggg\nhhh\niii")
+			_, err = fmt.Fprintf(w, "ggg\nhhh\niii")
 		case len(ms) == 1 && ms[0] == "iii":
 			w.WriteHeader(http.StatusNoContent)
 		default:
 			t.Errorf("Request with unexpected marker: [%v]", ms)
+		}
+		if err != nil {
+			log.Error(err)
 		}
 	})
 

@@ -42,7 +42,7 @@ func (e EnumValue) String() string {
 }
 
 func BuildTokenClient(c *cli.Context, endpointName, endpointType string) (*gcorecloud.ServiceClient, error) {
-	settings, err := gcore.NewGCloudTokenApiSettingsFromEnv()
+	settings, err := gcore.NewGCloudTokenAPISettingsFromEnv()
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func BuildTokenClient(c *cli.Context, endpointName, endpointType string) (*gcore
 
 	url := c.String("api-url")
 	if url != "" {
-		settings.ApiURL = url
+		settings.APIURL = url
 	}
 
 	region := c.Int("region")
@@ -101,7 +101,7 @@ func BuildTokenClient(c *cli.Context, endpointName, endpointType string) (*gcore
 }
 
 func BuildPasswordClient(c *cli.Context, endpointName, endpointType string) (*gcorecloud.ServiceClient, error) {
-	settings, err := gcore.NewGCloudPasswordApiSettingsFromEnv()
+	settings, err := gcore.NewGCloudPasswordAPISettingsFromEnv()
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func BuildPasswordClient(c *cli.Context, endpointName, endpointType string) (*gc
 
 	url := c.String("api-url")
 	if url != "" {
-		settings.ApiURL = url
+		settings.APIURL = url
 	}
 
 	region := c.Int("region")

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
+
 	th "gcloud/gcorecloud-go/testhelper"
 	"gcloud/gcorecloud-go/testhelper/client"
 )
@@ -25,7 +27,10 @@ func SetupHandler(t *testing.T, url, method, requestBody, responseBody string, s
 		w.WriteHeader(status)
 
 		if responseBody != "" {
-			fmt.Fprintf(w, responseBody)
+			_, err := fmt.Fprint(w, responseBody)
+			if err != nil {
+				log.Error(err)
+			}
 		}
 	})
 }

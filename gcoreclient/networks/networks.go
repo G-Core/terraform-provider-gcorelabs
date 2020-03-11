@@ -28,6 +28,9 @@ var networkListCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		results, err := networks.ExtractNetworks(pages)
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
 		utils.ShowResults(results, c.String("format"))
 		return nil
 	},

@@ -165,7 +165,6 @@ const CreateResponse = `
 
 var createdTimeString = "2020-02-28T11:35:58+00:00"
 var createdTime, _ = time.Parse(time.RFC3339, createdTimeString)
-var updatedTime, _ = time.Parse(time.RFC3339, createdTimeString)
 
 var (
 	ClusterTemplate1 = clustertemplates.ClusterTemplate{
@@ -174,15 +173,15 @@ var (
 		MasterFlavorID:      "g1-standard-1-2",
 		FlavorID:            "g1-standard-1-2",
 		NoProxy:             "",
-		HttpsProxy:          "",
-		HttpProxy:           "",
-		TlsDisabled:         false,
+		HTTPSProxy:          "",
+		HTTPProxy:           "",
+		TLSDisabled:         false,
 		KeyPairID:           "keypair",
 		Public:              false,
 		DockerVolumeSize:    5,
 		ServerType:          "vm",
-		ExternalNetworkId:   "3a1d8f88-6020-4d11-9f9f-f815fe69ea40",
-		ImageId:             "fedora-coreos",
+		ExternalNetworkID:   "3a1d8f88-6020-4d11-9f9f-f815fe69ea40",
+		ImageID:             "fedora-coreos",
 		VolumeDriver:        "cinder",
 		RegistryEnabled:     false,
 		DockerStorageDriver: "overlay",
@@ -190,8 +189,8 @@ var (
 		NetworkDriver:       "calico",
 		FixedNetwork:        "",
 		MasterLbEnabled:     true,
-		DnsNameServer:       "8.8.8.8",
-		FloatingIpEnabled:   false,
+		DNSNameServer:       "8.8.8.8",
+		FloatingIPEnabled:   false,
 		Hidden:              false,
 		UUID:                "db7a8580-cd3b-493f-a15a-8dbc9e30aa1e",
 		CreatedAt:           createdTime,

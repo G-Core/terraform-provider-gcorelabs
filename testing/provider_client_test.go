@@ -72,6 +72,7 @@ func TestConcurrentReauth(t *testing.T) {
 	p.UseTokenLock()
 	err := p.SetTokensAndAuthResult(atc)
 	if err != nil {
+		log.Error(err)
 	}
 	p.ReauthFunc = func() error {
 		p.SetThrowaway(true)
@@ -107,7 +108,7 @@ func TestConcurrentReauth(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		_, err := fmt.Fprintf(w, `{}`)
 		if err != nil {
-
+			log.Error(err)
 		}
 	})
 
@@ -134,7 +135,7 @@ func TestConcurrentReauth(t *testing.T) {
 			defer func() {
 				err := resp.Body.Close()
 				if err != nil {
-
+					log.Error(err)
 				}
 			}()
 			actual, err := ioutil.ReadAll(resp.Body)
@@ -170,7 +171,7 @@ func TestReauthEndLoop(t *testing.T) {
 	p.UseTokenLock()
 	err := p.SetTokensAndAuthResult(atc)
 	if err != nil {
-
+		log.Error(err)
 	}
 	p.ReauthFunc = func() error {
 		info.mut.Lock()
@@ -194,7 +195,6 @@ func TestReauthEndLoop(t *testing.T) {
 	th.Mux.HandleFunc("/route", func(w http.ResponseWriter, r *http.Request) {
 		// route always return 401
 		w.WriteHeader(http.StatusUnauthorized)
-		return
 	})
 
 	reqopts := new(gcorecloud.RequestOpts)
@@ -208,7 +208,7 @@ func TestReauthEndLoop(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, err := p.Request("GET", fmt.Sprintf("%s/route", th.Endpoint()), reqopts)
+			_, err := p.Request("GET", fmt.Sprintf("%s/route", th.Endpoint()), reqopts) // nolint
 
 			mut.Lock()
 			defer mut.Unlock()
@@ -301,7 +301,7 @@ func TestRequestThatCameDuringReauthWaitsUntilItIsCompleted(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		_, err := fmt.Fprintf(w, `{}`)
 		if err != nil {
-
+			log.Error(err)
 		}
 	})
 
@@ -397,7 +397,7 @@ func TestRequestReauthsAtMostOnce(t *testing.T) {
 	// the part before the colon), but when encountering another 401 response, we
 	// did not attempt reauthentication again and just passed that 401 response to
 	// the caller as ErrDefault401.
-	_, err = p.Request("GET", th.Endpoint()+"/route", &gcorecloud.RequestOpts{})
+	_, err = p.Request("GET", th.Endpoint()+"/route", &gcorecloud.RequestOpts{}) // nolint
 	expectedErrorMessage := "Successfully re-authenticated, but got error executing request: Authentication failed"
 	if err != nil {
 		th.AssertEquals(t, expectedErrorMessage, err.Error())
@@ -408,6 +408,7 @@ func TestRequestWithContext(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := fmt.Fprintln(w, "OK")
 		if err != nil {
+			log.Error(err)
 		}
 	}))
 	defer ts.Close()
@@ -418,6 +419,9 @@ func TestRequestWithContext(t *testing.T) {
 	res, err := p.Request("GET", ts.URL, &gcorecloud.RequestOpts{})
 	th.AssertNoErr(t, err)
 	_, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Error(err)
+	}
 	err = res.Body.Close()
 	if err != nil {
 		log.Error(err)
@@ -425,7 +429,7 @@ func TestRequestWithContext(t *testing.T) {
 	th.AssertNoErr(t, err)
 
 	cancel()
-	res, err = p.Request("GET", ts.URL, &gcorecloud.RequestOpts{})
+	_, err = p.Request("GET", ts.URL, &gcorecloud.RequestOpts{}) // nolint
 	if err == nil {
 		t.Fatal("expecting error, got nil")
 	}

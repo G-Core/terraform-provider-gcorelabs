@@ -66,18 +66,18 @@ type CreateOptsBuilder interface {
 // CreateOpts represents options used to create a cluster.
 type CreateOpts struct {
 	Name              string             `json:"name"`
-	ClusterTemplateId string             `json:"cluster_template_id"`
+	ClusterTemplateID string             `json:"cluster_template_id"`
 	NodeCount         int                `json:"node_count"`
 	MasterCount       int                `json:"master_count"`
 	KeyPair           *string            `json:"keypair,omitempty"`
-	FlavorId          *string            `json:"flavor_id,omitempty"`
-	MasterFlavorId    *string            `json:"master_flavor_id,omitempty"`
-	DiscoveryUrl      *string            `json:"discovery_url,omitempty"`
+	FlavorID          *string            `json:"flavor_id,omitempty"`
+	MasterFlavorID    *string            `json:"master_flavor_id,omitempty"`
+	DiscoveryURL      *string            `json:"discovery_url,omitempty"`
 	CreateTimeout     *int               `json:"create_timeout,omitempty"`
 	Labels            *map[string]string `json:"labels,omitempty"`
 	FixedNetwork      *string            `json:"fixed_cluster,omitempty"`
 	FixedSubnet       *string            `json:"fixed_subnet,omitempty"`
-	FloatingIpEnabled bool               `json:"floating_ip_enabled"`
+	FloatingIPEnabled bool               `json:"floating_ip_enabled"`
 }
 
 // ToClusterCreateMap builds a request body from CreateOpts.

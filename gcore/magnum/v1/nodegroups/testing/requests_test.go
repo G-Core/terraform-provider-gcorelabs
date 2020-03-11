@@ -41,7 +41,7 @@ func TestList(t *testing.T) {
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, ListResponse)
+		_, err := fmt.Fprint(w, ListResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -81,7 +81,7 @@ func TestGet(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprintf(w, GetResponse)
+		_, err := fmt.Fprint(w, GetResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -110,7 +110,7 @@ func TestCreate(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
-		_, err := fmt.Fprintf(w, CreateResponse)
+		_, err := fmt.Fprint(w, CreateResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -120,8 +120,8 @@ func TestCreate(t *testing.T) {
 
 	options := nodegroups.CreateOpts{
 		Name:             NodeGroup1.Name,
-		FlavorId:         NodeGroup1.FlavorID,
-		ImageId:          NodeGroup1.ImageId,
+		FlavorID:         NodeGroup1.FlavorID,
+		ImageID:          NodeGroup1.ImageID,
 		NodeCount:        1,
 		DockerVolumeSize: &size,
 	}
@@ -137,12 +137,12 @@ func TestDelete(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	listenUrl := prepareGetTestURL(NodeGroup1.UUID)
-	th.Mux.HandleFunc(listenUrl, func(w http.ResponseWriter, r *http.Request) {
+	listenURL := prepareGetTestURL(NodeGroup1.UUID)
+	th.Mux.HandleFunc(listenURL, func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "DELETE")
 		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
 		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, DeleteResponse)
+		_, err := fmt.Fprint(w, DeleteResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -167,7 +167,7 @@ func TestUpdate(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprintf(w, UpdateResponse)
+		_, err := fmt.Fprint(w, UpdateResponse)
 		if err != nil {
 			log.Error(err)
 		}

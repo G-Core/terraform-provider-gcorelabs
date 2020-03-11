@@ -35,6 +35,9 @@ var nodegroupListSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		results, err := nodegroups.ExtractClusterNodeGroups(pages)
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
 		utils.ShowResults(results, c.String("format"))
 		return nil
 	},
@@ -245,8 +248,8 @@ var nodegroupCreateSubCommand = cli.Command{
 		}
 		opts := nodegroups.CreateOpts{
 			Name:             c.String("name"),
-			FlavorId:         c.String("flavor-id"),
-			ImageId:          c.String("image-id"),
+			FlavorID:         c.String("flavor-id"),
+			ImageID:          c.String("image-id"),
 			NodeCount:        c.Int("node-count"),
 			DockerVolumeSize: utils.IntToPointer(c.Int("docker-volume-size")),
 			Labels:           &labels,

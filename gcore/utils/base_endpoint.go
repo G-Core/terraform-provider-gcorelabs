@@ -51,8 +51,8 @@ func BaseRootEndpoint(endpoint string) (string, error) {
 	return u.String(), nil
 }
 
-// NormalizeUrlPath removes duplicated slashes
-func NormalizeUrlPath(endpoint string) (string, error) {
+// NormalizeURLPath removes duplicated slashes
+func NormalizeURLPath(endpoint string) (string, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return "", err

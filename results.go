@@ -280,8 +280,10 @@ func (r HeaderResult) ExtractInto(to interface{}) error {
 // RFC3339Milli describes a common time format used by some API responses.
 const RFC3339Milli = "2006-01-02T15:04:05.999999Z"
 
+// JSONRFC3339Milli describes time.Time in RFC3339Milli format.
 type JSONRFC3339Milli time.Time
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC3339Milli
 func (jt *JSONRFC3339Milli) UnmarshalJSON(data []byte) error {
 	b := bytes.NewBuffer(data)
 	dec := json.NewDecoder(b)
@@ -297,10 +299,13 @@ func (jt *JSONRFC3339Milli) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// RFC3339MilliNoZ is the time format with millis.
 const RFC3339MilliNoZ = "2006-01-02T15:04:05.999999"
 
+// JSONRFC3339MilliNoZ describes time.Time in RFC3339MilliNoZ format.
 type JSONRFC3339MilliNoZ time.Time
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC3339MilliNoZ
 func (jt *JSONRFC3339MilliNoZ) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -317,8 +322,10 @@ func (jt *JSONRFC3339MilliNoZ) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// JSONRFC1123 describes time.Time in time.RFC1123 format.
 type JSONRFC1123 time.Time
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC1123
 func (jt *JSONRFC1123) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -335,8 +342,10 @@ func (jt *JSONRFC1123) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// JSONUnix describes time.Time in unix format.
 type JSONUnix time.Time
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONUnix
 func (jt *JSONUnix) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -357,10 +366,12 @@ func (jt *JSONUnix) UnmarshalJSON(data []byte) error {
 // RFC3339NoZ is the time format used in Heat (Orchestration).
 const RFC3339NoZ = "2006-01-02T15:04:05"
 
+// JSONRFC3339NoZ describes time.Time in RFC3339NoZ format.
 type JSONRFC3339NoZ struct {
 	time.Time
 }
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC3339NoZ
 func (jt *JSONRFC3339NoZ) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -381,6 +392,7 @@ func (jt *JSONRFC3339NoZ) String() string {
 	return jt.Format(RFC3339NoZ)
 }
 
+// MarshalJSON - implements Marshaler interface for JSONRFC3339NoZ
 func (jt *JSONRFC3339NoZ) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jt.Format(RFC3339NoZ))
 }
@@ -388,10 +400,12 @@ func (jt *JSONRFC3339NoZ) MarshalJSON() ([]byte, error) {
 // RFC3339Z is the time format used in Heat (Orchestration).
 const RFC3339Z = "2006-01-02T15:04:05-0700"
 
+// JSONRFC3339Z describes time.Time in RFC3339Z format.
 type JSONRFC3339Z struct {
 	time.Time
 }
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC3339Z
 func (jt *JSONRFC3339Z) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -408,6 +422,7 @@ func (jt *JSONRFC3339Z) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// MarshalJSON - implements Marshaler interface for JSONRFC3339Z
 func (jt *JSONRFC3339Z) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jt.Format(RFC3339Z))
 }
@@ -415,8 +430,10 @@ func (jt *JSONRFC3339Z) MarshalJSON() ([]byte, error) {
 // RFC3339ZNoT is the time format used in Zun (Containers Service).
 const RFC3339ZNoT = "2006-01-02 15:04:05-07:00"
 
+// JSONRFC3339ZNoT describes time.Time in RFC3339ZNoT format.
 type JSONRFC3339ZNoT time.Time
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC3339ZNoT
 func (jt *JSONRFC3339ZNoT) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -436,8 +453,10 @@ func (jt *JSONRFC3339ZNoT) UnmarshalJSON(data []byte) error {
 // RFC3339ZNoTNoZ is another time format used in Zun (Containers Service).
 const RFC3339ZNoTNoZ = "2006-01-02 15:04:05"
 
+// JSONRFC3339ZNoTNoZ describes time.Time in RFC3339ZNoTNoZ format.
 type JSONRFC3339ZNoTNoZ time.Time
 
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC3339ZNoTNoZ
 func (jt *JSONRFC3339ZNoTNoZ) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {

@@ -18,7 +18,7 @@ service that's used for authentication explicitly, for example.
 A basic example of using this would be:
 
 	ao, err := gcore.AuthOptionsFromEnv()
-	provider, err := gcore.NewClient(ao.ApiURL)
+	provider, err := gcore.NewClient(ao.APIURL)
 	client, err := gcore.NewIdentity(provider, gcorecloud.EndpointOpts{})
 */
 func NewClient(endpoint string) (*gcorecloud.ProviderClient, error) {
@@ -67,7 +67,7 @@ Example:
 	client, err := gcore.NewMagnumV1(client, gcorecloud.EndpointOpts{})
 */
 func AuthenticatedClient(options gcorecloud.AuthOptions) (*gcorecloud.ProviderClient, error) {
-	client, err := NewGCoreClient(options.ApiURL)
+	client, err := NewGCoreClient(options.APIURL)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func AuthenticatedClient(options gcorecloud.AuthOptions) (*gcorecloud.ProviderCl
 }
 
 func TokenClient(options gcorecloud.TokenOptions) (*gcorecloud.ProviderClient, error) {
-	client, err := NewGCoreClient(options.ApiURL)
+	client, err := NewGCoreClient(options.APIURL)
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +87,7 @@ func TokenClient(options gcorecloud.TokenOptions) (*gcorecloud.ProviderClient, e
 	if err != nil {
 		return nil, err
 	}
-	err = setGCloudReauth(client, "", options, gcorecloud.EndpointOpts{})
-	if err != nil {
-		return nil, err
-	}
+	setGCloudReauth(client, "", options, gcorecloud.EndpointOpts{})
 	return client, nil
 }
 
@@ -234,7 +231,7 @@ func refreshGCloud(client *gcorecloud.ProviderClient, endpoint string, options g
 	return nil
 }
 
-func setGCloudReauth(client *gcorecloud.ProviderClient, endpoint string, options gcorecloud.TokenOptions, eo gcorecloud.EndpointOpts) error {
+func setGCloudReauth(client *gcorecloud.ProviderClient, endpoint string, options gcorecloud.TokenOptions, eo gcorecloud.EndpointOpts) {
 
 	if options.AllowReauth {
 		// here we're creating a throw-away client (tac). it's a copy of the user's provider client, but
@@ -255,8 +252,6 @@ func setGCloudReauth(client *gcorecloud.ProviderClient, endpoint string, options
 			return nil
 		}
 	}
-
-	return nil
 }
 
 // NewIdentity creates a ServiceClient that may be used to interact with the gcore identity auth service.
@@ -286,7 +281,7 @@ func initClientOpts(client *gcorecloud.ProviderClient, eo gcorecloud.EndpointOpt
 	if err != nil {
 		return sc, err
 	}
-	url, err = utils.NormalizeUrlPath(url)
+	url, err = utils.NormalizeURLPath(url)
 	if err != nil {
 		return sc, err
 	}

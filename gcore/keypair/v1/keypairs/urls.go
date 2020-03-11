@@ -24,10 +24,6 @@ func createURL(c *gcorecloud.ServiceClient) string {
 	return rootURL(c)
 }
 
-func updateURL(c *gcorecloud.ServiceClient, id string) string {
-	return resourceURL(c, id)
-}
-
 func deleteURL(c *gcorecloud.ServiceClient, id string) string {
 	return resourceURL(c, id)
 }

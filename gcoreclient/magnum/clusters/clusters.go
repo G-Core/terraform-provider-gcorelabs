@@ -28,6 +28,9 @@ var clusterListSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		results, err := clusters.ExtractClusters(pages)
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
 		utils.ShowResults(results, c.String("format"))
 		return nil
 	},
@@ -40,7 +43,7 @@ var clusterDeleteSubCommand = cli.Command{
 	Category:  "cluster",
 	Flags:     flags.WaitCommandFlags,
 	Action: func(c *cli.Context) error {
-		clusterId, err := flags.GetFirstArg(c, clusterIDText)
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "delete")
 			return err
@@ -50,15 +53,15 @@ var clusterDeleteSubCommand = cli.Command{
 			_ = cli.ShowAppHelp(c)
 			return cli.NewExitError(err, 1)
 		}
-		results, err := clusters.Delete(client, clusterId).ExtractTasks()
+		results, err := clusters.Delete(client, clusterID).ExtractTasks()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
 
 		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
-			_, err := clusters.Get(client, clusterId).Extract()
+			_, err := clusters.Get(client, clusterID).Extract()
 			if err == nil {
-				return nil, fmt.Errorf("cannot delete cluster with ID: %s", clusterId)
+				return nil, fmt.Errorf("cannot delete cluster with ID: %s", clusterID)
 			}
 			switch err.(type) {
 			case gcorecloud.ErrDefault404:
@@ -96,7 +99,7 @@ var clusterResizeSubCommand = cli.Command{
 		},
 	}, flags.WaitCommandFlags...),
 	Action: func(c *cli.Context) error {
-		clusterId, err := flags.GetFirstArg(c, clusterIDText)
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "resize")
 			return err
@@ -118,7 +121,7 @@ var clusterResizeSubCommand = cli.Command{
 			NodeGroup:     utils.StringToPointer(c.String("nodegroup")),
 		}
 
-		results, err := clusters.Resize(client, clusterId, opts).ExtractTasks()
+		results, err := clusters.Resize(client, clusterID, opts).ExtractTasks()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
@@ -149,7 +152,7 @@ var clusterGetSubCommand = cli.Command{
 	ArgsUsage: "<cluster_id>",
 	Category:  "cluster",
 	Action: func(c *cli.Context) error {
-		clusterId, err := flags.GetFirstArg(c, clusterIDText)
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "show")
 			return err
@@ -159,7 +162,7 @@ var clusterGetSubCommand = cli.Command{
 			_ = cli.ShowAppHelp(c)
 			return cli.NewExitError(err, 1)
 		}
-		result, err := clusters.Get(client, clusterId).Extract()
+		result, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
@@ -263,16 +266,16 @@ var clusterCreateSubCommand = cli.Command{
 		}
 		opts := clusters.CreateOpts{
 			Name:              c.String("name"),
-			ClusterTemplateId: c.String("template-id"),
+			ClusterTemplateID: c.String("template-id"),
 			NodeCount:         c.Int("node-count"),
 			MasterCount:       c.Int("master-node-count"),
 			KeyPair:           utils.StringToPointer(c.String("keypair")),
-			FlavorId:          utils.StringToPointer(c.String("flavor")),
-			MasterFlavorId:    utils.StringToPointer(c.String("master-flavor")),
+			FlavorID:          utils.StringToPointer(c.String("flavor")),
+			MasterFlavorID:    utils.StringToPointer(c.String("master-flavor")),
 			Labels:            &labels,
 			FixedNetwork:      utils.StringToPointer(c.String("fixed-network")),
 			FixedSubnet:       utils.StringToPointer(c.String("fixed-subnet")),
-			FloatingIpEnabled: c.Bool("floating-ip-enabled"),
+			FloatingIPEnabled: c.Bool("floating-ip-enabled"),
 			CreateTimeout:     utils.IntToPointer(c.Int("create-timeout")),
 		}
 

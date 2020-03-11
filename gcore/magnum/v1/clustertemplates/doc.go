@@ -25,8 +25,8 @@ Example to Create a Cluster Template
 	iTrue := true
 	createOpts := clustertemplates.CreateOpts{
 		Name:         "clustertemplate_1",
-		ExternalNetworkId   "id",
-		ImageId             "image_id"
+		ExternalNetworkID   "id",
+		ImageID             "image_id"
 		KeyPairID           "keypair_id",
 		Name                "name",
 		DockerVolumeSize    10,

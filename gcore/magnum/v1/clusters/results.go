@@ -60,18 +60,18 @@ type DeleteResult struct {
 // Cluster represents a cluster structure.
 type Cluster struct {
 	StatusReason       *string           `json:"status_reason,omitempty"`
-	ApiAddress         *string           `json:"api_address,omitempty"`
+	APIAddress         *string           `json:"api_address,omitempty"`
 	CoeVersion         *string           `json:"coe_version,omitempty"`
 	ContainerVersion   *string           `json:"container_version,omitempty"`
 	DiscoveryURL       string            `json:"discovery_url,omitempty"`
 	HealthStatusReason map[string]string `json:"health_status_reason,omitempty"`
-	ProjectId          string            `json:"project_id"`
-	UserId             string            `json:"user_id"`
+	ProjectID          string            `json:"project_id"`
+	UserID             string            `json:"user_id"`
 	NodeAddresses      []string          `json:"node_addresses"`
 	MasterAddresses    []string          `json:"master_addresses"`
 	FixedNetwork       *string           `json:"fixed_network"`
 	FixedSubnet        *string           `json:"fixed_subnet"`
-	FloatingIpEnabled  bool              `json:"floating_ip_enabled"`
+	FloatingIPEnabled  bool              `json:"floating_ip_enabled"`
 	CreatedAt          time.Time         `json:"created_at"`
 	UpdatedAt          *time.Time        `json:"updated_at"`
 	Faults             map[string]string `json:"faults"`

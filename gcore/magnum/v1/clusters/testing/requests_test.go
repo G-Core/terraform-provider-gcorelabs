@@ -49,7 +49,7 @@ func TestList(t *testing.T) {
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, ListResponse)
+		_, err := fmt.Fprint(w, ListResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -88,7 +88,7 @@ func TestGet(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprintf(w, GetResponse)
+		_, err := fmt.Fprint(w, GetResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -119,7 +119,7 @@ func TestCreate(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
-		_, err := fmt.Fprintf(w, CreateResponse)
+		_, err := fmt.Fprint(w, CreateResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -130,14 +130,14 @@ func TestCreate(t *testing.T) {
 
 	options := clusters.CreateOpts{
 		Name:              Cluster1.Name,
-		ClusterTemplateId: Cluster1.ClusterTemplateID,
+		ClusterTemplateID: Cluster1.ClusterTemplateID,
 		NodeCount:         1,
 		MasterCount:       1,
 		KeyPair:           &keypair,
-		FlavorId:          &Cluster1.FlavorID,
-		DiscoveryUrl:      nil,
+		FlavorID:          &Cluster1.FlavorID,
+		DiscoveryURL:      nil,
 		CreateTimeout:     &timeout,
-		MasterFlavorId:    &Cluster1.MasterFlavorID,
+		MasterFlavorID:    &Cluster1.MasterFlavorID,
 		Labels:            &map[string]string{},
 		FixedSubnet:       nil,
 	}
@@ -156,7 +156,7 @@ func TestDelete(t *testing.T) {
 		th.TestMethod(t, r, "DELETE")
 		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
 		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, DeleteResponse)
+		_, err := fmt.Fprint(w, DeleteResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -181,7 +181,7 @@ func TestResize(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
-		_, err := fmt.Fprintf(w, ResizeResponse)
+		_, err := fmt.Fprint(w, ResizeResponse)
 		if err != nil {
 			log.Error(err)
 		}

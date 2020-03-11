@@ -41,7 +41,7 @@ func TestList(t *testing.T) {
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, ListResponse)
+		_, err := fmt.Fprint(w, ListResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -81,7 +81,7 @@ func TestGet(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprintf(w, GetResponse)
+		_, err := fmt.Fprint(w, GetResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -112,7 +112,7 @@ func TestCreate(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
-		_, err := fmt.Fprintf(w, CreateResponse)
+		_, err := fmt.Fprint(w, CreateResponse)
 		if err != nil {
 			log.Error(err)
 		}
@@ -120,7 +120,7 @@ func TestCreate(t *testing.T) {
 
 	options := clustertemplates.CreateOpts{
 		Name:             ClusterTemplate1.Name,
-		ImageId:          ClusterTemplate1.ImageId,
+		ImageID:          ClusterTemplate1.ImageID,
 		KeyPairID:        ClusterTemplate1.KeyPairID,
 		DockerVolumeSize: ClusterTemplate1.DockerVolumeSize,
 	}

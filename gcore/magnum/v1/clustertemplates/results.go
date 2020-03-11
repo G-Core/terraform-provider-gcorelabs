@@ -53,15 +53,15 @@ type ClusterTemplate struct {
 	MasterFlavorID      string            `json:"master_flavor_id"`
 	FlavorID            string            `json:"flavor_id"`
 	NoProxy             string            `json:"no_proxy"`
-	HttpsProxy          string            `json:"https_proxy"`
-	HttpProxy           string            `json:"http_proxy"`
-	TlsDisabled         bool              `json:"tls_disabled"`
+	HTTPSProxy          string            `json:"https_proxy"`
+	HTTPProxy           string            `json:"http_proxy"`
+	TLSDisabled         bool              `json:"tls_disabled"`
 	KeyPairID           string            `json:"keypair_id"`
 	Public              bool              `json:"public"`
 	DockerVolumeSize    int               `json:"docker_volume_size"`
 	ServerType          string            `json:"server_type"`
-	ExternalNetworkId   string            `json:"external_network_id"`
-	ImageId             string            `json:"image_id"`
+	ExternalNetworkID   string            `json:"external_network_id"`
+	ImageID             string            `json:"image_id"`
 	VolumeDriver        string            `json:"volume_driver"`
 	RegistryEnabled     bool              `json:"registry_enabled"`
 	DockerStorageDriver string            `json:"docker_storage_driver"`
@@ -69,8 +69,8 @@ type ClusterTemplate struct {
 	NetworkDriver       string            `json:"network_driver"`
 	FixedNetwork        string            `json:"fixed_network"`
 	MasterLbEnabled     bool              `json:"master_lb_enabled"`
-	DnsNameServer       string            `json:"dns_nameserver"`
-	FloatingIpEnabled   bool              `json:"floating_ip_enabled"`
+	DNSNameServer       string            `json:"dns_nameserver"`
+	FloatingIPEnabled   bool              `json:"floating_ip_enabled"`
 	Hidden              bool              `json:"hidden"`
 	UUID                string            `json:"uuid"`
 	CreatedAt           time.Time         `json:"created_at"`

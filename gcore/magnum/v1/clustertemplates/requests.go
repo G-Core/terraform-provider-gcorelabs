@@ -64,7 +64,7 @@ type CreateOptsBuilder interface {
 
 // CreateOpts represents options used to create a cluster template.
 type CreateOpts struct {
-	ImageId             string             `json:"image_id"`
+	ImageID             string             `json:"image_id"`
 	KeyPairID           string             `json:"keypair_id"`
 	Name                string             `json:"name"`
 	DockerVolumeSize    int                `json:"docker_volume_size"`
@@ -73,9 +73,9 @@ type CreateOpts struct {
 	MasterFlavorID      *string            `json:"master_flavor_id,omitempty"`
 	FlavorID            *string            `json:"flavor_id,omitempty"`
 	NoProxy             *string            `json:"no_proxy,omitempty"`
-	HttpsProxy          *string            `json:"https_proxy,omitempty"`
-	HttpProxy           *string            `json:"http_proxy,omitempty"`
-	TlsDisabled         *bool              `json:"tls_disabled,omitempty"`
+	HTTPSProxy          *string            `json:"https_proxy,omitempty"`
+	HTTPProxy           *string            `json:"http_proxy,omitempty"`
+	TLSDisabled         *bool              `json:"tls_disabled,omitempty"`
 	Public              *bool              `json:"public,omitempty"`
 	ServerType          *string            `json:"server_type,omitempty"`
 	VolumeDriver        *string            `json:"volume_driver,omitempty"`
@@ -84,8 +84,8 @@ type CreateOpts struct {
 	NetworkDriver       *string            `json:"network_driver,omitempty"`
 	FixedNetwork        *string            `json:"fixed_network,omitempty"`
 	MasterLbEnabled     *bool              `json:"master_lb_enabled,omitempty"`
-	DnsNameServer       *string            `json:"dns_nameserver,omitempty"`
-	FloatingIpEnabled   *bool              `json:"floating_ip_enabled,omitempty"`
+	DNSNameServer       *string            `json:"dns_nameserver,omitempty"`
+	FloatingIPEnabled   *bool              `json:"floating_ip_enabled,omitempty"`
 	Hidden              *bool              `json:"hidden,omitempty"`
 }
 

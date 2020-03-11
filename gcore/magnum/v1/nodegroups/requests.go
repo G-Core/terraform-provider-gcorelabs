@@ -64,8 +64,8 @@ type CreateOptsBuilder interface {
 // CreateOpts represents options used to create a cluster nodegroup.
 type CreateOpts struct {
 	Name             string             `json:"name"`
-	FlavorId         string             `json:"flavor_id,omitempty"`
-	ImageId          string             `json:"image_id,omitempty"`
+	FlavorID         string             `json:"flavor_id,omitempty"`
+	ImageID          string             `json:"image_id,omitempty"`
 	NodeCount        int                `json:"node_count"`
 	DockerVolumeSize *int               `json:"docker_volume_size,omitempty"`
 	Labels           *map[string]string `json:"labels,omitempty"`
