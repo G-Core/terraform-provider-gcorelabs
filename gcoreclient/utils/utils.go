@@ -257,6 +257,16 @@ func StringToPointer(s string) *string {
 	return &s
 }
 
+func StringSliceToPointer(s []string) *[]string {
+	if s == nil {
+		return nil
+	}
+	if len(s) == 0 {
+		return nil
+	}
+	return &s
+}
+
 func IntToPointer(i int) *int {
 	if i == 0 {
 		return nil

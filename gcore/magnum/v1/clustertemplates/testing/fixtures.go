@@ -8,7 +8,8 @@ import (
 
 const ListResponse = `
 {
-  "clustertemplates": [
+  "count": 1,	
+  "results": [
     {
       "docker_volume_size": 5,
       "hidden": false,

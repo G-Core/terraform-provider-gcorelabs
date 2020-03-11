@@ -298,6 +298,59 @@ func isZero(v reflect.Value) bool {
 	return v.Interface() == z.Interface()
 }
 
+type buildQueryStringStrategy func(v reflect.Value, tag string) url.Values
+
+func buildQueryStringSliceStrategy(v reflect.Value, tag string) url.Values {
+	params := url.Values{}
+	switch v.Type().Elem() {
+	case reflect.TypeOf(0):
+		for i := 0; i < v.Len(); i++ {
+			params.Add(tag, strconv.FormatInt(v.Index(i).Int(), 10))
+		}
+	default:
+		for i := 0; i < v.Len(); i++ {
+			params.Add(tag, v.Index(i).String())
+		}
+	}
+	return params
+}
+
+func buildQueryStringCommaSeparatedSliceStrategy(v reflect.Value, tag string) url.Values {
+	params := url.Values{}
+	var s []string
+	switch v.Type().Elem() {
+	case reflect.TypeOf(0):
+		for i := 0; i < v.Len(); i++ {
+			s = append(s, strconv.FormatInt(v.Index(i).Int(), 10))
+		}
+	default:
+		for i := 0; i < v.Len(); i++ {
+			s = append(s, v.Index(i).String())
+		}
+	}
+	params.Add(tag, strings.Join(s, ","))
+	return params
+}
+
+func mergeURLValue(params url.Values, additions url.Values) url.Values {
+	for key, values := range additions {
+		for _, value := range values {
+			params.Add(key, value)
+		}
+	}
+	return params
+}
+
+func queryStringSliceStrategy(delimiter string) buildQueryStringStrategy {
+	switch delimiter {
+	case "comma":
+		return buildQueryStringCommaSeparatedSliceStrategy
+	default:
+		return buildQueryStringSliceStrategy
+	}
+
+}
+
 /*
 BuildQueryString is an internal function to be used by request methods in
 individual resource packages.
@@ -315,7 +368,31 @@ converted into query parameters based on a "q" tag. For example:
 	   Baz: "BBB",
 	}
 
-will be converted into "?x_bar=AAA&lorem_ipsum=BBB".
+	will be converted into "?x_bar=AAA&lorem_ipsum=BBB".
+
+	type struct Something {
+	   Bar []string `q:"x_bar",delimiter:"comma"`
+	   Baz int    `q:"lorem_ipsum"`
+	}
+
+	instance := Something{
+	   Bar: []string{"AAA", "CCC"},
+	   Baz: "BBB",
+	}
+
+	will be converted into "?x_bar=AAA,CCC&lorem_ipsum=BBB".
+
+	type struct Something {
+	   Bar []string `q:"x_bar"`
+	   Baz int    `q:"lorem_ipsum"`
+	}
+
+	instance := Something{
+	   Bar: []string{"AAA", "CCC"},
+	   Baz: "BBB",
+	}
+
+	will be converted into "?x_bar=AAA&x_bar=CCC&lorem_ipsum=BBB".
 
 The struct's fields may be strings, integers, or boolean values. Fields left at
 their type's zero value will be omitted from the query.
@@ -357,16 +434,8 @@ func BuildQueryString(opts interface{}) (*url.URL, error) {
 					case reflect.Bool:
 						params.Add(tags[0], strconv.FormatBool(v.Bool()))
 					case reflect.Slice:
-						switch v.Type().Elem() {
-						case reflect.TypeOf(0):
-							for i := 0; i < v.Len(); i++ {
-								params.Add(tags[0], strconv.FormatInt(v.Index(i).Int(), 10))
-							}
-						default:
-							for i := 0; i < v.Len(); i++ {
-								params.Add(tags[0], v.Index(i).String())
-							}
-						}
+						strategy := queryStringSliceStrategy(f.Tag.Get("delimiter"))
+						params = mergeURLValue(params, strategy(v, tags[0]))
 					case reflect.Map:
 						if v.Type().Key().Kind() == reflect.String && v.Type().Elem().Kind() == reflect.String {
 							var s []string

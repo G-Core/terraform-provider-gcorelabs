@@ -133,7 +133,7 @@ func ExtractClusters(r pagination.Page) ([]ClusterList, error) {
 }
 
 func ExtractClustersInto(r pagination.Page, v interface{}) error {
-	return r.(ClusterPage).Result.ExtractIntoSlicePtr(v, "clusters")
+	return r.(ClusterPage).Result.ExtractIntoSlicePtr(v, "results")
 }
 
 type ClusterTaskResult struct {

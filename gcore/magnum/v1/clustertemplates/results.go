@@ -115,5 +115,5 @@ func ExtractClusterTemplates(r pagination.Page) ([]ClusterTemplate, error) {
 }
 
 func ExtractClusterTemplatesInto(r pagination.Page, v interface{}) error {
-	return r.(ClusterTemplatePage).Result.ExtractIntoSlicePtr(v, "clustertemplates")
+	return r.(ClusterTemplatePage).Result.ExtractIntoSlicePtr(v, "results")
 }

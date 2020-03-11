@@ -8,7 +8,8 @@ import (
 
 const ListResponse = `
 {
-  "nodegroups": [
+  "count": 2,	
+  "results": [
     {
       "status": "CREATE_IN_PROGRESS",
       "name": "default-master",

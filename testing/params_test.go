@@ -88,6 +88,20 @@ func TestBuildQueryString(t *testing.T) {
 	}
 }
 
+func TestBuildQueryCommaSeparatedString(t *testing.T) {
+	opts := struct {
+		S []string `q:"s" delimiter:"comma"`
+	}{
+		S: []string{"one", "two", "three"},
+	}
+	expected := &url.URL{RawQuery: "s=one%2Ctwo%2Cthree"}
+	actual, err := gcorecloud.BuildQueryString(&opts)
+	if err != nil {
+		t.Errorf("Error building query string: %v", err)
+	}
+	th.CheckDeepEquals(t, expected, actual)
+}
+
 func TestBuildHeaders(t *testing.T) {
 	testStruct := struct {
 		Accept        string `h:"Accept"`

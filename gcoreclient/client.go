@@ -9,6 +9,7 @@ import (
 	"gcloud/gcorecloud-go/gcoreclient/magnum/templates"
 	"gcloud/gcorecloud-go/gcoreclient/networks"
 	"gcloud/gcorecloud-go/gcoreclient/tasks"
+	"gcloud/gcorecloud-go/gcoreclient/volumes"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,7 @@ var commands = []*cli.Command{
 	&networks.NetworkCommands,
 	&tasks.TaskCommands,
 	&keypairs.KeypairCommands,
+	&volumes.VolumeCommands,
 	{
 		Name:  "magnum",
 		Usage: "Magnum commands",

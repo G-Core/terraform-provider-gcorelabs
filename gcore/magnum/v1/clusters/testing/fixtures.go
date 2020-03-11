@@ -9,7 +9,8 @@ import (
 
 const ListResponse = `
 {
-  "clusters": [
+  "count": 1,
+  "results": [
     {
       "health_status": null,
       "master_flavor_id": "g1-standard-1-2",

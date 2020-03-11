@@ -1,7 +1,9 @@
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
-  disable-all: true
+  disable-all: false
+  disable:
+    - typecheck
   enable:
     - bodyclose
     - deadcode
@@ -32,7 +34,7 @@ linters:
     - staticcheck
     - structcheck
     - stylecheck
-    - typecheck
+#    - typecheck
     - unconvert
     - unparam
     - unused

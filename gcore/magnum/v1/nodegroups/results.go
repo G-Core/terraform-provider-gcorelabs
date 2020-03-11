@@ -115,7 +115,7 @@ func ExtractClusterNodeGroups(r pagination.Page) ([]ClusterListNodeGroup, error)
 }
 
 func ExtractClusterNodeGroupsInto(r pagination.Page, v interface{}) error {
-	return r.(ClusterNodeGroupPage).Result.ExtractIntoSlicePtr(v, "nodegroups")
+	return r.(ClusterNodeGroupPage).Result.ExtractIntoSlicePtr(v, "results")
 }
 
 type ClusterTaskResult struct {
