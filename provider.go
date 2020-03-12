@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"git.gcore.com/terraform-provider-gcore/common"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-
-func Provider() *schema.Provider {
+func Provider() terraform.ResourceProvider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"jwt": {
@@ -33,4 +33,3 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	}
 	return &config, nil
 }
-
