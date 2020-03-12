@@ -3,17 +3,18 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"io/ioutil"
 )
 
 var HOST = common.HOST
 
-func CheckValueExisting(id int, name string, object_type string, info_message string) (error) {
-	if id == 0 && name == ""{
+func CheckValueExisting(id int, name string, object_type string, info_message string) error {
+	if id == 0 && name == "" {
 		return fmt.Errorf("Missing value: set %s_id or %s_name to %s.", object_type, object_type, info_message)
-	} else if id != 0 && name != ""{
+	} else if id != 0 && name != "" {
 		return fmt.Errorf("Invalid value: use one of fields: %s_id or %s_name, - not together (%s).", object_type, object_type, info_message)
 	}
 	return nil
@@ -33,7 +34,7 @@ func GetProject(d *schema.ResourceData, header string, info_message string) (int
 	project_name := d.Get("project_name").(string)
 	// invalid cases
 	err := CheckValueExisting(project_id, project_name, "project", info_message)
-	if err != nil{
+	if err != nil {
 		return 0, err
 	}
 
@@ -43,27 +44,26 @@ func GetProject(d *schema.ResourceData, header string, info_message string) (int
 	} else {
 		url := fmt.Sprintf("%sprojects", HOST)
 		resp, err := common.GetRequest(url, header)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
-		if resp.StatusCode != 200{
+		if resp.StatusCode != 200 {
 			return 0, fmt.Errorf("Can't get projects.")
 		}
 
-
 		var projects_data common.Projects
 		responseData, err := ioutil.ReadAll(resp.Body)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
 		//log.Printf("RD%s", responseData)
 		err = json.Unmarshal([]byte(responseData), &projects_data)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
 		//log.Printf("RD%s", p.Results[0].Keystone_id)
 		region_id, err := find_project_by_name(projects_data.Results, project_name)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
 		return region_id, nil
@@ -84,7 +84,7 @@ func GetRegion(d *schema.ResourceData, header string, info_message string) (int,
 	region_name := d.Get("region_name").(string)
 	// invalid cases
 	err := CheckValueExisting(region_id, region_name, "region", info_message)
-	if err != nil{
+	if err != nil {
 		return 0, err
 	}
 
@@ -94,27 +94,26 @@ func GetRegion(d *schema.ResourceData, header string, info_message string) (int,
 	} else {
 		url := fmt.Sprintf("%sregions", HOST)
 		resp, err := common.GetRequest(url, header)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
-		if resp.StatusCode != 200{
+		if resp.StatusCode != 200 {
 			return 0, fmt.Errorf("Can't get regions.")
 		}
 
-
 		var regions_data common.Regions
 		responseData, err := ioutil.ReadAll(resp.Body)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
 		//log.Printf("RD%s", responseData)
 		err = json.Unmarshal([]byte(responseData), &regions_data)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
 		//log.Printf("RD%s", p.Results[0].Keystone_id)
 		region_id, err := find_region_by_name(regions_data.Results, region_name)
-		if err != nil{
+		if err != nil {
 			return 0, err
 		}
 		return region_id, nil
