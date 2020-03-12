@@ -19,12 +19,12 @@ func Create(c *gcorecloud.ServiceClient, opts gcorecloud.AuthOptionsBuilder) (r 
 	return processToken(c, opts, tokenURL(c))
 }
 
-// Refresh token with GCore API
-func Refresh(c *gcorecloud.ServiceClient, opts gcorecloud.TokenOptionsBuilder) (r TokenResult) {
+// RefreshPlatform token with GCore platform API
+func RefreshPlatform(c *gcorecloud.ServiceClient, opts gcorecloud.TokenOptionsBuilder) (r TokenResult) {
 	return processToken(c, opts, refreshURL(c))
 }
 
-// Refresh token with gcloud API
+// RefreshPlatform token with gcloud API
 func RefreshGCloud(c *gcorecloud.ServiceClient, opts gcorecloud.TokenOptionsBuilder) (r TokenResult) {
 	return processToken(c, opts, refreshGCloudURL(c))
 }

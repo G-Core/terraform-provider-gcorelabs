@@ -129,7 +129,7 @@ func auth(client *gcorecloud.ProviderClient, endpoint string, options gcorecloud
 		tao := options
 		tao.AllowReauth = false
 		client.ReauthFunc = func() error {
-			err := refresh(&tac, endpoint, tro, tao, eo)
+			err := refreshPlatform(&tac, endpoint, tro, tao, eo)
 			if err != nil {
 				errAuth := auth(&tac, endpoint, tao, eo)
 				if errAuth != nil {
@@ -144,7 +144,7 @@ func auth(client *gcorecloud.ProviderClient, endpoint string, options gcorecloud
 	return nil
 }
 
-func refresh(client *gcorecloud.ProviderClient, endpoint string, tokenOptions gcorecloud.TokenOptions, authOptions gcorecloud.AuthOptions, eo gcorecloud.EndpointOpts) error {
+func refreshPlatform(client *gcorecloud.ProviderClient, endpoint string, tokenOptions gcorecloud.TokenOptions, authOptions gcorecloud.AuthOptions, eo gcorecloud.EndpointOpts) error {
 
 	identityClient, err := NewIdentity(client, eo)
 	if err != nil {
@@ -155,7 +155,7 @@ func refresh(client *gcorecloud.ProviderClient, endpoint string, tokenOptions gc
 		identityClient.Endpoint = endpoint
 	}
 
-	result := tokens.Refresh(identityClient, tokenOptions)
+	result := tokens.RefreshPlatform(identityClient, tokenOptions)
 
 	err = client.SetTokensAndAuthResult(result)
 	if err != nil {
@@ -175,7 +175,7 @@ func refresh(client *gcorecloud.ProviderClient, endpoint string, tokenOptions gc
 		tao := authOptions
 		tao.AllowReauth = false
 		client.ReauthFunc = func() error {
-			err := refresh(&tac, endpoint, tro, tao, eo)
+			err := refreshPlatform(&tac, endpoint, tro, tao, eo)
 			if err != nil {
 				errAuth := auth(&tac, endpoint, tao, eo)
 				if errAuth != nil {
@@ -316,18 +316,6 @@ func AuthClientService(options gcorecloud.AuthOptions, eo gcorecloud.EndpointOpt
 	}
 	provider.EndpointLocator = gcorecloud.DefaultEndpointLocator(provider.IdentityBase)
 	client, err := initClientOpts(provider, eo, eo.Type)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
-}
-
-func TaskTokenClient(options gcorecloud.TokenOptions) (*gcorecloud.ServiceClient, error) {
-	eo := gcorecloud.EndpointOpts{
-		Name:    "tasks",
-		Version: "v1",
-	}
-	client, err := TokenClientService(options, eo)
 	if err != nil {
 		return nil, err
 	}

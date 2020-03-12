@@ -46,20 +46,6 @@ func ServiceTokenClient(name string, version string) *gcorecloud.ServiceClient {
 	return client
 }
 
-func TaskTokenClient() *gcorecloud.ServiceClient {
-	options := gcorecloud.TokenOptions{
-		APIURL:       testhelper.GCloudRefreshTokenIdentifyEndpoint(),
-		AccessToken:  AccessToken,
-		RefreshToken: RefreshToken,
-		AllowReauth:  true,
-	}
-	client, err := gcore.TaskTokenClient(options)
-	if err != nil {
-		panic(err)
-	}
-	return client
-}
-
 func ServiceAuthClient(name string, version string) *gcorecloud.ServiceClient {
 	options := gcorecloud.AuthOptions{
 		APIURL:      testhelper.GCoreIdentifyEndpoint(),

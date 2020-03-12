@@ -27,7 +27,7 @@ var commands = []*cli.Command{
 	&flavors.FlavorCommands,
 	{
 		Name:  "magnum",
-		Usage: "Magnum commands",
+		Usage: "Gcloud Magnum API",
 		Subcommands: []*cli.Command{
 			&clusters.ClusterCommands,
 			&templates.ClusterTemplatesCommands,

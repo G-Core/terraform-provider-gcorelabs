@@ -86,7 +86,7 @@ func TestGet(t *testing.T) {
 		}
 	})
 
-	client := fake.TaskTokenClient()
+	client := fake.ServiceTokenClient("tasks", "v1")
 	ct, err := tasks.Get(client, Task1.ID).Extract()
 
 	require.NoError(t, err)
