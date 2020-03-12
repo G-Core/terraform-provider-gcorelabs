@@ -4,27 +4,32 @@ import (
 	"fmt"
 	"testing"
 
-	//"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccVolume(t *testing.T) {
+func TestAccCreateVolumeV1(t *testing.T) {
+
+	name:="foo"
+	fullName := fmt.Sprintf("gcore_volume.%s", name)
+	size := 2
+	typeName := "ssd_hiiops"
 
 	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckGcoreVolumeConfig,
+				Config: testAccVolumeTemplate(name, size, typeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExampleResourceExists("gcore_volume.foo"),
+					testAccCheckResourceExists(fullName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckExampleResourceExists(resourceName string) resource.TestCheckFunc {
+func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		// retrieve the resource by name from state
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -39,16 +44,18 @@ func testAccCheckExampleResourceExists(resourceName string) resource.TestCheckFu
 	}
 }
 
-const testAccCheckGcoreVolumeConfig = `
-provider "gcore" {
-	jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyNTgwOTM4Nzg4LCJqdGkiOiJhZWQ2ZjQwNjhhYzM0NWNkYWM1MTcwZjk0MzcwMDIzMyIsInVzZXJfaWQiOjEsInVzZXJfdHlwZSI6InN5c3RlbV9hZG1pbiIsInVzZXJfZ3JvdXBzIjpudWxsLCJjbGllbnRfaWQiOm51bGwsImVtYWlsIjoidGVzdEB0ZXN0LnRlc3QiLCJ1c2VybmFtZSI6InRlc3RAdGVzdC50ZXN0IiwiaXNfYWRtaW4iOnRydWUsImNsaWVudF9uYW1lIjoidGVzdCIsInJqdGkiOiJjZmJhNzMxODhlOTg0MzgxODAzZDdmYzU3OWJmZWIxYyJ9.0xjny_NM1uLQ5gRT8ZSmA_tvyeNZs8BrPjSFfhkKJbk"
+func testAccVolumeTemplate(name string, size int, typeName string) string {
+    r := fmt.Sprintf(`
+	%s
+	
+	resource "gcore_volume" "%s" {
+		name = "%s"
+		size = %d
+		type_name = "%s"
+		%s
+		%s
+	}
+	`, providerData(), name, name, size, typeName, regionInfo(), projectInfo())
+	fmt.Printf(r)
+	return r
 }
-
-resource "gcore_volume" "foo" {
-	name = 156
-	size = 2
-	type_name = "ssd_hiiops"
-	region_id = 1
-	project_id = 78
-  }
-`
