@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -12,8 +13,10 @@ func TestAccCreateVolumeV1(t *testing.T) {
 
 	name:="foo"
 	fullName := fmt.Sprintf("gcore_volume.%s", name)
-	size := 2
-	typeName := "ssd_hiiops"
+	size := 1
+	typeName := "standard"
+	newSize := 2
+	newTypeName := "ssd_hiiops"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -23,6 +26,22 @@ func TestAccCreateVolumeV1(t *testing.T) {
 				Config: testAccVolumeTemplate(name, size, typeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "size", strconv.Itoa(size)),
+					resource.TestCheckResourceAttr(fullName, "type_name", typeName),
+				),
+			},
+			{
+				Config: testAccVolumeTemplate(name, newSize, typeName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "size", strconv.Itoa(newSize)),
+				),
+			},
+			{
+				Config: testAccVolumeTemplate(name, newSize, newTypeName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "type_name", newTypeName),
 				),
 			},
 		},
@@ -45,7 +64,7 @@ func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
 }
 
 func testAccVolumeTemplate(name string, size int, typeName string) string {
-    r := fmt.Sprintf(`
+    return fmt.Sprintf(`
 	%s
 	
 	resource "gcore_volume" "%s" {
@@ -56,6 +75,4 @@ func testAccVolumeTemplate(name string, size int, typeName string) string {
 		%s
 	}
 	`, providerData(), name, name, size, typeName, regionInfo(), projectInfo())
-	fmt.Printf(r)
-	return r
 }
