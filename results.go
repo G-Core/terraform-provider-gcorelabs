@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ladydascalie/currency"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -544,4 +546,40 @@ func (c CIDR) MarshalJSON() ([]byte, error) {
 // String - implements Stringer
 func (c CIDR) String() string {
 	return c.IPNet.String()
+}
+
+type Currency struct {
+	*currency.Currency
+}
+
+func ParseCurrency(s string) (*Currency, error) {
+	c, err := currency.Get(s)
+	if err != nil {
+		return nil, err
+	}
+	return &Currency{Currency: c}, nil
+}
+
+// String - implements Stringer
+func (c Currency) String() string {
+	return c.Currency.Code()
+}
+
+// UnmarshalJSON - implements Unmarshaler interface for Currency
+func (c *Currency) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	v, err := ParseCurrency(s)
+	if err != nil {
+		return err
+	}
+	*c = *v
+	return nil
+}
+
+// MarshalJSON - implements Marshaler interface for Currency
+func (c Currency) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.String())
 }
