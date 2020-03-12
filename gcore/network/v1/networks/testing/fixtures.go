@@ -61,6 +61,12 @@ const CreateRequest = `
 }	
 `
 
+const UpdateRequest = `
+{
+	"name": "private"
+}	
+`
+
 const CreateResponse = `
 {
   "tasks": [

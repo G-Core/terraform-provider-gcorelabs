@@ -375,6 +375,7 @@ var volumeExtendCommand = cli.Command{
 	Flags: append([]cli.Flag{
 		&cli.IntFlag{
 			Name:     "size",
+			Aliases:  []string{"s"},
 			Usage:    "Volume size",
 			Required: true,
 		},
@@ -403,14 +404,6 @@ var volumeExtendCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
-			taskInfo, err := tasks.Get(client, string(task)).Extract()
-			if err != nil {
-				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
-			}
-			volumeID, err := volumes.ExtractVolumeIDFromTask(taskInfo)
-			if err != nil {
-				return nil, fmt.Errorf("cannot retrieve volume ID from task info: %w", err)
-			}
 			volume, err := volumes.Get(client, volumeID).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get volume with ID: %s. Error: %w", volumeID, err)

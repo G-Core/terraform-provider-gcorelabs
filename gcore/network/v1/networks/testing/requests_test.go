@@ -152,3 +152,41 @@ func TestDelete(t *testing.T) {
 	require.Equal(t, Tasks1, *tasks)
 
 }
+
+func TestUpdate(t *testing.T) {
+
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+
+	testURL := prepareGetTestURL(Network1.ID)
+
+	th.Mux.HandleFunc(testURL, func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "PATCH")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+		th.TestHeader(t, r, "Content-Type", "application/json")
+		th.TestHeader(t, r, "Accept", "application/json")
+		th.TestJSONRequest(t, r, UpdateRequest)
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		_, err := fmt.Fprint(w, GetResponse)
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	client := fake.ServiceTokenClient("networks", "v1")
+
+	opts := networks.UpdateOpts{
+		Name: Network1.Name,
+	}
+
+	ct, err := networks.Update(client, Network1.ID, opts).Extract()
+
+	require.NoError(t, err)
+	require.Equal(t, Network1, *ct)
+	require.Equal(t, Network1.Name, ct.Name)
+	require.Equal(t, createdTime, ct.CreatedAt)
+	require.Equal(t, updatedTime, *ct.UpdatedAt)
+
+}

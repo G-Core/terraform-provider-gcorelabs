@@ -105,6 +105,48 @@ var networkDeleteCommand = cli.Command{
 	},
 }
 
+var networkUpdateCommand = cli.Command{
+	Name:      "update",
+	Usage:     "Update network",
+	ArgsUsage: "<network_id>",
+	Category:  "network",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "name",
+			Aliases:  []string{"n"},
+			Usage:    "Network name",
+			Required: true,
+		},
+	},
+	Action: func(c *cli.Context) error {
+		networkID, err := flags.GetFirstArg(c, networkIDText)
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "delete")
+			return err
+		}
+		client, err := utils.BuildClient(c, "networks", "")
+		if err != nil {
+			_ = cli.ShowAppHelp(c)
+			return cli.NewExitError(err, 1)
+		}
+
+		opts := networks.UpdateOpts{
+			Name: c.String("name"),
+		}
+
+		network, err := networks.Update(client, networkID, opts).Extract()
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+		if network == nil {
+			return cli.NewExitError(err, 1)
+		}
+		utils.ShowResults(network, c.String("format"))
+		return nil
+
+	},
+}
+
 var networkCreateCommand = cli.Command{
 	Name:     "create",
 	Usage:    "Create network",
@@ -174,5 +216,6 @@ var NetworkCommands = cli.Command{
 		&networkGetCommand,
 		&networkDeleteCommand,
 		&networkCreateCommand,
+		&networkUpdateCommand,
 	},
 }

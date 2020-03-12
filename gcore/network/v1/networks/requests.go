@@ -55,6 +55,7 @@ type UpdateOptsBuilder interface {
 
 // UpdateOpts represents options used to update a network.
 type UpdateOpts struct {
+	Name string `json:"name,omitempty"`
 }
 
 // ToNetworkUpdateMap builds a request body from UpdateOpts.
