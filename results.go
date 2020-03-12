@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -507,4 +508,40 @@ func ExtractNextURL(links []Link) (string, error) {
 	}
 
 	return url, nil
+}
+
+type CIDR struct {
+	net.IPNet
+}
+
+func ParseCIDRString(s string) (*CIDR, error) {
+	_, nt, err := net.ParseCIDR(s)
+	if err != nil {
+		return nil, err
+	}
+	return &CIDR{IPNet: *nt}, nil
+}
+
+// UnmarshalJSON - implements Unmarshaler interface for CIDR
+func (c *CIDR) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	cd, err := ParseCIDRString(s)
+	if err != nil {
+		return err
+	}
+	*c = *cd
+	return nil
+}
+
+// MarshalJSON - implements Marshaler interface for CIDR
+func (c CIDR) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.String())
+}
+
+// String - implements Stringer
+func (c CIDR) String() string {
+	return c.IPNet.String()
 }

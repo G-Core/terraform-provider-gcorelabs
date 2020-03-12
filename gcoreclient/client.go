@@ -8,6 +8,7 @@ import (
 	"gcloud/gcorecloud-go/gcoreclient/magnum/nodegroups"
 	"gcloud/gcorecloud-go/gcoreclient/magnum/templates"
 	"gcloud/gcorecloud-go/gcoreclient/networks"
+	"gcloud/gcorecloud-go/gcoreclient/subnets"
 	"gcloud/gcorecloud-go/gcoreclient/tasks"
 	"gcloud/gcorecloud-go/gcoreclient/volumes"
 	"os"
@@ -21,6 +22,7 @@ var commands = []*cli.Command{
 	&tasks.TaskCommands,
 	&keypairs.KeypairCommands,
 	&volumes.VolumeCommands,
+	&subnets.SubnetCommands,
 	{
 		Name:  "magnum",
 		Usage: "Magnum commands",

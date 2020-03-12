@@ -36,6 +36,7 @@ above.
 var trueTag = "true"
 
 func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, error) { // nolint: gocyclo
+
 	optsValue := reflect.ValueOf(opts)
 	if optsValue.Kind() == reflect.Ptr {
 		optsValue = optsValue.Elem()
@@ -47,6 +48,7 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 	}
 
 	optsMap := make(map[string]interface{})
+
 	if optsValue.Kind() == reflect.Struct {
 		for i := 0; i < optsValue.NumField(); i++ {
 			v := optsValue.Field(i)
@@ -54,6 +56,11 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 
 			if f.Name != strings.Title(f.Name) {
 				//fmt.Printf("Skipping field: %s...\n", f.Name)
+				continue
+			}
+
+			// pass to marshall process and do not process this type as struct
+			if v.Type() == reflect.TypeOf(CIDR{}) {
 				continue
 			}
 
@@ -171,8 +178,6 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 		if err != nil {
 			return nil, err
 		}
-
-		//fmt.Printf("string(b): %s\n", string(b))
 
 		err = json.Unmarshal(b, &optsMap)
 		if err != nil {
