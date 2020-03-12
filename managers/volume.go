@@ -78,6 +78,7 @@ func GetVolume(project_id int, region_id int, volume_id string, token string) (c
 
 func UpdateVolume(project_id int, region_id int, volume_id string, token string, new_volume_data common.Volume) error {
 	volume_data, err := GetVolume(project_id, region_id, volume_id, token)
+	fmt.Printf("\n %s \n", volume_data)
 	if err != nil {
 		return err
 	}
@@ -146,7 +147,7 @@ func RetypeVolume(project_id int, region_id int, volume_id string, new_type stri
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return volume, fmt.Errorf("Retype volume (%s) attempt failed.", volume_id)
+		return volume, fmt.Errorf("Retype volume (%s) attempt failed: %s.", volume_id, resp)
 	}
 	current_volume_data, err := ParseJsonVolume(resp)
 	return current_volume_data, err
