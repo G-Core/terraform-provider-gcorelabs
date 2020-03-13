@@ -188,6 +188,32 @@ func (r Result) ExtractIntoStructPtr(to interface{}, label string) error {
 	}
 }
 
+// ExtractIntoMapPtr will unmarshal the Result (r) into the provided
+// interface{} (to).
+//
+// NOTE: For internal use only
+//
+// `to` must be a pointer to an underlying map type
+//
+// If provided, `label` will be filtered out of the response
+// body prior to `r` being unmarshalled into `to`.
+func (r Result) ExtractIntoMapPtr(to interface{}, label string) error {
+	if r.Err != nil {
+		return r.Err
+	}
+
+	t := reflect.TypeOf(to)
+	if k := t.Kind(); k != reflect.Ptr {
+		return fmt.Errorf("expected pointer, got %v", k)
+	}
+	switch t.Elem().Kind() {
+	case reflect.Map:
+		return r.extractIntoPtr(to, label)
+	default:
+		return fmt.Errorf("expected pointer to map, got: %v", t)
+	}
+}
+
 // ExtractIntoSlicePtr will unmarshal the Result (r) into the provided
 // interface{} (to).
 //

@@ -42,15 +42,6 @@ var commonFlags = []cli.Flag{
 		Required: false,
 	},
 	&cli.GenericFlag{
-		Name:    "format",
-		Aliases: []string{"f"},
-		Value: &utils.EnumValue{
-			Enum:    []string{"json", "table", "yaml"},
-			Default: "json",
-		},
-		Usage: "output in json, table or yaml",
-	},
-	&cli.GenericFlag{
 		Name:    "client-type",
 		Aliases: []string{"t"},
 		Value: &utils.EnumValue{
@@ -68,12 +59,21 @@ var commonFlags = []cli.Flag{
 	},
 }
 
-var DebugFlags = []cli.Flag{
+var OutputFlags = []cli.Flag{
 	&cli.BoolFlag{
 		Name:     "debug",
 		Aliases:  []string{"d"},
 		Usage:    "debug API requests",
 		Required: false,
+	},
+	&cli.GenericFlag{
+		Name:    "format",
+		Aliases: []string{"f"},
+		Value: &utils.EnumValue{
+			Enum:    []string{"json", "table", "yaml"},
+			Default: "json",
+		},
+		Usage: "output in json, table or yaml",
 	},
 }
 
@@ -174,8 +174,8 @@ func AddFlags(commands []*cli.Command, flags ...cli.Flag) {
 	}
 }
 
-func AddDebugFlags(commands []*cli.Command) {
-	AddFlags(commands, DebugFlags...)
+func AddOutputFlags(commands []*cli.Command) {
+	AddFlags(commands, OutputFlags...)
 }
 
 func GetFirstArg(c *cli.Context, errorText string) (string, error) {

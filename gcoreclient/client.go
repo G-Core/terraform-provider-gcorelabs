@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gcloud/gcorecloud-go/gcoreclient/flags"
 	"gcloud/gcorecloud-go/gcoreclient/flavors"
+	"gcloud/gcorecloud-go/gcoreclient/heat/resources"
 	"gcloud/gcorecloud-go/gcoreclient/keypairs"
 	"gcloud/gcorecloud-go/gcoreclient/magnum/clusters"
 	"gcloud/gcorecloud-go/gcoreclient/magnum/nodegroups"
@@ -26,6 +27,13 @@ var commands = []*cli.Command{
 	&subnets.SubnetCommands,
 	&flavors.FlavorCommands,
 	{
+		Name:  "heat",
+		Usage: "Gcloud Heat API",
+		Subcommands: []*cli.Command{
+			&resources.ResourceCommands,
+		},
+	},
+	{
 		Name:  "magnum",
 		Usage: "Gcloud Magnum API",
 		Subcommands: []*cli.Command{
@@ -38,7 +46,7 @@ var commands = []*cli.Command{
 
 func main() {
 
-	flags.AddDebugFlags(commands)
+	flags.AddOutputFlags(commands)
 
 	app := cli.NewApp()
 	app.Version = "0.0.1"
