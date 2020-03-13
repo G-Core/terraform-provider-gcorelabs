@@ -11,15 +11,15 @@ import (
 
 func TestAccCreateVolumeV1(t *testing.T) {
 
-	name:="foo"
+	name := "foo"
 	fullName := fmt.Sprintf("gcore_volume.%s", name)
 	size := 1
 	typeName := "standard"
 	newSize := 2
-	newTypeName := "ssd_hiiops"
+	//newTypeName := "ssd_hiiops"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -38,10 +38,10 @@ func TestAccCreateVolumeV1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccVolumeTemplate(name, newSize, newTypeName),
+				Config: testAccVolumeTemplate(name, size, typeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "type_name", newTypeName),
+					resource.TestCheckResourceAttr(fullName, "type_name", typeName),
 				),
 			},
 		},
@@ -64,7 +64,7 @@ func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
 }
 
 func testAccVolumeTemplate(name string, size int, typeName string) string {
-    return fmt.Sprintf(`
+	return fmt.Sprintf(`
 	%s
 	
 	resource "gcore_volume" "%s" {
