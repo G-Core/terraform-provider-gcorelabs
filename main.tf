@@ -8,4 +8,5 @@ resource "gcore_volume" "foo" {
   type_name = "ssd_hiiops"
   region_id = 1
   project_id = 78
+  count = 2
 }
