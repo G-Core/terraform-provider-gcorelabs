@@ -293,14 +293,20 @@ func StringSliceToMap(slice []string) (map[string]string, error) {
 	return m, nil
 }
 
-func WaitTaskAndShowResult(c *cli.Context, client *gcorecloud.ServiceClient, results *tasks.TaskResults, infoRetriever tasks.RetrieveTaskResult) error {
+func WaitTaskAndShowResult(
+	c *cli.Context,
+	client *gcorecloud.ServiceClient,
+	results *tasks.TaskResults,
+	stopOnTaskError bool,
+	infoRetriever tasks.RetrieveTaskResult,
+) error {
 	if c.Bool("wait") {
 		if len(results.Tasks) == 0 {
 			return cli.NewExitError(fmt.Errorf("wrong task response"), 1)
 		}
 		task := results.Tasks[0]
 		waitSeconds := c.Int("wait-seconds")
-		err := tasks.WaitForStatus(client, string(task), tasks.TaskStateFinished, waitSeconds)
+		err := tasks.WaitForStatus(client, string(task), tasks.TaskStateFinished, waitSeconds, stopOnTaskError)
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}

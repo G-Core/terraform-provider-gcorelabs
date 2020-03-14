@@ -30,6 +30,6 @@ type SignalResult struct {
 // Extract is a function that accepts a result and extracts a heat resource metadata.
 func (r MetadataResult) Extract() (map[string]interface{}, error) {
 	var s map[string]interface{}
-	err := r.Result.ExtractIntoMapPtr(&s, "metadata")
+	err := r.Result.ExtractIntoMapPtr(&s, "")
 	return s, err
 }

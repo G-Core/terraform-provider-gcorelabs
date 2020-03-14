@@ -89,7 +89,7 @@ var networkDeleteCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, false, func(task tasks.TaskID) (interface{}, error) {
 			_, err := networks.Get(client, networkID).Extract()
 			if err == nil {
 				return nil, fmt.Errorf("cannot delete network with ID: %s", networkID)
@@ -189,7 +189,7 @@ var networkCreateCommand = cli.Command{
 		if results == nil {
 			return cli.NewExitError(err, 1)
 		}
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
 			taskInfo, err := tasks.Get(client, string(task)).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)

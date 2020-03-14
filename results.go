@@ -609,3 +609,5 @@ func (c *Currency) UnmarshalJSON(data []byte) error {
 func (c Currency) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c.String())
 }
+
+type UUIDIDType string

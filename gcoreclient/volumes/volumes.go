@@ -119,7 +119,7 @@ var volumeDeleteCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, false, func(task tasks.TaskID) (interface{}, error) {
 			_, err := volumes.Get(client, volumeID).Extract()
 			if err == nil {
 				return nil, fmt.Errorf("cannot delete volume with ID: %s", volumeID)
@@ -230,7 +230,7 @@ var volumeCreateCommand = cli.Command{
 		if results == nil {
 			return cli.NewExitError(err, 1)
 		}
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
 			taskInfo, err := tasks.Get(client, string(task)).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
@@ -403,7 +403,7 @@ var volumeExtendCommand = cli.Command{
 		if results == nil {
 			return cli.NewExitError(err, 1)
 		}
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
 			volume, err := volumes.Get(client, volumeID).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get volume with ID: %s. Error: %w", volumeID, err)

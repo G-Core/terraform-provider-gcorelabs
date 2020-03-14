@@ -58,7 +58,7 @@ var clusterDeleteSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, false, func(task tasks.TaskID) (interface{}, error) {
 			_, err := clusters.Get(client, clusterID).Extract()
 			if err == nil {
 				return nil, fmt.Errorf("cannot delete cluster with ID: %s", clusterID)
@@ -126,7 +126,7 @@ var clusterResizeSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
 			taskInfo, err := tasks.Get(client, string(task)).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
@@ -287,7 +287,7 @@ var clusterCreateSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		return utils.WaitTaskAndShowResult(c, client, results, func(task tasks.TaskID) (interface{}, error) {
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
 			taskInfo, err := tasks.Get(client, string(task)).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
