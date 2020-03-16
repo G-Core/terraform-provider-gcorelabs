@@ -30,17 +30,17 @@ func find_project_by_name(arr []common.Project, name string) (int, error) {
 }
 
 func GetProject(d *schema.ResourceData, header string, info_message string) (int, error) {
-	project_id := d.Get("project_id").(int)
+	projectID := d.Get("project_id").(int)
 	project_name := d.Get("project_name").(string)
 	// invalid cases
-	err := CheckValueExisting(project_id, project_name, "project", info_message)
+	err := CheckValueExisting(projectID, project_name, "project", info_message)
 	if err != nil {
 		return 0, err
 	}
 
 	// valid cases
-	if project_id != 0 {
-		return project_id, nil
+	if projectID != 0 {
+		return projectID, nil
 	} else {
 		url := fmt.Sprintf("%sprojects", HOST)
 		resp, err := common.GetRequest(url, header)
@@ -61,12 +61,12 @@ func GetProject(d *schema.ResourceData, header string, info_message string) (int
 		if err != nil {
 			return 0, err
 		}
-		//log.Printf("RD%s", p.Results[0].Keystone_id)
-		region_id, err := find_project_by_name(projects_data.Results, project_name)
+		//log.Printf("RD%s", p.Results[0].KeystoneID)
+		regionID, err := find_project_by_name(projects_data.Results, project_name)
 		if err != nil {
 			return 0, err
 		}
-		return region_id, nil
+		return regionID, nil
 	}
 }
 
@@ -80,17 +80,17 @@ func find_region_by_name(arr []common.Region, name string) (int, error) {
 }
 
 func GetRegion(d *schema.ResourceData, header string, info_message string) (int, error) {
-	region_id := d.Get("region_id").(int)
+	regionID := d.Get("region_id").(int)
 	region_name := d.Get("region_name").(string)
 	// invalid cases
-	err := CheckValueExisting(region_id, region_name, "region", info_message)
+	err := CheckValueExisting(regionID, region_name, "region", info_message)
 	if err != nil {
 		return 0, err
 	}
 
 	// valid cases
-	if region_id != 0 {
-		return region_id, nil
+	if regionID != 0 {
+		return regionID, nil
 	} else {
 		url := fmt.Sprintf("%sregions", HOST)
 		resp, err := common.GetRequest(url, header)
@@ -111,11 +111,11 @@ func GetRegion(d *schema.ResourceData, header string, info_message string) (int,
 		if err != nil {
 			return 0, err
 		}
-		//log.Printf("RD%s", p.Results[0].Keystone_id)
-		region_id, err := find_region_by_name(regions_data.Results, region_name)
+		//log.Printf("RD%s", p.Results[0].KeystoneID)
+		regionID, err := find_region_by_name(regions_data.Results, region_name)
 		if err != nil {
 			return 0, err
 		}
-		return region_id, nil
+		return regionID, nil
 	}
 }

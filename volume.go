@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"git.gcore.com/terraform-provider-gcore/common"
 	"git.gcore.com/terraform-provider-gcore/managers"
@@ -16,6 +18,9 @@ func resourceVolume() *schema.Resource {
 		Read:   resourceVolumeRead,
 		Update: resourceVolumeUpdate,
 		Delete: resourceVolumeDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
@@ -54,71 +59,59 @@ func resourceVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"instance_id_to_attach_to": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 		},
 	}
 }
 
 func get_volume_data_v2(d *schema.ResourceData) map[string]string {
-	volume_data := make(map[string]string)
+	volumeData := make(map[string]string)
 	name := d.Get("name").(string)
 	size := d.Get("size").(int)
-	type_name := d.Get("type_name").(string)
-	image_id := d.Get("image_id").(string)
-	snapshot_id := d.Get("snapshot_id").(string)
-	instance_id_to_attach_to := d.Get("instance_id_to_attach_to").(string)
+	typeName := d.Get("type_name").(string)
+	imageID := d.Get("image_id").(string)
+	snapshotID := d.Get("snapshot_id").(string)
 
-	volume_data["size"] = fmt.Sprintf("%d", size)
-	volume_data["source"] = "new-volume"
-	volume_data["name"] = name
-	if image_id != "" {
-		volume_data["image_id"] = image_id
+	volumeData["size"] = fmt.Sprintf("%d", size)
+	volumeData["source"] = "new-volume"
+	volumeData["name"] = name
+	if imageID != "" {
+		volumeData["image_id"] = imageID
 	}
-	if type_name != "" {
-		volume_data["type_name"] = type_name
+	if typeName != "" {
+		volumeData["type_name"] = typeName
 	}
-	if snapshot_id != "" {
-		volume_data["snapshot_id"] = snapshot_id
+	if snapshotID != "" {
+		volumeData["snapshot_id"] = snapshotID
 	}
-	if instance_id_to_attach_to != "" {
-		volume_data["instance_id_to_attach_to"] = instance_id_to_attach_to
-	}
-	return volume_data
+	return volumeData
 }
 
-func get_volume_data(d *schema.ResourceData) common.Volume {
+func getVolumeData(d *schema.ResourceData) common.Volume {
 	name := d.Get("name").(string)
 	size := d.Get("size").(int)
-	type_name := d.Get("type_name").(string)
-	image_id := d.Get("image_id").(string)
-	snapshot_id := d.Get("snapshot_id").(string)
-	instance_id_to_attach_to := d.Get("instance_id_to_attach_to").(string)
+	typeName := d.Get("type_name").(string)
+	imageID := d.Get("image_id").(string)
+	snapshotID := d.Get("snapshot_id").(string)
 
-	volume_data := common.Volume{
+	volumeData := common.Volume{
 		Size:   size,
 		Source: "new-volume",
 		Name:   name,
 	}
-	if image_id != "" {
-		volume_data.Image_id = image_id
+	if imageID != "" {
+		volumeData.ImageID = imageID
 	}
-	if type_name != "" {
-		volume_data.Type_name = type_name
+	if typeName != "" {
+		volumeData.TypeName = typeName
 	}
-	if snapshot_id != "" {
-		volume_data.Snapshot_id = snapshot_id
+	if snapshotID != "" {
+		volumeData.SnapshotID = snapshotID
 	}
-	if instance_id_to_attach_to != "" {
-		volume_data.Instance_id_to_attach_to = instance_id_to_attach_to
-	}
-	return volume_data
+	return volumeData
 }
 
-func get_volume_body(d *schema.ResourceData) ([]byte, error) {
-	volume_data := get_volume_data_v2(d)
+func getVolumeBody(d *schema.ResourceData) ([]byte, error) {
+	volume_data := getVolumeData(d)
 	body, err := json.Marshal(&volume_data)
 	if err != nil {
 		return nil, err
@@ -127,73 +120,114 @@ func get_volume_body(d *schema.ResourceData) ([]byte, error) {
 }
 
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
+
+	log.Println("Start volume creating")
 	log.Printf("Start volume creating")
 	name := d.Get("name").(string)
 	info_message := fmt.Sprintf("create a %s volume", name)
 	config := m.(*common.Config)
 	token := config.Jwt
 
-	project_id, err := managers.GetProject(d, token, info_message)
+	projectID, err := managers.GetProject(d, token, info_message)
 	if err != nil {
 		return err
 	}
-	region_id, err := managers.GetRegion(d, token, info_message)
+	regionID, err := managers.GetRegion(d, token, info_message)
 	if err != nil {
 		return err
 	}
-	log.Printf("!!!%d", project_id)
+	log.Printf("!!!%d", projectID)
 
-	body, err := get_volume_body(d)
+	body, err := getVolumeBody(d)
 	if err != nil {
 		return err
 	}
-	volume_id, err := managers.CreateVolume(project_id, region_id, name, token, body)
+	volumeID, err := managers.CreateVolume(projectID, regionID, name, token, body)
 	if err != nil {
 		return err
 	}
-	d.SetId(volume_id)
+	d.SetId(volumeID)
 	log.Printf("finish volume creating")
 	return resourceVolumeRead(d, m)
 }
 
+func getVolumeID(UUIDstr string) (int, int, string, error) {
+	infoStrings := strings.Split(UUIDstr, "-")
+	if len(infoStrings) == 5 {
+		return 0, 0, UUIDstr, nil
+	}
+	if len(infoStrings) != 7 {
+		return 0, 0, "", fmt.Errorf("volume id is in error state")
+
+	}
+	projectID, err := strconv.Atoi(infoStrings[0])
+	if err != nil {
+		return 0, 0, "", err
+	}
+	regionID, err := strconv.Atoi(infoStrings[1])
+	if err != nil {
+		return 0, 0, "", err
+	}
+	return projectID, regionID, strings.Join(infoStrings[2:], "-"), nil
+}
+
 func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
+	log.Println("Start volume reading")
+	//log.Printf("\n!%s\n")
 	config := m.(*common.Config)
+	log.Println("rt!")
+	log.Printf("\n\n!abc%s\n\n", d.Get("Addr"))
 	token := config.Jwt
-	volume_id := d.Id()
-	info_message := fmt.Sprintf("get a volume %s", volume_id)
-	project_id, err := managers.GetProject(d, token, info_message)
+	volumeID := d.Id()
+	importProjectID, importRegionID, volumeID, err := getVolumeID(volumeID)
 	if err != nil {
 		return err
 	}
-	region_id, err := managers.GetRegion(d, token, info_message)
+	info_message := fmt.Sprintf("get a volume %s", volumeID)
+	projectID, err := managers.GetProject(d, token, info_message)
 	if err != nil {
-		return err
+		if importProjectID == 0 {
+			return err
+		} else {
+			projectID = importProjectID
+		}
+
 	}
-	resp, err := common.GetRequest(common.ObjectUrl("volumes", project_id, region_id, volume_id), token)
+	regionID, err := managers.GetRegion(d, token, info_message)
+	if err != nil {
+		if importRegionID == 0 {
+			return err
+		} else {
+			regionID = importRegionID
+		}
+	}
+	resp, err := common.GetRequest(common.ObjectUrl("volumes", projectID, regionID, volumeID), token)
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Can't find a volume %s.", volume_id)
+		return fmt.Errorf("Can't find a volume %s.", volumeID)
 	}
+	d.SetId(volumeID)
 	return nil
 }
 
 func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
-	new_volume_data := get_volume_data(d)
-	volume_id := d.Id()
+	log.Println("Start volume updating")
+	new_volume_data := getVolumeData(d)
+	volumeID := d.Id()
 	config := m.(*common.Config)
 	token := config.Jwt
-	info_message := fmt.Sprintf("update a volume %s", volume_id)
-	project_id, err := managers.GetProject(d, token, info_message)
+	infoMessage := fmt.Sprintf("update a volume %s", volumeID)
+	projectID, err := managers.GetProject(d, token, infoMessage)
 	if err != nil {
 		return err
 	}
-	region_id, err := managers.GetRegion(d, token, info_message)
+	regionID, err := managers.GetRegion(d, token, infoMessage)
 	if err != nil {
 		return err
 	}
-	err = managers.UpdateVolume(project_id, region_id, volume_id, token, new_volume_data)
+	err = managers.UpdateVolume(projectID, regionID, volumeID, token, new_volume_data)
 	if err != nil {
 		return err
 	}
@@ -201,21 +235,22 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
+	log.Println("Start volume deleting")
 	config := m.(*common.Config)
 	token := config.Jwt
-	volume_id := d.Id()
-	info_message := fmt.Sprintf("delete the %s volume", volume_id)
+	volumeID := d.Id()
+	info_message := fmt.Sprintf("delete the %s volume", volumeID)
 
-	project_id, err := managers.GetProject(d, token, info_message)
+	projectID, err := managers.GetProject(d, token, info_message)
 	if err != nil {
 		return err
 	}
-	region_id, err := managers.GetRegion(d, token, info_message)
+	regionID, err := managers.GetRegion(d, token, info_message)
 	if err != nil {
 		return err
 	}
 
-	err = managers.DeleteVolume(project_id, region_id, volume_id, token)
+	err = managers.DeleteVolume(projectID, regionID, volumeID, token)
 	if err != nil {
 		return err
 	}

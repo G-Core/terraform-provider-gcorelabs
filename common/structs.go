@@ -41,33 +41,23 @@ type TaskIds struct {
 }
 
 type Type struct {
-	Volume_type string `json:"volume_type"`
+	VolumeType string `json:"volume_type"`
 }
 
 //V
 type Volume struct {
-	Size                     int    `json:"size"`
-	Source                   string `json:"source"`
-	Name                     string `json:"name"`
-	Type_name                string `json:"type_name,omitempty"`
-	Image_id                 string `json:"image_id,omitempty"`
-	Snapshot_id              string `json:"snapshot_id,omitempty"`
-	Instance_id_to_attach_to string `json:"instance_id_to_attach_to,omitempty"`
+	Size       int    `json:"size"`
+	Source     string `json:"source"`
+	Name       string `json:"name"`
+	TypeName   string `json:"type_name,omitempty"`
+	ImageID    string `json:"image_id,omitempty"`
+	SnapshotID string `json:"snapshot_id,omitempty"`
 }
 
 type OpenstackVolume struct {
 	Size        int           `json:"size"`
-	Type_name   string        `json:"volume_type,omitempty"`
+	TypeName    string        `json:"volume_type,omitempty"`
 	Attachments []interface{} `json:"attachments,omitempty"`
-}
-
-type VolumeAttachment struct {
-	Server_id     string `json:"server_id"`
-	Instance_name string `json:"instance_name"`
-	Attachment_id string `json:"attachment_id"`
-	Volume_id     string `json:"volume_id"`
-	Device        string `json:"device"`
-	Attached_at   string `json:"attached_at"`
 }
 
 type VolumeIds struct {

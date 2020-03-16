@@ -3,10 +3,20 @@ provider "gcore" {
 }
 
 resource "gcore_volume" "foo" {
-  name = 156
-  size = 2
-  type_name = "ssd_hiiops"
-  region_id = 1
-  project_id = 78
-  count = 2
+  # name = 156
+  # size = 2
+  # type_name = "ssd_hiiops"
+  # region_id = 1
+  # project_id = 78
+  # #count = 2
+}
+
+#variable "project_id" {}
+
+variable "region_id" {
+  default = 0
+}
+
+locals {
+  region_id2 = "$var.region_id"
 }

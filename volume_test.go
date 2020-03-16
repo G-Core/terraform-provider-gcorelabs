@@ -16,7 +16,7 @@ func TestAccCreateVolumeV1(t *testing.T) {
 	size := 1
 	typeName := "standard"
 	newSize := 2
-	//newTypeName := "ssd_hiiops"
+	newTypeName := "ssd_hiiops"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -38,10 +38,10 @@ func TestAccCreateVolumeV1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccVolumeTemplate(name, size, typeName),
+				Config: testAccVolumeTemplate(name, newSize, newTypeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "type_name", typeName),
+					resource.TestCheckResourceAttr(fullName, "type_name", newTypeName),
 				),
 			},
 		},
