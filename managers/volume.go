@@ -11,7 +11,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func ParseJsonVolume(resp *http.Response) (common.OpenstackVolume, error) {
+func ParseJSONVolume(resp *http.Response) (common.OpenstackVolume, error) {
 	var volume = common.OpenstackVolume{}
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -21,8 +21,8 @@ func ParseJsonVolume(resp *http.Response) (common.OpenstackVolume, error) {
 	return volume, err
 }
 
-func CreateVolume(project_id int, region_id int, name string, token string, body []byte) (string, error) {
-	resp, err := common.PostRequest(common.ObjectsUrl("volumes", project_id, region_id), token, body)
+func CreateVolume(projectID int, regionID int, name string, token string, body []byte) (string, error) {
+	resp, err := common.PostRequest(common.ObjectsUrl("volumes", projectID, regionID), token, body)
 	if err != nil {
 		return "", err
 	}
@@ -41,13 +41,13 @@ func CreateVolume(project_id int, region_id int, name string, token string, body
 	log.Printf("get volume id from %s", volume_data)
 	mapstructure.Decode(volume_data, &result)
 	log.Printf("get volume id from %s", result)
-	volume_id := result.Volumes[0]
-	log.Printf("Volume %s created.", volume_id)
-	return volume_id, nil
+	volumeID := result.Volumes[0]
+	log.Printf("Volume %s created.", volumeID)
+	return volumeID, nil
 }
 
-func DeleteVolume(project_id int, region_id int, volume_id string, token string) error {
-	resp, err := common.DeleteRequest(common.ObjectUrl("volumes", project_id, region_id, volume_id), token)
+func DeleteVolume(projectID int, regionID int, volumeID string, token string) error {
+	resp, err := common.DeleteRequest(common.ObjectUrl("volumes", projectID, regionID, volumeID), token)
 	if err != nil {
 		return err
 	}
@@ -63,21 +63,21 @@ func DeleteVolume(project_id int, region_id int, volume_id string, token string)
 	return nil
 }
 
-func GetVolume(project_id int, region_id int, volume_id string, token string) (common.OpenstackVolume, error) {
+func GetVolume(projectID int, regionID int, volumeID string, token string) (common.OpenstackVolume, error) {
 	var volume = common.OpenstackVolume{}
-	resp, err := common.GetRequest(common.ObjectUrl("volumes", project_id, region_id, volume_id), token)
+	resp, err := common.GetRequest(common.ObjectUrl("volumes", projectID, regionID, volumeID), token)
 	if err != nil {
 		return volume, err
 	}
 	if resp.StatusCode != 200 {
-		return volume, fmt.Errorf("Can't find a volume %s.", volume_id)
+		return volume, fmt.Errorf("Can't find a volume %s.", volumeID)
 	}
-	volume, err = ParseJsonVolume(resp)
+	volume, err = ParseJSONVolume(resp)
 	return volume, err
 }
 
-func UpdateVolume(project_id int, region_id int, volume_id string, token string, new_volume_data common.Volume) error {
-	volume_data, err := GetVolume(project_id, region_id, volume_id, token)
+func UpdateVolume(projectID int, regionID int, volumeID string, token string, new_volume_data common.Volume) error {
+	volume_data, err := GetVolume(projectID, regionID, volumeID, token)
 	fmt.Printf("\n %s \n", volume_data)
 	if err != nil {
 		return err
@@ -88,14 +88,14 @@ func UpdateVolume(project_id int, region_id int, volume_id string, token string,
 
 	// size
 	if volume_data.Size != new_volume_data.Size {
-		volume_data, err = ExtendVolume(project_id, region_id, volume_id, new_volume_data.Size, token)
+		volume_data, err = ExtendVolume(projectID, regionID, volumeID, new_volume_data.Size, token)
 		if err != nil {
 			return err
 		}
 	}
 	// type
-	if volume_data.Type_name != new_volume_data.Type_name {
-		volume_data, err = RetypeVolume(project_id, region_id, volume_id, new_volume_data.Type_name, token)
+	if volume_data.TypeName != new_volume_data.TypeName {
+		volume_data, err = RetypeVolume(projectID, regionID, volumeID, new_volume_data.TypeName, token)
 		if err != nil {
 			return err
 		}
@@ -104,20 +104,20 @@ func UpdateVolume(project_id int, region_id int, volume_id string, token string,
 	return nil
 }
 
-func ExtendVolume(project_id int, region_id int, volume_id string, new_size int, token string) (common.OpenstackVolume, error) {
+func ExtendVolume(projectID int, regionID int, volumeID string, new_size int, token string) (common.OpenstackVolume, error) {
 	var volume = common.OpenstackVolume{}
-	var body_data = common.Size{new_size}
-	body, err := json.Marshal(&body_data)
+	var bodyData = common.Size{new_size}
+	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return volume, err
 	}
-	resp, err := common.PostRequest(common.ExpandedObjectUrl("volumes", project_id, region_id, volume_id, "extend"), token, body)
+	resp, err := common.PostRequest(common.ExpandedObjectUrl("volumes", projectID, regionID, volumeID, "extend"), token, body)
 	if err != nil {
 		return volume, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return volume, fmt.Errorf("Extend volume (%s) attempt failed.", volume_id)
+		return volume, fmt.Errorf("Extend volume (%s) attempt failed.", volumeID)
 	}
 
 	log.Printf("Try to get task id from a response.")
@@ -127,28 +127,28 @@ func ExtendVolume(project_id int, region_id int, volume_id string, new_size int,
 	}
 	log.Printf("Finish waiting.")
 
-	current_volume_data, err := GetVolume(project_id, region_id, volume_id, token)
+	currentVolumeData, err := GetVolume(projectID, regionID, volumeID, token)
 	if err != nil {
 		return volume, err
 	}
-	return current_volume_data, nil
+	return currentVolumeData, nil
 }
 
-func RetypeVolume(project_id int, region_id int, volume_id string, new_type string, token string) (common.OpenstackVolume, error) {
+func RetypeVolume(projectID int, regionID int, volumeID string, new_type string, token string) (common.OpenstackVolume, error) {
 	var volume = common.OpenstackVolume{}
-	var body_data = common.Type{new_type}
-	body, err := json.Marshal(&body_data)
+	var bodyData = common.Type{new_type}
+	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return volume, err
 	}
-	resp, err := common.PostRequest(common.ExpandedObjectUrl("volumes", project_id, region_id, volume_id, "retype"), token, body)
+	resp, err := common.PostRequest(common.ExpandedObjectUrl("volumes", projectID, regionID, volumeID, "retype"), token, body)
 	if err != nil {
 		return volume, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return volume, fmt.Errorf("Retype volume (%s) attempt failed: %s.", volume_id, resp)
+		return volume, fmt.Errorf("Retype volume (%s) attempt failed: %s.", volumeID, resp)
 	}
-	current_volume_data, err := ParseJsonVolume(resp)
-	return current_volume_data, err
+	currentVolumeData, err := ParseJSONVolume(resp)
+	return currentVolumeData, err
 }
