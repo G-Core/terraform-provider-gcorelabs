@@ -178,7 +178,7 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("Can't find a volume %s.", volumeID)
 	}
-	d.SetId(volumeID)
+	log.Println("\n\nFinish volume reading")
 	return nil
 }
 
