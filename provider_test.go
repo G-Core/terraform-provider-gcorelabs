@@ -20,9 +20,15 @@ func init() {
 	}
 }
 
+func TestProvider(t *testing.T) {
+	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
+		t.Fatalf("err: %s", err)
+	}
+}
+
 func testAccPreCheck(t *testing.T) {
-	if os.Getenv("TEST_PROVIDER_JWT") == "" {
-		t.Fatal("TEST_PROVIDER_JWT must be set for acceptance tests")
+	if os.Getenv("OS_PROVIDER_JWT") == "" {
+		t.Fatal("OS_PROVIDER_JWT must be set for acceptance tests")
 	}
 	checkNameAndID("PROJECT", t)
 	checkNameAndID("REGION", t)
