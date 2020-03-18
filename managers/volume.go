@@ -21,8 +21,8 @@ func ParseJSONVolume(resp *http.Response) (common.OpenstackVolume, error) {
 	return volume, err
 }
 
-func CreateVolume(projectID int, regionID int, name string, token string, body []byte) (string, error) {
-	resp, err := common.PostRequest(common.ObjectsUrl("volumes", projectID, regionID), token, body)
+func CreateVolume(session *common.Session, projectID int, regionID int, name string, body []byte) (string, error) {
+	resp, err := common.PostRequest(session, common.ObjectsUrl("volumes", projectID, regionID), body)
 	if err != nil {
 		return "", err
 	}
@@ -32,7 +32,7 @@ func CreateVolume(projectID int, regionID int, name string, token string, body [
 	}
 
 	log.Printf("Try to get task id from a response.")
-	volume_data, err := full_task_wait(resp, token)
+	volume_data, err := full_task_wait(session, resp)
 	if err != nil {
 		return "", err
 	}
@@ -46,8 +46,8 @@ func CreateVolume(projectID int, regionID int, name string, token string, body [
 	return volumeID, nil
 }
 
-func DeleteVolume(projectID int, regionID int, volumeID string, token string) error {
-	resp, err := common.DeleteRequest(common.ObjectUrl("volumes", projectID, regionID, volumeID), token)
+func DeleteVolume(session *common.Session, projectID int, regionID int, volumeID string) error {
+	resp, err := common.DeleteRequest(session, common.ObjectUrl("volumes", projectID, regionID, volumeID))
 	if err != nil {
 		return err
 	}
@@ -56,16 +56,16 @@ func DeleteVolume(projectID int, regionID int, volumeID string, token string) er
 	}
 	defer resp.Body.Close()
 
-	_, err = full_task_wait(resp, token)
+	_, err = full_task_wait(session, resp)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetVolume(projectID int, regionID int, volumeID string, token string) (common.OpenstackVolume, error) {
+func GetVolume(session *common.Session, projectID int, regionID int, volumeID string) (common.OpenstackVolume, error) {
 	var volume = common.OpenstackVolume{}
-	resp, err := common.GetRequest(common.ObjectUrl("volumes", projectID, regionID, volumeID), token)
+	resp, err := common.GetRequest(session, common.ObjectUrl("volumes", projectID, regionID, volumeID))
 	if err != nil {
 		return volume, err
 	}
@@ -76,8 +76,8 @@ func GetVolume(projectID int, regionID int, volumeID string, token string) (comm
 	return volume, err
 }
 
-func UpdateVolume(projectID int, regionID int, volumeID string, token string, new_volume_data common.Volume) error {
-	volume_data, err := GetVolume(projectID, regionID, volumeID, token)
+func UpdateVolume(session *common.Session, projectID int, regionID int, volumeID string, new_volume_data common.Volume) error {
+	volume_data, err := GetVolume(session, projectID, regionID, volumeID)
 	fmt.Printf("\n %s \n", volume_data)
 	if err != nil {
 		return err
@@ -88,14 +88,14 @@ func UpdateVolume(projectID int, regionID int, volumeID string, token string, ne
 
 	// size
 	if volume_data.Size != new_volume_data.Size {
-		volume_data, err = ExtendVolume(projectID, regionID, volumeID, new_volume_data.Size, token)
+		volume_data, err = ExtendVolume(session, projectID, regionID, volumeID, new_volume_data.Size)
 		if err != nil {
 			return err
 		}
 	}
 	// type
 	if volume_data.TypeName != new_volume_data.TypeName {
-		volume_data, err = RetypeVolume(projectID, regionID, volumeID, new_volume_data.TypeName, token)
+		volume_data, err = RetypeVolume(session, projectID, regionID, volumeID, new_volume_data.TypeName)
 		if err != nil {
 			return err
 		}
@@ -104,14 +104,14 @@ func UpdateVolume(projectID int, regionID int, volumeID string, token string, ne
 	return nil
 }
 
-func ExtendVolume(projectID int, regionID int, volumeID string, new_size int, token string) (common.OpenstackVolume, error) {
+func ExtendVolume(session *common.Session, projectID int, regionID int, volumeID string, new_size int) (common.OpenstackVolume, error) {
 	var volume = common.OpenstackVolume{}
 	var bodyData = common.Size{new_size}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return volume, err
 	}
-	resp, err := common.PostRequest(common.ExpandedObjectUrl("volumes", projectID, regionID, volumeID, "extend"), token, body)
+	resp, err := common.PostRequest(session, common.ExpandedObjectUrl("volumes", projectID, regionID, volumeID, "extend"), body)
 	if err != nil {
 		return volume, err
 	}
@@ -121,27 +121,27 @@ func ExtendVolume(projectID int, regionID int, volumeID string, new_size int, to
 	}
 
 	log.Printf("Try to get task id from a response.")
-	_, err = full_task_wait(resp, token)
+	_, err = full_task_wait(session, resp)
 	if err != nil {
 		return volume, err
 	}
 	log.Printf("Finish waiting.")
 
-	currentVolumeData, err := GetVolume(projectID, regionID, volumeID, token)
+	currentVolumeData, err := GetVolume(session, projectID, regionID, volumeID)
 	if err != nil {
 		return volume, err
 	}
 	return currentVolumeData, nil
 }
 
-func RetypeVolume(projectID int, regionID int, volumeID string, new_type string, token string) (common.OpenstackVolume, error) {
+func RetypeVolume(session *common.Session, projectID int, regionID int, volumeID string, new_type string) (common.OpenstackVolume, error) {
 	var volume = common.OpenstackVolume{}
 	var bodyData = common.Type{new_type}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return volume, err
 	}
-	resp, err := common.PostRequest(common.ExpandedObjectUrl("volumes", projectID, regionID, volumeID, "retype"), token, body)
+	resp, err := common.PostRequest(session, common.ExpandedObjectUrl("volumes", projectID, regionID, volumeID, "retype"), body)
 	if err != nil {
 		return volume, err
 	}

@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
+var CurrentSession common.Session
+
 func Provider() terraform.ResourceProvider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -34,8 +36,9 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	if jwt == "" {
 		jwt = os.Getenv("OS_PROVIDER_JWT")
 	}
-	config := common.Config{
-		Jwt: jwt,
+	config := common.Session{
+		Jwt:       jwt,
+		UserAgent: "Terraform/Go",
 	}
 	return &config, nil
 }
