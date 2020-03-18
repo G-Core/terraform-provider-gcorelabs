@@ -71,6 +71,10 @@ type LoadBalancer struct {
 	Region             string                   `json:"region"`
 }
 
+func (lb LoadBalancer) IsDeleted() bool {
+	return lb.ProvisioningStatus == types.ProvisioningStatusDeleted
+}
+
 // LoadBalancerPage is the page returned by a pager when traversing over a
 // collection of loadbalancers.
 type LoadBalancerPage struct {

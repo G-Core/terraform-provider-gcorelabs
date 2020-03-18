@@ -36,6 +36,60 @@ var loadBalancerListSubCommand = cli.Command{
 	},
 }
 
+var loadBalancerCreateSubCommand = cli.Command{
+	Name:     "create",
+	Usage:    "Create loadbalancer",
+	Category: "loadbalancer",
+	Flags: append([]cli.Flag{
+		&cli.StringFlag{
+			Name:     "name",
+			Aliases:  []string{"n"},
+			Usage:    "Loadbalancer name",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:        "vip-network-id",
+			Usage:       "Loadbalancer name vip network ID",
+			DefaultText: "<nil>",
+			Required:    false,
+		},
+	}, flags.WaitCommandFlags...),
+	Action: func(c *cli.Context) error {
+		client, err := utils.BuildClient(c, "loadbalancers", "")
+		if err != nil {
+			_ = cli.ShowAppHelp(c)
+			return cli.NewExitError(err, 1)
+		}
+
+		opts := loadbalancers.CreateOpts{
+			Name:         c.String("name"),
+			Listeners:    []loadbalancers.CreateListenerOpts{},
+			VipNetworkID: utils.StringToPointer(c.String("vip-network-id")),
+		}
+
+		results, err := loadbalancers.Create(client, opts).ExtractTasks()
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
+			taskInfo, err := tasks.Get(client, string(task)).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+			}
+			loadBalancerID, err := loadbalancers.ExtractLoadBalancerIDFromTask(taskInfo)
+			if err != nil {
+				return nil, fmt.Errorf("cannot retrieve loadbalancer ID from task info: %w", err)
+			}
+			loadBalancer, err := loadbalancers.Get(client, loadBalancerID).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get loadbalancer with ID: %s. Error: %w", loadBalancerID, err)
+			}
+			utils.ShowResults(loadBalancer, c.String("format"))
+			return nil, nil
+		})
+	},
+}
+
 var loadBalancerGetSubCommand = cli.Command{
 	Name:      "show",
 	Usage:     "Show loadbalancer",
@@ -66,6 +120,7 @@ var loadBalancerDeleteSubCommand = cli.Command{
 	Usage:     "Show loadbalancer",
 	ArgsUsage: "<loadbalancer_id>",
 	Category:  "loadbalancer",
+	Flags:     flags.WaitCommandFlags,
 	Action: func(c *cli.Context) error {
 		loadBalancerID, err := flags.GetFirstArg(c, loadBalancerIDText)
 		if err != nil {
@@ -77,16 +132,16 @@ var loadBalancerDeleteSubCommand = cli.Command{
 			_ = cli.ShowAppHelp(c)
 			return cli.NewExitError(err, 1)
 		}
-		results, err := loadbalancers.Get(client, loadBalancerID).ExtractTasks()
+		results, err := loadbalancers.Delete(client, loadBalancerID).ExtractTasks()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
-		if results == nil {
-			return cli.NewExitError(err, 1)
-		}
 		return utils.WaitTaskAndShowResult(c, client, results, false, func(task tasks.TaskID) (interface{}, error) {
-			_, err := loadbalancers.Get(client, loadBalancerID).Extract()
+			loadbalancer, err := loadbalancers.Get(client, loadBalancerID).Extract()
 			if err == nil {
+				if loadbalancer != nil && loadbalancer.IsDeleted() {
+					return nil, nil
+				}
 				return nil, fmt.Errorf("cannot delete loadbalancer with ID: %s", loadBalancerID)
 			}
 			switch err.(type) {
@@ -146,5 +201,6 @@ var LoadBalancerCommands = cli.Command{
 		&loadBalancerGetSubCommand,
 		&loadBalancerUpdateSubCommand,
 		&loadBalancerDeleteSubCommand,
+		&loadBalancerCreateSubCommand,
 	},
 }
