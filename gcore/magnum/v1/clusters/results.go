@@ -19,6 +19,13 @@ func (r commonResult) Extract() (*Cluster, error) {
 	return &s, err
 }
 
+// Extract is a function that accepts a result and extracts a cluster resource.
+func (r commonResult) ExtractConfig() (*Config, error) {
+	var c Config
+	err := r.ExtractInto(&c)
+	return &c, err
+}
+
 // ExtractTasks is a function that accepts a result and extracts a cluster creation task resource.
 func (r commonResult) ExtractTasks() (*tasks.TaskResults, error) {
 	var t tasks.TaskResults
@@ -47,6 +54,11 @@ type UpdateResult struct {
 	commonResult
 }
 
+// UpgradeResult represents the result of an upgrade operation. Call its ExtractTasks method to interpret it as a Tasks.
+type UpgradeResult struct {
+	commonResult
+}
+
 // ResizeResult represents the result of an resizing operation. Call its Extract method to interpret it as a Cluster.
 type ResizeResult struct {
 	commonResult
@@ -54,6 +66,11 @@ type ResizeResult struct {
 
 // DeleteResult represents the result of a delete operation
 type DeleteResult struct {
+	commonResult
+}
+
+// ConfigResult represents the result of kubernetes config
+type ConfigResult struct {
 	commonResult
 }
 
@@ -76,6 +93,11 @@ type Cluster struct {
 	UpdatedAt          *time.Time        `json:"updated_at"`
 	Faults             map[string]string `json:"faults"`
 	*ClusterList
+}
+
+// Config represents a k8s config structure.
+type Config struct {
+	Config string `json:"config,omitempty"`
 }
 
 // Cluster represents a cluster structure in list response.

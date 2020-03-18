@@ -6,6 +6,7 @@ import (
 	"gcloud/gcorecloud-go/gcoreclient/flavors"
 	"gcloud/gcorecloud-go/gcoreclient/heat/resources"
 	"gcloud/gcorecloud-go/gcoreclient/keypairs"
+	"gcloud/gcorecloud-go/gcoreclient/loadbalancers/loadbalancers"
 	"gcloud/gcorecloud-go/gcoreclient/magnum/clusters"
 	"gcloud/gcorecloud-go/gcoreclient/magnum/nodegroups"
 	"gcloud/gcorecloud-go/gcoreclient/magnum/templates"
@@ -26,6 +27,7 @@ var commands = []*cli.Command{
 	&volumes.VolumeCommands,
 	&subnets.SubnetCommands,
 	&flavors.FlavorCommands,
+	&loadbalancers.LoadBalancerCommands,
 	{
 		Name:  "heat",
 		Usage: "Gcloud Heat API",

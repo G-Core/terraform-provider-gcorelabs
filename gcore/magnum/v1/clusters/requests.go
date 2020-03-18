@@ -126,9 +126,45 @@ func Resize(c *gcorecloud.ServiceClient, clusterID string, opts ResizeOptsBuilde
 	return
 }
 
+// UpgradeOptsBuilder allows extensions to add additional parameters to the Upgrade request.
+type UpgradeOptsBuilder interface {
+	ToClusterUpgradeMap() (map[string]interface{}, error)
+}
+
+// UpgradeOpts represents options used to upgrade a cluster.
+type UpgradeOpts struct {
+	ClusterTemplate string  `json:"cluster_template" required:"true"`
+	MaxBatchSize    *int    `json:"max_batch_size,omitempty"`
+	NodeGroup       *string `json:"nodegroup,omitempty"`
+}
+
+// ToClusterUpgradeMap builds a request body from UpgradeOpts.
+func (opts UpgradeOpts) ToClusterUpgradeMap() (map[string]interface{}, error) {
+	return gcorecloud.BuildRequestBody(opts, "")
+}
+
+// Upgrade accepts a UpgradeOpts struct and upgrades an existing cluster using the values provided.
+func Upgrade(c *gcorecloud.ServiceClient, clusterID string, opts UpgradeOptsBuilder) (r UpgradeResult) {
+	b, err := opts.ToClusterUpgradeMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	_, r.Err = c.Post(upgradeURL(c, clusterID), b, &r.Body, &gcorecloud.RequestOpts{
+		OkCodes: []int{200, 201},
+	})
+	return
+}
+
 // Delete accepts a unique ID and deletes the cluster associated with it.
 func Delete(c *gcorecloud.ServiceClient, clusterID string) (r DeleteResult) {
 	_, r.Err = c.DeleteWithResponse(deleteURL(c, clusterID), &r.Body, nil)
+	return
+}
+
+// Config accepts a unique ID and get cluster config.
+func GetConfig(c *gcorecloud.ServiceClient, clusterID string) (r ConfigResult) {
+	_, r.Err = c.Get(configURL(c, clusterID), &r.Body, nil)
 	return
 }
 

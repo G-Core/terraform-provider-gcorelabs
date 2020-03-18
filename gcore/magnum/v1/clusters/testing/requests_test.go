@@ -27,6 +27,9 @@ func prepareActionTestURLParams(projectID int, regionID int, id, action string) 
 	return fmt.Sprintf("/v1/magnum/%d/%d/clusters/%s/actions/%s", projectID, regionID, id, action)
 }
 
+func prepareClusterTestURLParams(projectID int, regionID int, id, name string) string {
+	return fmt.Sprintf("/v1/magnum/%d/%d/clusters/%s/%s", projectID, regionID, id, name)
+}
 func prepareListTestURL() string {
 	return prepareListTestURLParams(fake.ProjectID, fake.RegionID)
 }
@@ -35,8 +38,16 @@ func prepareGetTestURL(id string) string {
 	return prepareGetTestURLParams(fake.ProjectID, fake.RegionID, id)
 }
 
+func prepareGetConfigTestURL(id string) string {
+	return prepareClusterTestURLParams(fake.ProjectID, fake.RegionID, id, "config")
+}
+
 func prepareResizeTestURL(id string) string {
 	return prepareActionTestURLParams(fake.ProjectID, fake.RegionID, id, "resize")
+}
+
+func prepareUpgradeTestURL(id string) string {
+	return prepareActionTestURLParams(fake.ProjectID, fake.RegionID, id, "upgrade")
 }
 
 func TestList(t *testing.T) {
@@ -197,6 +208,70 @@ func TestResize(t *testing.T) {
 
 	client := fake.ServiceTokenClient("magnum", "v1")
 	tasks, err := clusters.Resize(client, Cluster1.UUID, options).ExtractTasks()
+	require.NoError(t, err)
+	require.Equal(t, Tasks1, *tasks)
+
+}
+
+func TestGetConfig(t *testing.T) {
+
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+
+	th.Mux.HandleFunc(prepareGetConfigTestURL(Cluster1.UUID), func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		fmt.Println(string(ConfigResponse))
+
+		_, err := fmt.Fprint(w, string(ConfigResponse))
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	client := fake.ServiceTokenClient("magnum", "v1")
+
+	cfg, err := clusters.GetConfig(client, Cluster1.UUID).ExtractConfig()
+
+	require.NoError(t, err)
+	require.Equal(t, Config1, *cfg)
+
+}
+
+func TestUpgrade(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+
+	th.Mux.HandleFunc(prepareUpgradeTestURL(Cluster1.UUID), func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "POST")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+		th.TestHeader(t, r, "Content-Type", "application/json")
+		th.TestHeader(t, r, "Accept", "application/json")
+		th.TestJSONRequest(t, r, UpgradeRequest)
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+
+		_, err := fmt.Fprint(w, UpgradeResponse)
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	nodeGroup := "test"
+	MaxBatchSize := 1
+
+	options := clusters.UpgradeOpts{
+		ClusterTemplate: "test",
+		MaxBatchSize:    &MaxBatchSize,
+		NodeGroup:       &nodeGroup,
+	}
+
+	client := fake.ServiceTokenClient("magnum", "v1")
+	tasks, err := clusters.Upgrade(client, Cluster1.UUID, options).ExtractTasks()
 	require.NoError(t, err)
 	require.Equal(t, Tasks1, *tasks)
 

@@ -2,10 +2,8 @@ package testing
 
 const MetadataResponse = `
 {
-    "metadata": {
-        "some_key": "some_value",
-        "some_other_key": "some_other_value"
-    }
+	"some_key": "some_value",
+	"some_other_key": "some_other_value"
 }
 `
 

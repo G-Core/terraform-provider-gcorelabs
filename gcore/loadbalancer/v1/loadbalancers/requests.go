@@ -107,7 +107,7 @@ type UpdateOptsBuilder interface {
 
 // UpdateOpts represents options used to update a loadbalancer.
 type UpdateOpts struct {
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" required:"true"`
 }
 
 // ToLoadBalancerUpdateMap builds a request body from UpdateOpts.

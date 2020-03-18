@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"encoding/json"
 	"gcloud/gcorecloud-go"
 	"gcloud/gcorecloud-go/gcore/magnum/v1/clusters"
 	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
@@ -122,6 +123,14 @@ const ResizeRequest = `
 }
 `
 
+const UpgradeRequest = `
+{
+    "cluster_template": "test",
+    "max_batch_size": 1,
+    "nodegroup": "test"
+}
+`
+
 const CreateResponse = `
 {
   "tasks": [
@@ -137,6 +146,14 @@ const DeleteResponse = `
 }
 `
 const ResizeResponse = `
+{
+  "tasks": [
+    "50f53a35-42ed-40c4-82b2-5a37fb3e00bc"
+  ]
+}
+`
+
+const UpgradeResponse = `
 {
   "tasks": [
     "50f53a35-42ed-40c4-82b2-5a37fb3e00bc"
@@ -181,12 +198,38 @@ const CreateClusterTask = `
 }
 `
 
+const ConfigStringResponse = `
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: ca
+    server: 10.0.0.1
+  name: name
+contexts:
+- context:
+    cluster: name
+    user: admin
+  name: default
+current-context: default
+kind: Config
+preferences: {}
+users:
+- name: admin
+  user:
+    client-certificate-data: cert
+    client-key-data: key
+`
+
+var c = clusters.Config{Config: ConfigStringResponse}
+var ConfigResponse, _ = json.Marshal(c)
+
 var createdTimeString = "2020-03-02T12:20:43+00:00"
 var updatedTimeString = "2020-03-02T12:20:47+00:00"
 var createdTime, _ = time.Parse(time.RFC3339, createdTimeString)
 var updatedTime, _ = time.Parse(time.RFC3339, updatedTimeString)
 
 var (
+	Config1  = clusters.Config{Config: ConfigStringResponse}
 	Cluster1 = clusters.Cluster{
 		ClusterList: &clusters.ClusterList{
 			HealthStatus:   nil,

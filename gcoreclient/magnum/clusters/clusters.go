@@ -146,6 +146,72 @@ var clusterResizeSubCommand = cli.Command{
 	},
 }
 
+var clusterUpgradeSubCommand = cli.Command{
+	Name:      "upgrade",
+	Usage:     "Magnum upgrade cluster",
+	ArgsUsage: "<cluster_id>",
+	Category:  "cluster",
+	Flags: append([]cli.Flag{
+		&cli.StringFlag{
+			Name:     "cluster-template",
+			Usage:    "Cluster template",
+			Required: true,
+		},
+		&cli.IntFlag{
+			Name:     "max-batch-size",
+			Usage:    "Max batch size during upgrade",
+			Required: false,
+		},
+		&cli.StringFlag{
+			Name:        "nodegroup",
+			Usage:       "Cluster nodegroup",
+			DefaultText: "nil",
+			Required:    false,
+		},
+	}, flags.WaitCommandFlags...),
+	Action: func(c *cli.Context) error {
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "resize")
+			return err
+		}
+		client, err := utils.BuildClient(c, "magnum", "")
+		if err != nil {
+			_ = cli.ShowAppHelp(c)
+			return cli.NewExitError(err, 1)
+		}
+
+		opts := clusters.UpgradeOpts{
+			ClusterTemplate: c.String("cluster-template"),
+			MaxBatchSize:    utils.IntToPointer(c.Int("max-batch-size")),
+			NodeGroup:       utils.StringToPointer(c.String("nodegroup")),
+		}
+
+		results, err := clusters.Upgrade(client, clusterID, opts).ExtractTasks()
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
+			taskInfo, err := tasks.Get(client, string(task)).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+			}
+			clusterID, err := clusters.ExtractClusterIDFromTask(taskInfo)
+			if err != nil {
+				return nil, fmt.Errorf("cannot retrieve cluster ID from task info: %w", err)
+			}
+			network, err := clusters.Get(client, clusterID).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get cluster with ID: %s. Error: %w", clusterID, err)
+			}
+			utils.ShowResults(network, c.String("format"))
+			return nil, nil
+		})
+
+	},
+}
+
 var clusterGetSubCommand = cli.Command{
 	Name:      "show",
 	Usage:     "Magnum get cluster",
@@ -163,6 +229,31 @@ var clusterGetSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		result, err := clusters.Get(client, clusterID).Extract()
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+		utils.ShowResults(result, c.String("format"))
+		return nil
+	},
+}
+
+var clusterConfigSubCommand = cli.Command{
+	Name:      "config",
+	Usage:     "Magnum get cluster config",
+	ArgsUsage: "<cluster_id>",
+	Category:  "cluster",
+	Action: func(c *cli.Context) error {
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "show")
+			return err
+		}
+		client, err := utils.BuildClient(c, "magnum", "")
+		if err != nil {
+			_ = cli.ShowAppHelp(c)
+			return cli.NewExitError(err, 1)
+		}
+		result, err := clusters.GetConfig(client, clusterID).ExtractConfig()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
@@ -315,5 +406,7 @@ var ClusterCommands = cli.Command{
 		&clusterGetSubCommand,
 		&clusterCreateSubCommand,
 		&clusterResizeSubCommand,
+		&clusterUpgradeSubCommand,
+		&clusterConfigSubCommand,
 	},
 }
