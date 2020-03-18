@@ -242,10 +242,36 @@ var clusterConfigSubCommand = cli.Command{
 	Usage:     "Magnum get cluster config",
 	ArgsUsage: "<cluster_id>",
 	Category:  "cluster",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:     "save",
+			Aliases:  []string{"s"},
+			Usage:    "Save k8s config in file",
+			Required: false,
+		},
+		&cli.BoolFlag{
+			Name:     "force",
+			Usage:    "Force rewrite KUBECONFIG file",
+			Required: false,
+		},
+		&cli.BoolFlag{
+			Name:     "merge",
+			Aliases:  []string{"m"},
+			Usage:    "Merge into existing KUBECONFIG file",
+			Required: false,
+		},
+		&cli.StringFlag{
+			Name:     "file",
+			Aliases:  []string{"c"},
+			Usage:    "KUBECONFIG file",
+			Value:    "~/.kube/config",
+			Required: false,
+		},
+	},
 	Action: func(c *cli.Context) error {
 		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
-			_ = cli.ShowCommandHelp(c, "show")
+			_ = cli.ShowCommandHelp(c, "config")
 			return err
 		}
 		client, err := utils.BuildClient(c, "magnum", "")
@@ -257,7 +283,44 @@ var clusterConfigSubCommand = cli.Command{
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
-		utils.ShowResults(result, c.String("format"))
+		if c.Bool("save") {
+			filename := c.String("file")
+			exists, err := utils.FileExists(filename)
+			if err != nil {
+				_ = cli.ShowCommandHelp(c, "config")
+				return cli.NewExitError(err, 1)
+			}
+			if exists {
+				merge := c.Bool("merge")
+				force := c.Bool("force")
+				if (!force && !merge) || (force && merge) {
+					_ = cli.ShowCommandHelp(c, "config")
+					return cli.NewExitError(fmt.Errorf("either --force or --merge shoud be set"), 1)
+				}
+				if force {
+					err := utils.WriteKubeconfigFile(filename, []byte(result.Config))
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
+					return nil
+				}
+				if merge {
+					err := utils.MergeKubeconfigFile(filename, []byte(result.Config))
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
+					return nil
+				}
+			} else {
+				err := utils.WriteToFile(filename, []byte(result.Config))
+				if err != nil {
+					return cli.NewExitError(err, 1)
+				}
+				return nil
+			}
+		} else {
+			utils.ShowResults(result, c.String("format"))
+		}
 		return nil
 	},
 }

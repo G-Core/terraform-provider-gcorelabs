@@ -6,9 +6,13 @@ import (
 	"gcloud/gcorecloud-go"
 	"gcloud/gcorecloud-go/gcore"
 	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/mitchellh/go-homedir"
 
 	"gopkg.in/yaml.v2"
 
@@ -319,6 +323,105 @@ func WaitTaskAndShowResult(
 		}
 	} else {
 		ShowResults(results, c.String("format"))
+	}
+	return nil
+}
+
+func getAbsPath(filename string) (string, error) {
+	path, err := homedir.Expand(filename)
+	if err != nil {
+		return "", err
+	}
+	path, err = filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
+func FileExists(filename string) (bool, error) {
+	path, err := getAbsPath(filename)
+	if err != nil {
+		return false, err
+	}
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return !info.IsDir(), nil
+}
+
+func WriteToFile(filename string, content []byte) error {
+	path, err := getAbsPath(filename)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path, content, 0644)
+	return err
+}
+
+func MergeKubeconfigFile(filename string, content []byte) error {
+	path, err := getAbsPath(filename)
+	if err != nil {
+		return err
+	}
+	contentMap := map[string]interface{}{}
+	err = yaml.Unmarshal(content, contentMap)
+	if err != nil {
+		return err
+	}
+	fileContent, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	existingContentMap := map[string]interface{}{}
+	err = yaml.Unmarshal(fileContent, existingContentMap)
+	if err != nil {
+		return err
+	}
+	for key, value := range contentMap {
+		contentSlice, ok := value.([]interface{})
+		if !ok {
+			continue
+		}
+		existingContent, ok := existingContentMap[key]
+		if !ok {
+			return fmt.Errorf("cannot find key %s in %#v", key, existingContentMap)
+		}
+		existingContentSlice, ok := existingContent.([]interface{})
+		if !ok {
+			return fmt.Errorf("cannot set %#v into slice", existingContent)
+		}
+		existingContentMap[key] = append(existingContentSlice, contentSlice...)
+	}
+	out, err := yaml.Marshal(existingContentMap)
+	if err != nil {
+		return err
+	}
+	err = WriteToFile(path, out)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func WriteKubeconfigFile(filename string, content []byte) error {
+	path, err := getAbsPath(filename)
+	if err != nil {
+		return err
+	}
+	contentMap := map[string]interface{}{}
+	err = yaml.Unmarshal(content, contentMap)
+	if err != nil {
+		return err
+	}
+	out, err := yaml.Marshal(contentMap)
+	if err != nil {
+		return err
+	}
+	err = WriteToFile(path, out)
+	if err != nil {
+		return err
 	}
 	return nil
 }
