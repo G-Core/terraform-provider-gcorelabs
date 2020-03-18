@@ -1,7 +1,10 @@
 package loadbalancers
 
 import (
+	"fmt"
+	"gcloud/gcorecloud-go"
 	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
+	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"gcloud/gcorecloud-go/gcoreclient/flags"
 	"gcloud/gcorecloud-go/gcoreclient/utils"
 
@@ -58,6 +61,44 @@ var loadBalancerGetSubCommand = cli.Command{
 	},
 }
 
+var loadBalancerDeleteSubCommand = cli.Command{
+	Name:      "delete",
+	Usage:     "Show loadbalancer",
+	ArgsUsage: "<loadbalancer_id>",
+	Category:  "loadbalancer",
+	Action: func(c *cli.Context) error {
+		loadBalancerID, err := flags.GetFirstArg(c, loadBalancerIDText)
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "delete")
+			return err
+		}
+		client, err := utils.BuildClient(c, "loadbalancers", "")
+		if err != nil {
+			_ = cli.ShowAppHelp(c)
+			return cli.NewExitError(err, 1)
+		}
+		results, err := loadbalancers.Get(client, loadBalancerID).ExtractTasks()
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+		if results == nil {
+			return cli.NewExitError(err, 1)
+		}
+		return utils.WaitTaskAndShowResult(c, client, results, false, func(task tasks.TaskID) (interface{}, error) {
+			_, err := loadbalancers.Get(client, loadBalancerID).Extract()
+			if err == nil {
+				return nil, fmt.Errorf("cannot delete loadbalancer with ID: %s", loadBalancerID)
+			}
+			switch err.(type) {
+			case gcorecloud.ErrDefault404:
+				return nil, nil
+			default:
+				return nil, err
+			}
+		})
+	},
+}
+
 var loadBalancerUpdateSubCommand = cli.Command{
 	Name:      "update",
 	Usage:     "Update loadbalancer",
@@ -104,5 +145,6 @@ var LoadBalancerCommands = cli.Command{
 		&loadBalancerListSubCommand,
 		&loadBalancerGetSubCommand,
 		&loadBalancerUpdateSubCommand,
+		&loadBalancerDeleteSubCommand,
 	},
 }
