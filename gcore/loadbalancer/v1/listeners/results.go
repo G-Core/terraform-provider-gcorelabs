@@ -57,13 +57,17 @@ type DeleteResult struct {
 type Listener struct {
 	PoolCount          int                      `json:"pool_count"`
 	ProtocolPort       int                      `json:"protocol_port"`
-	Protocol           string                   `json:"protocol"`
+	Protocol           types.ProtocolType       `json:"protocol"`
 	Name               string                   `json:"name"`
 	ID                 string                   `json:"id"`
 	ProvisioningStatus types.ProvisioningStatus `json:"provisioning_status"`
 	OperationStatus    types.OperatingStatus    `json:"operating_status"`
 	CreatorTaskID      *string                  `json:"creator_task_id"`
 	TaskID             *string                  `json:"task_id"`
+}
+
+func (l Listener) IsDeleted() bool {
+	return l.ProvisioningStatus == types.ProvisioningStatusDeleted
 }
 
 // ListenerPage is the page returned by a pager when traversing over a

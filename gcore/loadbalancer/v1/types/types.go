@@ -39,7 +39,7 @@ const (
 	PersistenceTypeSourceIP               PersistenceType       = "SOURCE_IP"
 	ProtocolTypeHTTP                      ProtocolType          = "HTTP"
 	ProtocolTypeHTTPS                     ProtocolType          = "HTTPS"
-	ProtocolTypeTCP                       ProtocolType          = "CP"
+	ProtocolTypeTCP                       ProtocolType          = "TCP"
 	ProtocolTypeTerminatedHTTPS           ProtocolType          = "TERMINATED_HTTPS"
 	ProtocolTypeUDP                       ProtocolType          = "UDP"
 	HealthMonitorTypeHTTP                 HealthMonitorType     = "HTTP"

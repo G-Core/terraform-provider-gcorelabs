@@ -1,6 +1,7 @@
 package gcorecloud
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -12,7 +13,7 @@ type BaseError struct {
 }
 
 func (e BaseError) Error() string {
-	e.DefaultErrString = "An error occurred while executing a Gophercloud request."
+	e.DefaultErrString = "An error occurred while executing a Gcore cloud request."
 	return e.choseErrString()
 }
 
@@ -89,7 +90,20 @@ func (e ErrUnexpectedResponseCode) Error() string {
 		"Expected HTTP response code %v when accessing [%s %s], but got %d instead\n%s",
 		e.Expected, e.Method, e.URL, e.Actual, e.Body,
 	)
+	gcoreErr := GcoreErrorType{}
+	err := json.Unmarshal(e.Body, &gcoreErr)
+	if err != nil {
+		e.Info = gcoreErr.Message
+	}
 	return e.choseErrString()
+}
+
+func (e *ErrUnexpectedResponseCode) ReadGcoreError() {
+	gcoreErr := GcoreErrorType{}
+	err := json.Unmarshal(e.Body, &gcoreErr)
+	if err == nil {
+		e.Info = gcoreErr.Message
+	}
 }
 
 // GetStatusCode returns the actual status code of the error.
@@ -164,9 +178,17 @@ func (e ErrDefault400) Error() string {
 		"Bad request with: [%s %s], error message: %s",
 		e.Method, e.URL, e.Body,
 	)
+	e.ReadGcoreError()
+	if e.Info != "" {
+		return e.choseErrString()
+	}
 	return e.choseErrString()
 }
 func (e ErrDefault401) Error() string {
+	e.ReadGcoreError()
+	if e.Info != "" {
+		return e.choseErrString()
+	}
 	return "Authentication failed"
 }
 func (e ErrDefault403) Error() string {
@@ -174,9 +196,17 @@ func (e ErrDefault403) Error() string {
 		"Request forbidden: [%s %s], error message: %s",
 		e.Method, e.URL, e.Body,
 	)
+	e.ReadGcoreError()
+	if e.Info != "" {
+		return e.choseErrString()
+	}
 	return e.choseErrString()
 }
 func (e ErrDefault404) Error() string {
+	e.ReadGcoreError()
+	if e.Info != "" {
+		return e.choseErrString()
+	}
 	return "Resource not found"
 }
 func (e ErrDefault405) Error() string {
@@ -190,6 +220,10 @@ func (e ErrDefault429) Error() string {
 		" requests, wait up to one minute, and try again."
 }
 func (e ErrDefault500) Error() string {
+	e.ReadGcoreError()
+	if e.Info != "" {
+		return e.choseErrString()
+	}
 	return "Internal Server Error"
 }
 func (e ErrDefault503) Error() string {

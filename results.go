@@ -611,3 +611,9 @@ func (c Currency) MarshalJSON() ([]byte, error) {
 }
 
 type UUIDIDType string
+
+type GcoreErrorType struct {
+	ExceptionClass string `json:"exception_class"`
+	Message        string `json:"message"`
+	Traceback      string `json:"traceback"`
+}

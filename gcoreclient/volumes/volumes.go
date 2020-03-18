@@ -200,16 +200,14 @@ var volumeCreateCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 		source := volumes.VolumeSource(c.String("source"))
-		err = source.IsValid()
-		if err != nil {
+		if err = source.IsValid(); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 		typeName := utils.StringToPointer(c.String("type"))
 		var volumeType *volumes.VolumeType
 		if typeName != nil {
 			tp := volumes.VolumeType(*typeName)
-			err = tp.IsValid()
-			if err != nil {
+			if err = tp.IsValid(); err != nil {
 				return cli.NewExitError(err, 1)
 			}
 			volumeType = &tp
