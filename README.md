@@ -44,7 +44,7 @@ Example:
 To run tests, set the environment variables:
 ```
 TF_ACC (=1/true)
-TEST_PROVIDER_JWT
+OS_PROVIDER_JWT
 TEST_PROJECT_ID or TEST_PROJECT_NAME
 TEST_REGION_ID or TEST_REGION_NAME
 ```

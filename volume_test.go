@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
@@ -50,6 +51,7 @@ func TestAccCreateVolumeV1(t *testing.T) {
 func TestAccImportVolumeV1(t *testing.T) {
 	name := "import_test"
 	fullName := fmt.Sprintf("gcore_volume.%s", name)
+	importStateIdPrefix := fmt.Sprintf("%s:%s:", os.Getenv("TEST_PROJECT_ID"), os.Getenv("TEST_REGION_ID"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -62,7 +64,7 @@ func TestAccImportVolumeV1(t *testing.T) {
 				),
 			},
 			{
-				ImportStateIdPrefix: "78:1:",
+				ImportStateIdPrefix: importStateIdPrefix,
 				ResourceName:        fullName,
 				ImportState:         true,
 			},

@@ -1,9 +1,5 @@
 package common
 
-type Config struct {
-	Jwt string
-}
-
 type InstanceId struct {
 	InstanceId string `json:"instance_id"`
 }
@@ -31,6 +27,11 @@ type Regions struct {
 }
 
 //S
+type Session struct {
+	Jwt       string
+	UserAgent string
+}
+
 type Size struct {
 	Size int `json:"size"`
 }
