@@ -72,6 +72,17 @@ func (ps ProvisioningStatus) IsValid() error {
 	return fmt.Errorf("invalid ProvisioningStatus type: %v", ps)
 }
 
+func (ps ProvisioningStatus) ValidOrNil() (*ProvisioningStatus, error) {
+	if ps.String() == "" {
+		return nil, nil
+	}
+	err := ps.IsValid()
+	if err != nil {
+		return &ps, err
+	}
+	return &ps, nil
+}
+
 func (ps ProvisioningStatus) String() string {
 	return string(ps)
 }
@@ -125,7 +136,18 @@ func (os OperatingStatus) IsValid() error {
 		OperatingStatusNoMonitor:
 		return nil
 	}
-	return fmt.Errorf("invalid OperatingStatus type: %v", os)
+	return fmt.Errorf("invalid OperatingStatus: %v", os)
+}
+
+func (os OperatingStatus) ValidOrNil() (*OperatingStatus, error) {
+	if os.String() == "" {
+		return nil, nil
+	}
+	err := os.IsValid()
+	if err != nil {
+		return &os, err
+	}
+	return &os, nil
 }
 
 func (os OperatingStatus) String() string {
@@ -179,7 +201,18 @@ func (lba LoadBalancerAlgorithm) IsValid() error {
 		LoadBalancerAlgorithmSourceIPPort:
 		return nil
 	}
-	return fmt.Errorf("invalid LoadBalancerAlgorithm type: %v", lba)
+	return fmt.Errorf("invalid LoadBalancerAlgorithm: %v", lba)
+}
+
+func (lba LoadBalancerAlgorithm) ValidOrNil() (*LoadBalancerAlgorithm, error) {
+	if lba.String() == "" {
+		return nil, nil
+	}
+	err := lba.IsValid()
+	if err != nil {
+		return &lba, err
+	}
+	return &lba, nil
 }
 
 func (lba LoadBalancerAlgorithm) String() string {
@@ -230,11 +263,26 @@ func (lbspt PersistenceType) IsValid() error {
 		PersistenceTypeSourceIP:
 		return nil
 	}
-	return fmt.Errorf("invalid PersistenceType type: %v", lbspt)
+	return fmt.Errorf("invalid PersistenceType: %v", lbspt)
+}
+
+func (lbspt PersistenceType) ValidOrNil() (*PersistenceType, error) {
+	if lbspt.String() == "" {
+		return nil, nil
+	}
+	err := lbspt.IsValid()
+	if err != nil {
+		return &lbspt, err
+	}
+	return &lbspt, nil
 }
 
 func (lbspt PersistenceType) String() string {
 	return string(lbspt)
+}
+
+func (lbspt PersistenceType) ISCookiesType() bool {
+	return lbspt == PersistenceTypeHTTPCookie || lbspt == PersistenceTypeAppCookie
 }
 
 func (lbspt PersistenceType) List() []PersistenceType {
@@ -278,7 +326,18 @@ func (pt ProtocolType) IsValid() error {
 	case ProtocolTypeHTTP, ProtocolTypeHTTPS, ProtocolTypeTCP, ProtocolTypeTerminatedHTTPS, ProtocolTypeUDP:
 		return nil
 	}
-	return fmt.Errorf("invalid ProvisioningStatus type: %v", pt)
+	return fmt.Errorf("invalid ProtocolType: %v", pt)
+}
+
+func (pt ProtocolType) ValidOrNil() (*ProtocolType, error) {
+	if pt.String() == "" {
+		return nil, nil
+	}
+	err := pt.IsValid()
+	if err != nil {
+		return &pt, err
+	}
+	return &pt, nil
 }
 
 func (pt ProtocolType) String() string {
@@ -327,11 +386,26 @@ func (hm HealthMonitorType) IsValid() error {
 		HealthMonitorTypeUDPConnect:
 		return nil
 	}
-	return fmt.Errorf("invalid ProvisioningStatus type: %v", hm)
+	return fmt.Errorf("invalid HealthMonitorType: %v", hm)
+}
+
+func (hm HealthMonitorType) ValidOrNil() (*HealthMonitorType, error) {
+	if hm.String() == "" {
+		return nil, nil
+	}
+	err := hm.IsValid()
+	if err != nil {
+		return &hm, err
+	}
+	return &hm, nil
 }
 
 func (hm HealthMonitorType) String() string {
 	return string(hm)
+}
+
+func (hm HealthMonitorType) IsHTTPType() bool {
+	return hm == HealthMonitorTypeHTTP || hm == HealthMonitorTypeHTTPS
 }
 
 func (hm HealthMonitorType) List() []HealthMonitorType {
@@ -386,7 +460,18 @@ func (m HTTPMethod) IsValid() error {
 		HTTPMethodTRACE:
 		return nil
 	}
-	return fmt.Errorf("invalid ProvisioningStatus type: %v", m)
+	return fmt.Errorf("invalid HTTPMethod: %v", m)
+}
+
+func (m HTTPMethod) ValidOrNil() (*HTTPMethod, error) {
+	if m.String() == "" {
+		return nil, nil
+	}
+	err := m.IsValid()
+	if err != nil {
+		return &m, err
+	}
+	return &m, nil
 }
 
 func (m HTTPMethod) String() string {

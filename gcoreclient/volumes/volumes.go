@@ -203,14 +203,9 @@ var volumeCreateCommand = cli.Command{
 		if err = source.IsValid(); err != nil {
 			return cli.NewExitError(err, 1)
 		}
-		typeName := utils.StringToPointer(c.String("type"))
-		var volumeType *volumes.VolumeType
-		if typeName != nil {
-			tp := volumes.VolumeType(*typeName)
-			if err = tp.IsValid(); err != nil {
-				return cli.NewExitError(err, 1)
-			}
-			volumeType = &tp
+		volumeType, err := volumes.VolumeType(c.String("type")).ValidOrNil()
+		if err != nil {
+			return cli.NewExitError(err, 1)
 		}
 		opts := volumes.CreateOpts{
 			Source:               source,

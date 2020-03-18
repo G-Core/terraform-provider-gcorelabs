@@ -24,7 +24,7 @@ var listenerListSubCommand = cli.Command{
 	Category: "listener",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:        "loadbalancer_id",
+			Name:        "loadbalancer-id",
 			Aliases:     []string{"l"},
 			Usage:       "loadbalancer ID",
 			Required:    false,
@@ -38,7 +38,7 @@ var listenerListSubCommand = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		opts := listeners.ListOpts{LoadBalancerID: utils.StringToPointer(c.String("loadbalancer_id"))}
+		opts := listeners.ListOpts{LoadBalancerID: utils.StringToPointer(c.String("loadbalancer-id"))}
 
 		pages, err := listeners.List(client, opts).AllPages()
 		if err != nil {
@@ -209,7 +209,7 @@ var listenerUpdateSubCommand = cli.Command{
 	Action: func(c *cli.Context) error {
 		clusterID, err := flags.GetFirstArg(c, listenerIDText)
 		if err != nil {
-			_ = cli.ShowCommandHelp(c, "show")
+			_ = cli.ShowCommandHelp(c, "update")
 			return err
 		}
 		client, err := utils.BuildClient(c, "lblisteners", "")

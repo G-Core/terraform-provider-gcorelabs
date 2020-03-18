@@ -6,6 +6,8 @@ import (
 	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
 	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"gcloud/gcorecloud-go/gcoreclient/flags"
+	lbpools "gcloud/gcorecloud-go/gcoreclient/loadbalancers/lbpools"
+	"gcloud/gcorecloud-go/gcoreclient/loadbalancers/listeners"
 	"gcloud/gcorecloud-go/gcoreclient/utils"
 
 	"github.com/urfave/cli/v2"
@@ -170,7 +172,7 @@ var loadBalancerUpdateSubCommand = cli.Command{
 	Action: func(c *cli.Context) error {
 		clusterID, err := flags.GetFirstArg(c, loadBalancerIDText)
 		if err != nil {
-			_ = cli.ShowCommandHelp(c, "show")
+			_ = cli.ShowCommandHelp(c, "update")
 			return err
 		}
 		client, err := utils.BuildClient(c, "loadbalancers", "")
@@ -202,5 +204,7 @@ var LoadBalancerCommands = cli.Command{
 		&loadBalancerUpdateSubCommand,
 		&loadBalancerDeleteSubCommand,
 		&loadBalancerCreateSubCommand,
+		&listeners.ListenerCommands,
+		&lbpools.PoolCommands,
 	},
 }

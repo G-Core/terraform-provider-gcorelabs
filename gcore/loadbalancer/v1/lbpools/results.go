@@ -63,32 +63,57 @@ type DeleteResult struct {
 
 // PoolMember represents a pool member structure.
 type PoolMember struct {
-	Address      net.IP  `json:"address"`
+	Address      *net.IP `json:"address,omitempty"`
 	ID           string  `json:"id"`
-	Weight       int     `json:"weight"`
-	SubnetID     *string `json:"subnet_id"`
-	InstanceID   *string `json:"instance_id"`
-	ProtocolPort int     `json:"protocol_port"`
+	Weight       *int    `json:"weight,omitempty"`
+	SubnetID     *string `json:"subnet_id,omitempty"`
+	InstanceID   *string `json:"instance_id,omitempty"`
+	ProtocolPort *int    `json:"protocol_port,omitempty"`
 }
 
 // Pool represents a pool structure.
 type Pool struct {
-	LoadBalancers         []types.ItemID              `json:"load_balancers"`
+	LoadBalancers         []types.ItemID              `json:"loadbalancers"`
 	Listeners             []types.ItemID              `json:"listeners"`
-	SessionPersistence    *types.PersistenceType      `json:"session_persistence"`
+	SessionPersistence    *SessionPersistence         `json:"session_persistence"`
 	LoadBalancerAlgorithm types.LoadBalancerAlgorithm `json:"lb_algorithm"`
 	Name                  string                      `json:"name"`
 	ID                    string                      `json:"id"`
-	Protocol              string                      `json:"protocol"`
+	Protocol              types.ProtocolType          `json:"protocol"`
 	Members               []PoolMember                `json:"members"`
+	HealthMonitor         *HealthMonitor              `json:"healthmonitor"`
 	ProvisioningStatus    types.ProvisioningStatus    `json:"provisioning_status"`
-	OperationStatus       types.OperatingStatus       `json:"operation_status"`
+	OperatingStatus       types.OperatingStatus       `json:"operating_status"`
 	CreatorTaskID         *string                     `json:"creator_task_id"`
 	TaskID                *string                     `json:"task_id"`
 }
 
-// PoolPage is the page returned by a pager when traversing over a
-// collection of pools.
+// IsDeleted LB pool state.
+func (p Pool) IsDeleted() bool {
+	return p.ProvisioningStatus == types.ProvisioningStatusDeleted
+}
+
+// HealthMonitor for LB pool
+type HealthMonitor struct {
+	ID             string                  `json:"id"`
+	Type           types.HealthMonitorType `json:"type"`
+	Delay          int                     `json:"delay"`
+	MaxRetries     int                     `json:"max_retries"`
+	Timeout        int                     `json:"timeout"`
+	MaxRetriesDown *int                    `json:"max_retries_down,omitempty"`
+	HTTPMethod     types.HTTPMethod        `json:"http_method,omitempty"`
+	URLPath        *string                 `json:"url_path,omitempty"`
+}
+
+// SessionPersistenceOpts represents options used to create a lbpool listener pool session persistence rules.
+type SessionPersistence struct {
+	PersistenceGranularity *string               `json:"persistence_granularity,omitempty"`
+	PersistenceTimeout     *int                  `json:"persistence_timeout,omitempty"`
+	Type                   types.PersistenceType `json:"type"`
+	CookieName             *string               `json:"cookie_name,omitempty"`
+}
+
+// PoolPage is the page returned by a pager when traversing over a collection of pools.
 type PoolPage struct {
 	pagination.LinkedPageBase
 }
@@ -127,7 +152,7 @@ func ExtractPoolsInto(r pagination.Page, v interface{}) error {
 }
 
 type PoolTaskResult struct {
-	Pools []string `json:"lbpools"`
+	Pools []string `json:"pools"`
 }
 
 func ExtractPoolIDFromTask(task *tasks.Task) (string, error) {

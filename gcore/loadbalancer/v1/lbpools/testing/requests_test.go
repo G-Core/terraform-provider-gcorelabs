@@ -2,8 +2,7 @@ package testing
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/listeners"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
+	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/lbpools"
 	fake "gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
@@ -17,11 +16,11 @@ import (
 )
 
 func prepareListTestURLParams(projectID int, regionID int) string {
-	return fmt.Sprintf("/v1/lblisteners/%d/%d", projectID, regionID)
+	return fmt.Sprintf("/v1/lbpools/%d/%d", projectID, regionID)
 }
 
 func prepareGetTestURLParams(projectID int, regionID int, id string) string {
-	return fmt.Sprintf("/v1/lblisteners/%d/%d/%s", projectID, regionID, id)
+	return fmt.Sprintf("/v1/lbpools/%d/%d/%s", projectID, regionID, id)
 }
 
 func prepareListTestURL() string {
@@ -48,18 +47,18 @@ func TestList(t *testing.T) {
 		}
 	})
 
-	client := fake.ServiceTokenClient("lblisteners", "v1")
+	client := fake.ServiceTokenClient("lbpools", "v1")
 	count := 0
 
-	opts := listeners.ListOpts{LoadBalancerID: &Listener1.ID}
+	opts := lbpools.ListOpts{LoadBalancerID: &LBPool1.ID}
 
-	err := listeners.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
+	err := lbpools.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
 		count++
-		actual, err := listeners.ExtractListeners(page)
+		actual, err := lbpools.ExtractPools(page)
 		require.NoError(t, err)
 		ct := actual[0]
-		require.Equal(t, Listener1, ct)
-		require.Equal(t, ExpectedListenersSlice, actual)
+		require.Equal(t, LBPool1, ct)
+		require.Equal(t, ExpectedLBPoolsSlice, actual)
 		return true, nil
 	})
 
@@ -75,7 +74,7 @@ func TestGet(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	testURL := prepareGetTestURL(Listener1.ID)
+	testURL := prepareGetTestURL(LBPool1.ID)
 
 	th.Mux.HandleFunc(testURL, func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "GET")
@@ -90,12 +89,12 @@ func TestGet(t *testing.T) {
 		}
 	})
 
-	client := fake.ServiceTokenClient("lblisteners", "v1")
+	client := fake.ServiceTokenClient("lbpools", "v1")
 
-	ct, err := listeners.Get(client, Listener1.ID).Extract()
+	ct, err := lbpools.Get(client, LBPool1.ID).Extract()
 
 	require.NoError(t, err)
-	require.Equal(t, Listener1, *ct)
+	require.Equal(t, LBPool1, *ct)
 
 }
 
@@ -118,15 +117,34 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	options := listeners.CreateOpts{
-		Name:           Listener1.Name,
-		Protocol:       types.ProtocolTypeTCP,
-		ProtocolPort:   80,
-		LoadBalancerID: Listener1.ID,
+	options := lbpools.CreateOpts{
+		Name:            LBPool1.Name,
+		Protocol:        LBPool1.Protocol,
+		LBPoolAlgorithm: LBPool1.LoadBalancerAlgorithm,
+		Members: []lbpools.CreatePoolMemberOpts{
+			{
+				Address:      *Member1.Address,
+				ProtocolPort: *Member1.ProtocolPort,
+				Weight:       Member1.Weight,
+				SubnetID:     Member1.SubnetID,
+				InstanceID:   Member1.InstanceID,
+			},
+			{
+				Address:      *Member2.Address,
+				ProtocolPort: *Member2.ProtocolPort,
+				Weight:       Member2.Weight,
+				SubnetID:     Member2.SubnetID,
+				InstanceID:   Member2.InstanceID,
+			},
+		},
+		LoadBalancerID:     &LoadBalancerID,
+		ListenerID:         &ListenerID,
+		HealthMonitor:      nil,
+		SessionPersistence: nil,
 	}
 
-	client := fake.ServiceTokenClient("lblisteners", "v1")
-	tasks, err := listeners.Create(client, options).ExtractTasks()
+	client := fake.ServiceTokenClient("lbpools", "v1")
+	tasks, err := lbpools.Create(client, options).ExtractTasks()
 	require.NoError(t, err)
 	require.Equal(t, Tasks1, *tasks)
 }
@@ -135,7 +153,7 @@ func TestDelete(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	th.Mux.HandleFunc(prepareGetTestURL(Listener1.ID), func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc(prepareGetTestURL(LBPool1.ID), func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "DELETE")
 		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
 		w.WriteHeader(http.StatusOK)
@@ -145,8 +163,8 @@ func TestDelete(t *testing.T) {
 		}
 	})
 
-	client := fake.ServiceTokenClient("lblisteners", "v1")
-	tasks, err := listeners.Delete(client, Listener1.ID).ExtractTasks()
+	client := fake.ServiceTokenClient("lbpools", "v1")
+	tasks, err := lbpools.Delete(client, LBPool1.ID).ExtractTasks()
 	require.NoError(t, err)
 	require.Equal(t, Tasks1, *tasks)
 
@@ -157,7 +175,7 @@ func TestUpdate(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	testURL := prepareGetTestURL(Listener1.ID)
+	testURL := prepareGetTestURL(LBPool1.ID)
 
 	th.Mux.HandleFunc(testURL, func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "PATCH")
@@ -168,22 +186,22 @@ func TestUpdate(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprint(w, GetResponse)
+		_, err := fmt.Fprint(w, UpdateResponse)
 		if err != nil {
 			log.Error(err)
 		}
 	})
 
-	client := fake.ServiceTokenClient("lblisteners", "v1")
+	client := fake.ServiceTokenClient("lbpools", "v1")
 
-	opts := listeners.UpdateOpts{
-		Name: Listener1.Name,
+	opts := lbpools.UpdateOpts{
+		Name: &LBPool1.Name,
 	}
 
-	ct, err := listeners.Update(client, Listener1.ID, opts).Extract()
+	tasks, err := lbpools.Update(client, LBPool1.ID, opts).ExtractTasks()
 
 	require.NoError(t, err)
-	require.Equal(t, Listener1, *ct)
-	require.Equal(t, Listener1.Name, ct.Name)
+	require.NoError(t, err)
+	require.Equal(t, Tasks1, *tasks)
 
 }

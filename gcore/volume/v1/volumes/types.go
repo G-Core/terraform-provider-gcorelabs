@@ -25,6 +25,17 @@ func (vs VolumeSource) IsValid() error {
 	return fmt.Errorf("invalid VolumeSource type: %v", vs)
 }
 
+func (vs VolumeSource) ValidOrNil() (*VolumeSource, error) {
+	if vs.String() == "" {
+		return nil, nil
+	}
+	err := vs.IsValid()
+	if err != nil {
+		return &vs, err
+	}
+	return &vs, nil
+}
+
 func (vs VolumeSource) String() string {
 	return string(vs)
 }
@@ -83,6 +94,17 @@ func (vt VolumeType) IsValid() error {
 		return nil
 	}
 	return fmt.Errorf("invalid VolumeType type: %v", vt)
+}
+
+func (vt VolumeType) ValidOrNil() (*VolumeType, error) {
+	if vt.String() == "" {
+		return nil, nil
+	}
+	err := vt.IsValid()
+	if err != nil {
+		return &vt, err
+	}
+	return &vt, nil
 }
 
 // UnmarshalJSON - implements Unmarshaler interface for VolumeType

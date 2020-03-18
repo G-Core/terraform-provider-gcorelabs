@@ -41,8 +41,8 @@ type ListOpts struct {
 
 // CreateOpts represents options used to create a volume.
 type CreateOpts struct {
-	Source               VolumeSource `json:"source"`
-	Name                 string       `json:"name"`
+	Source               VolumeSource `json:"source" required:"true"`
+	Name                 string       `json:"name" required:"true"`
 	Size                 *int         `json:"size,omitempty"`
 	TypeName             *VolumeType  `json:"type_name,omitempty"`
 	ImageID              *string      `json:"image_id,omitempty"`
