@@ -1,7 +1,7 @@
 package flavors
 
 import (
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 func rootURL(c *gcorecloud.ServiceClient) string {

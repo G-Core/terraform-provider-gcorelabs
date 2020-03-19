@@ -1,8 +1,8 @@
 package testing
 
 import (
-	"gcloud/gcorecloud-go/gcore/magnum/v1/nodegroups"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/nodegroups"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"net"
 )
 

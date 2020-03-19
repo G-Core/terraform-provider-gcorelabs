@@ -3,8 +3,8 @@ package testing
 import (
 	"encoding/json"
 	"fmt"
-	"gcloud/gcorecloud-go/gcore/flavor/v1/flavors"
-	fake "gcloud/gcorecloud-go/testhelper/client"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/flavor/v1/flavors"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
 
@@ -12,8 +12,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"gcloud/gcorecloud-go/pagination"
-	th "gcloud/gcorecloud-go/testhelper"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
+	th "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 func prepareListTestURLParams(projectID int, regionID int) string {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"gcloud/gcorecloud-go"
-	th "gcloud/gcorecloud-go/testhelper"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	th "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 var singleResponse = `

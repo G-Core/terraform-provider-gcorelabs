@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 var expectedInterfaceLiteral = "[]interface{}"

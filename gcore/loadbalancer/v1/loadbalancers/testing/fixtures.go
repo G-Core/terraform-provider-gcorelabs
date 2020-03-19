@@ -1,11 +1,11 @@
 package testing
 
 import (
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	fake "gcloud/gcorecloud-go/testhelper/client"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net"
 	"time"
 )

@@ -2,11 +2,11 @@ package volumes
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"gcloud/gcorecloud-go/gcore/volume/v1/volumes"
-	"gcloud/gcorecloud-go/gcoreclient/flags"
-	"gcloud/gcorecloud-go/gcoreclient/utils"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/volume/v1/volumes"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
 	"strings"
 
 	"github.com/urfave/cli/v2"

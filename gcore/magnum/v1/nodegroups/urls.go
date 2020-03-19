@@ -1,7 +1,7 @@
 package nodegroups
 
 import (
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 func resourceURL(c *gcorecloud.ServiceClient, clusterID, id string) string {

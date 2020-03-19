@@ -1,10 +1,10 @@
 package testing
 
 import (
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/subnet/v1/subnets"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	fake "gcloud/gcorecloud-go/testhelper/client"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/subnet/v1/subnets"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net"
 	"time"
 )

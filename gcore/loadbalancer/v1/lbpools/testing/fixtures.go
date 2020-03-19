@@ -1,9 +1,9 @@
 package testing
 
 import (
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/lbpools"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/lbpools"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"net"
 )
 

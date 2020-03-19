@@ -1,9 +1,9 @@
 package templates
 
 import (
-	"gcloud/gcorecloud-go/gcore/magnum/v1/clustertemplates"
-	"gcloud/gcorecloud-go/gcoreclient/flags"
-	"gcloud/gcorecloud-go/gcoreclient/utils"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/clustertemplates"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
 
 	"github.com/urfave/cli/v2"
 )

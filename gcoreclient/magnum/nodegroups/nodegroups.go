@@ -2,11 +2,11 @@ package nodegroups
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/magnum/v1/nodegroups"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"gcloud/gcorecloud-go/gcoreclient/flags"
-	"gcloud/gcorecloud-go/gcoreclient/utils"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/nodegroups"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
 
 	"github.com/urfave/cli/v2"
 )

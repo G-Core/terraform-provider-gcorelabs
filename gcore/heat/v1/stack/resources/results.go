@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 type commonResult struct {

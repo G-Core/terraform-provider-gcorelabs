@@ -1,8 +1,8 @@
 package flavors
 
 import (
-	"gcloud/gcorecloud-go/gcore/flavor/v1/flavors"
-	"gcloud/gcorecloud-go/gcoreclient/utils"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/flavor/v1/flavors"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
 
 	"github.com/urfave/cli/v2"
 )

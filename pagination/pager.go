@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 var (

@@ -2,8 +2,8 @@ package testing
 
 import (
 	"encoding/json"
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"time"
 )
 

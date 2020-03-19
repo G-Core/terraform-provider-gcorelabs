@@ -8,8 +8,8 @@ export GOPATH=$HOME/go
 mkdir -p "${GOPATH}"
 
 # Download gcorecloud into that environment
-go get gcloud/gcorecloud-go
-cd "${GOPATH}/src/gcloud/gcorecloud-go" || exit 1
+go get bitbucket.gcore.lu/gcloud/gcorecloud-go
+cd "${GOPATH}/src/bitbucket.gcore.lu/gcloud/gcorecloud-go" || exit 1
 git checkout master
 
 # Write out the env.sh convenience file.
@@ -17,7 +17,7 @@ cd "${GOPATH}" || exit 1
 cat <<EOF >env.sh
 #!/bin/bash
 export GOPATH=$(pwd)
-export GOPHERCLOUD=$GOPATH/src/gcloud/gcorecloud-go
+export GOPHERCLOUD=$GOPATH/src/bitbucket.gcore.lu/gcloud/gcorecloud-go
 EOF
 chmod a+x env.sh
 

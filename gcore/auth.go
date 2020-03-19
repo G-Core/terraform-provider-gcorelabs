@@ -1,7 +1,7 @@
 package gcore
 
 import (
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"os"
 	"strconv"
 )

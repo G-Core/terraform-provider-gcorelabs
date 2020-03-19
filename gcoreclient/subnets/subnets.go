@@ -2,11 +2,11 @@ package subnets
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/subnet/v1/subnets"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"gcloud/gcorecloud-go/gcoreclient/flags"
-	"gcloud/gcorecloud-go/gcoreclient/utils"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/subnet/v1/subnets"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
 
 	"github.com/urfave/cli/v2"
 )

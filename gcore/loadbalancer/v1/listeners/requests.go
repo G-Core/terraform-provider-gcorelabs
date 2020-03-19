@@ -1,9 +1,9 @@
 package listeners
 
 import (
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
-	"gcloud/gcorecloud-go/pagination"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 )
 
 func List(c *gcorecloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {

@@ -2,7 +2,7 @@ package testing
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go/testhelper/client"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"strings"
 	"testing"
@@ -10,9 +10,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore"
-	th "gcloud/gcorecloud-go/testhelper"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
+	th "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 var testURL = "/v1/magnum/"

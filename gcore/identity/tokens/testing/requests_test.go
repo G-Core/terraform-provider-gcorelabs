@@ -2,8 +2,8 @@ package testing
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go/gcore"
-	"gcloud/gcorecloud-go/testhelper/client"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
 
@@ -11,9 +11,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/identity/tokens"
-	"gcloud/gcorecloud-go/testhelper"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/identity/tokens"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 // authTokenPost verifies that providing certain AuthOptions results in an expected JSON structure.

@@ -2,9 +2,9 @@ package volumes
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"gcloud/gcorecloud-go/pagination"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 )
 
 type commonResult struct {

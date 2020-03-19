@@ -3,9 +3,9 @@ package gcore
 import (
 	"reflect"
 
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore/identity/tokens"
-	"gcloud/gcorecloud-go/gcore/utils"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/identity/tokens"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/utils"
 )
 
 /*

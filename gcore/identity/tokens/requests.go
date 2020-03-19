@@ -1,7 +1,7 @@
 package tokens
 
 import (
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 func processToken(c *gcorecloud.ServiceClient, opts gcorecloud.AuthOptionsBuilder, url string) (r TokenResult) {

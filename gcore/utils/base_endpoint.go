@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"net/url"
 	"regexp"
 	"strings"

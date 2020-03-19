@@ -3,9 +3,9 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/gcore"
-	"gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"io/ioutil"
 	"os"
 	"path/filepath"

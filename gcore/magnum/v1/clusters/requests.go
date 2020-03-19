@@ -1,8 +1,8 @@
 package clusters
 
 import (
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/pagination"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 )
 
 // ListOptsBuilder allows extensions to add additional parameters to the

@@ -2,8 +2,8 @@ package testing
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go/gcore/heat/v1/stack/resources"
-	fake "gcloud/gcorecloud-go/testhelper/client"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/heat/v1/stack/resources"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
 
@@ -11,7 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	th "gcloud/gcorecloud-go/testhelper"
+	th "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 var stackID = "stack"

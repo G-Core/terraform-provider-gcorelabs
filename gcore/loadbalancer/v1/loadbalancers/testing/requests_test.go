@@ -2,9 +2,9 @@ package testing
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
-	"gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
-	fake "gcloud/gcorecloud-go/testhelper/client"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net"
 	"net/http"
 	"testing"
@@ -13,8 +13,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"gcloud/gcorecloud-go/pagination"
-	th "gcloud/gcorecloud-go/testhelper"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
+	th "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 func prepareListTestURLParams(projectID int, regionID int) string {

@@ -3,7 +3,7 @@ package gcore
 import (
 	"fmt"
 
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 // ErrEndpointNotFound is the error when no suitable endpoint can be found

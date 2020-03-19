@@ -2,7 +2,7 @@ package resources
 
 import (
 	"bytes"
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 // Metadata retrieves metadata for heat resource

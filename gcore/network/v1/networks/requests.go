@@ -1,8 +1,8 @@
 package networks
 
 import (
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/pagination"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 )
 
 func List(c *gcorecloud.ServiceClient) pagination.Pager {

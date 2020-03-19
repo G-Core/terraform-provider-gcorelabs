@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"fmt"
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 // WaitForStatus will continually poll the task resource, checking for a particular

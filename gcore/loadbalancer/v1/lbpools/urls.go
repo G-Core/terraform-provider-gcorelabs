@@ -1,7 +1,7 @@
 package lbpools
 
 import (
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 func resourceURL(c *gcorecloud.ServiceClient, id string) string {

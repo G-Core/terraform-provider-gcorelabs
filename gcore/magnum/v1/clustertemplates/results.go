@@ -3,8 +3,8 @@ package clustertemplates
 import (
 	"time"
 
-	"gcloud/gcorecloud-go"
-	"gcloud/gcorecloud-go/pagination"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 )
 
 type commonResult struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 // Version is a supported API version, corresponding to a vN package within the appropriate service.

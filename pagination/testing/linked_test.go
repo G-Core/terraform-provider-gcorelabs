@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"gcloud/gcorecloud-go/pagination"
-	"gcloud/gcorecloud-go/testhelper"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 // LinkedPager sample and test cases.

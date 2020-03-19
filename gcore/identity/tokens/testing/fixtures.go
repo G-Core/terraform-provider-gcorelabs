@@ -3,12 +3,12 @@ package testing
 import (
 	"encoding/json"
 	"fmt"
-	fake "gcloud/gcorecloud-go/testhelper/client"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
 
-	"gcloud/gcorecloud-go/gcore/identity/tokens"
-	"gcloud/gcorecloud-go/testhelper"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/identity/tokens"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"
 )
 
 // TokenOutput is a sample response to a AccessToken call.
