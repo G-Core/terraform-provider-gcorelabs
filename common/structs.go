@@ -17,8 +17,8 @@ type Projects struct {
 
 //R
 type Region struct {
-	Id            int    `json:"id"`
-	Keystone_name string `json:"keystone_name"`
+	Id           int    `json:"id"`
+	KeystoneName string `json:"keystone_name"`
 }
 
 type Regions struct {
@@ -37,6 +37,11 @@ type Size struct {
 }
 
 //T
+type Task struct {
+	State            string      `json:"state"`
+	CreatedResources interface{} `json:"created_resources,omitempty"`
+}
+
 type TaskIds struct {
 	Ids []string `json:"tasks"`
 }
@@ -56,9 +61,8 @@ type Volume struct {
 }
 
 type OpenstackVolume struct {
-	Size        int           `json:"size"`
-	TypeName    string        `json:"volume_type,omitempty"`
-	Attachments []interface{} `json:"attachments,omitempty"`
+	Size     int    `json:"size"`
+	TypeName string `json:"volume_type,omitempty"`
 }
 
 type VolumeIds struct {
