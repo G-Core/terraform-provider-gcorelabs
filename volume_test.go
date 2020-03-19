@@ -92,6 +92,7 @@ func testAccVolumeTemplate(name string, size int, typeName string) string {
 	resource "gcore_volume" "%s" {
 		name = "%s"
 		size = %d
+		source = "new-volume"
 		type_name = "%s"
 		%s
 		%s
