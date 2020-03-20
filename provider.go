@@ -22,7 +22,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"gcore_volume": resourceVolume(),
+			"gcore_volumeV1": resourceVolumeV1(),
 		},
 	}
 

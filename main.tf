@@ -3,7 +3,7 @@ provider "gcore" {
   password = "P@ssw0rd1!"
 }
 
-resource "gcore_volume" "simple_volume" {
+resource "gcore_volumeV1" "simple_volume" {
   name = 156
   size = 2
   type_name = "ssd_hiiops"
