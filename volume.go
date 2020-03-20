@@ -55,6 +55,10 @@ func resourceVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"source": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
 			"size": &schema.Schema{
 				Type:     schema.TypeInt,
 				Required: true,

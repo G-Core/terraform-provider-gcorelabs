@@ -1,5 +1,12 @@
 package common
 
+//A
+type Auth struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+//I
 type InstanceId struct {
 	InstanceId string `json:"instance_id"`
 }

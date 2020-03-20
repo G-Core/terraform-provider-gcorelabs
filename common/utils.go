@@ -16,9 +16,11 @@ func PostRequest(session *Session, url string, body []byte) (*http.Response, err
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", session.Jwt))
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("User-Agent", session.UserAgent)
+	req.Header.Set("Content-Type", "application/json")
+	if session != nil {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", session.Jwt))
+		req.Header.Add("User-Agent", session.UserAgent)
+	}
 
 	log.Printf("[DEBUG] Try to do request %v", req)
 	resp, err := client.Do(req)
