@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/heat"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flavors"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/heat/resources"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/instances"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/keypairs"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/loadbalancers/loadbalancers"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/magnum/clusters"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/magnum/nodegroups"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/magnum/templates"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/magnum"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/networks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/subnets"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/tasks"
@@ -29,22 +29,9 @@ var commands = []*cli.Command{
 	&subnets.SubnetCommands,
 	&flavors.FlavorCommands,
 	&loadbalancers.LoadBalancerCommands,
-	{
-		Name:  "heat",
-		Usage: "Gcloud Heat API",
-		Subcommands: []*cli.Command{
-			&resources.ResourceCommands,
-		},
-	},
-	{
-		Name:  "magnum",
-		Usage: "Gcloud Magnum API",
-		Subcommands: []*cli.Command{
-			&clusters.ClusterCommands,
-			&templates.ClusterTemplatesCommands,
-			&nodegroups.ClusterNodeGroupCommands,
-		},
-	},
+	&instances.InstanceCommands,
+	&magnum.MagnumsCommand,
+	&heat.HeatsCommand,
 }
 
 func main() {

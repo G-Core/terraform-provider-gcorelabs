@@ -456,6 +456,36 @@ func (jt *JSONRFC3339Z) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jt.Format(RFC3339Z))
 }
 
+// RFC3339ZZ describes a common time format used by some API responses.
+const RFC3339ZZ = "2006-01-02T15:04:05Z"
+
+// JSONRFC3339ZZ describes time.Time in RFC3339ZZ format
+type JSONRFC3339ZZ struct {
+	time.Time
+}
+
+// UnmarshalJSON - implements Unmarshaler interface for JSONRFC3339ZZ
+func (jt *JSONRFC3339ZZ) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	if s == "" {
+		return nil
+	}
+	t, err := time.Parse(RFC3339ZZ, s)
+	if err != nil {
+		return err
+	}
+	jt.Time = t
+	return nil
+}
+
+// MarshalJSON - implements Marshaler interface for JSONRFC3339ZZ
+func (jt *JSONRFC3339ZZ) MarshalJSON() ([]byte, error) {
+	return json.Marshal(jt.Format(RFC3339ZZ))
+}
+
 // RFC3339ZNoT is the time format used in Zun (Containers Service).
 const RFC3339ZNoT = "2006-01-02 15:04:05-07:00"
 
