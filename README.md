@@ -16,10 +16,11 @@ Using the provider
 Provider can be created in ``.tf`` file 
 ```
 provider "gcore" {
-  jwt = "..."
+  username = "..."
+  password = "..."
 }
 ```
-or be set an enviroment variable ``OS_PROJECT_JWT``. Also you can set ``HOST`` and ``OS_TIMEOUT`` to change default values.
+or be set an enviroment variable ``OS_PROJECT_USERNAME`` and ``OS_PROJECT_PASSWORD``. Also you can set ``HOST`` and ``OS_TIMEOUT`` to change default values.
 
 Volume should have the fields:
 ```
