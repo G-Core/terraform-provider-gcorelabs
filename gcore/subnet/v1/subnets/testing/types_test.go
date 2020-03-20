@@ -2,8 +2,9 @@ package testing
 
 import (
 	"encoding/json"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/subnet/v1/subnets"
 	"testing"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/subnet/v1/subnets"
 
 	"github.com/stretchr/testify/require"
 )

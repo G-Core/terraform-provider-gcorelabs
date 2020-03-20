@@ -2,6 +2,7 @@ package resources
 
 import (
 	"bytes"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 

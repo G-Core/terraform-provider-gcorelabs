@@ -1,11 +1,12 @@
 package testing
 
 import (
+	"time"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/network/v1/networks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
-	"time"
 )
 
 const ListResponse = `

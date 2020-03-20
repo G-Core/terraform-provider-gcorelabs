@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 // BaseEndpoint will return a URL without the /vX.Y

@@ -2,9 +2,10 @@ package testing
 
 import (
 	"encoding/json"
+	"time"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"time"
 )
 
 const ListResponse = `

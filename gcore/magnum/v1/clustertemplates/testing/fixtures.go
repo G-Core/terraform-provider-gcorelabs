@@ -1,9 +1,10 @@
 package testing
 
 import (
+	"time"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/clustertemplates"
-	"time"
 )
 
 const ListResponse = `

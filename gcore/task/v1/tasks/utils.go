@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"fmt"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 

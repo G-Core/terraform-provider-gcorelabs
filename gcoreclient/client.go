@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flavors"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/heat/resources"
@@ -14,7 +16,6 @@ import (
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/subnets"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/tasks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/volumes"
-	"os"
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"

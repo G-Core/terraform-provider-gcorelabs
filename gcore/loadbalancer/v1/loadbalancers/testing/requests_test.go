@@ -2,12 +2,13 @@ package testing
 
 import (
 	"fmt"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
-	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net"
 	"net/http"
 	"testing"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/loadbalancers"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 
 	"github.com/stretchr/testify/require"
 

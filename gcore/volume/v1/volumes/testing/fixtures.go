@@ -1,10 +1,11 @@
 package testing
 
 import (
+	"time"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/volume/v1/volumes"
-	"time"
 )
 
 const ListResponse = `

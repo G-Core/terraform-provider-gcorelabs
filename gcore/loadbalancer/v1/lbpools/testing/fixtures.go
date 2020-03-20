@@ -1,10 +1,11 @@
 package testing
 
 import (
+	"net"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/lbpools"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"net"
 )
 
 const ListResponse = `

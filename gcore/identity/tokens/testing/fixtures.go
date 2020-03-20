@@ -3,9 +3,10 @@ package testing
 import (
 	"encoding/json"
 	"fmt"
-	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
+
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/identity/tokens"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper"

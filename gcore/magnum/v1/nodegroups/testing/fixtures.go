@@ -1,9 +1,10 @@
 package testing
 
 import (
+	"net"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/nodegroups"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"net"
 )
 
 const ListResponse = `

@@ -1,10 +1,11 @@
 package lbpools
 
 import (
+	"net"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
-	"net"
 )
 
 func List(c *gcorecloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {

@@ -2,10 +2,11 @@ package testing
 
 import (
 	"fmt"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"strings"
 	"testing"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"

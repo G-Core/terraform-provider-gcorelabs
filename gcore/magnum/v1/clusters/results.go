@@ -2,10 +2,11 @@ package clusters
 
 import (
 	"fmt"
+	"time"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
-	"time"
 )
 
 type commonResult struct {

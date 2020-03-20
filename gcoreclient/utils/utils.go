@@ -3,14 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 
 	"github.com/mitchellh/go-homedir"
 

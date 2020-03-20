@@ -3,10 +3,11 @@ package testing
 import (
 	"encoding/json"
 	"fmt"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/flavor/v1/flavors"
-	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/flavor/v1/flavors"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 
 	"github.com/stretchr/testify/require"
 

@@ -2,14 +2,15 @@ package lbpools
 
 import (
 	"fmt"
+	"net"
+	"strings"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/lbpools"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/loadbalancer/v1/types"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
-	"net"
-	"strings"
 
 	"github.com/urfave/cli/v2"
 )

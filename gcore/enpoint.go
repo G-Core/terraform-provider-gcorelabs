@@ -1,9 +1,10 @@
 package gcore
 
 import (
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"os"
 	"strconv"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 var nilEndpointOptions = gcorecloud.EndpointOpts{}

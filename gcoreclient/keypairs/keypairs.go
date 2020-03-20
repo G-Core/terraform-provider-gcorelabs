@@ -1,10 +1,11 @@
 package keypairs
 
 import (
+	"io/ioutil"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/keypair/v1/keypairs"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
-	"io/ioutil"
 
 	"github.com/urfave/cli/v2"
 )

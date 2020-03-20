@@ -2,10 +2,11 @@ package testing
 
 import (
 	"fmt"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/network/v1/networks"
-	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 	"net/http"
 	"testing"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/network/v1/networks"
+	fake "bitbucket.gcore.lu/gcloud/gcorecloud-go/testhelper/client"
 
 	"github.com/stretchr/testify/require"
 
