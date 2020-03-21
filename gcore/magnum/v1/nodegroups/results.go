@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/types"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
@@ -71,13 +73,13 @@ type ClusterNodeGroup struct {
 
 // ClusterListNodeGroup represents a cluster nodegroup in the list response.
 type ClusterListNodeGroup struct {
-	UUID      string `json:"uuid"`
-	Name      string `json:"name"`
-	FlavorID  string `json:"flavor_id"`
-	ImageID   string `json:"image_id"`
-	NodeCount int    `json:"node_count"`
-	Status    string `json:"status"`
-	Role      string `json:"role"`
+	UUID      string              `json:"uuid"`
+	Name      string              `json:"name"`
+	FlavorID  string              `json:"flavor_id"`
+	ImageID   string              `json:"image_id"`
+	NodeCount int                 `json:"node_count"`
+	Status    string              `json:"status"`
+	Role      types.NodegroupRole `json:"role"`
 }
 
 // ClusterNodeGroupPage is the page returned by a pager when traversing over a

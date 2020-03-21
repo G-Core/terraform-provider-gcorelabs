@@ -226,8 +226,6 @@ func TestGetConfig(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		fmt.Println(string(ConfigResponse))
-
 		_, err := fmt.Fprint(w, string(ConfigResponse))
 		if err != nil {
 			log.Error(err)

@@ -2,6 +2,9 @@ package nodegroups
 
 import (
 	"fmt"
+	"strings"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/types"
 
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/nodegroups"
@@ -12,8 +15,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var nodeGroupIDText = "nodegroup_id is mandatory argument"
-var clusterIDText = "cluster_id is mandatory argument"
+var (
+	nodeGroupIDText = "nodegroup_id is mandatory argument"
+	clusterIDText   = "cluster_id is mandatory argument"
+	nodegroupRoles  = types.NodegroupRole("").StringList()
+)
 
 var nodegroupListSubCommand = cli.Command{
 	Name:      "list",
@@ -24,7 +30,7 @@ var nodegroupListSubCommand = cli.Command{
 		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "list")
-			return err
+			return cli.NewExitError(err, 1)
 		}
 		client, err := utils.BuildClient(c, "magnum", "")
 		if err != nil {
@@ -61,7 +67,7 @@ var nodegroupDeleteSubCommand = cli.Command{
 		nodeGroupID, err := flags.GetFirstArg(c, nodeGroupIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "delete")
-			return err
+			return cli.NewExitError(err, 1)
 		}
 		clusterID := c.String("cluster-id")
 		client, err := utils.BuildClient(c, "magnum", "")
@@ -121,7 +127,7 @@ var nodegroupUpdateSubCommand = cli.Command{
 		nodeGroupID, err := flags.GetFirstArg(c, nodeGroupIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "update")
-			return err
+			return cli.NewExitError(err, 1)
 		}
 		clusterID := c.String("cluster-id")
 		client, err := utils.BuildClient(c, "magnum", "")
@@ -160,7 +166,7 @@ var nodegroupGetSubCommand = cli.Command{
 		nodeGroupID, err := flags.GetFirstArg(c, nodeGroupIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "show")
-			return err
+			return cli.NewExitError(err, 1)
 		}
 		clusterID := c.String("cluster-id")
 		client, err := utils.BuildClient(c, "magnum", "")
@@ -192,8 +198,9 @@ var nodegroupCreateSubCommand = cli.Command{
 		&cli.IntFlag{
 			Name:     "node-count",
 			Usage:    "Node count",
+			Aliases:  []string{"c"},
 			Value:    1,
-			Required: true,
+			Required: false,
 		},
 		&cli.StringFlag{
 			Name:     "flavor-id",
@@ -204,6 +211,15 @@ var nodegroupCreateSubCommand = cli.Command{
 			Name:     "image-id",
 			Usage:    "Node image",
 			Required: true,
+		},
+		&cli.GenericFlag{
+			Name:    "role",
+			Aliases: []string{"r"},
+			Value: &utils.EnumValue{
+				Enum: nodegroupRoles,
+			},
+			Usage:    fmt.Sprintf("output in %s", strings.Join(nodegroupRoles, ", ")),
+			Required: false,
 		},
 		&cli.IntFlag{
 			Name:        "docker-volume-size",
@@ -235,7 +251,7 @@ var nodegroupCreateSubCommand = cli.Command{
 		clusterID, err := flags.GetFirstArg(c, clusterIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "create")
-			return err
+			return cli.NewExitError(err, 1)
 		}
 		client, err := utils.BuildClient(c, "magnum", "")
 		if err != nil {
@@ -247,10 +263,16 @@ var nodegroupCreateSubCommand = cli.Command{
 			_ = cli.ShowAppHelp(c)
 			return cli.NewExitError(err, 1)
 		}
+		role, err := types.NodegroupRole(c.String("role")).ValidOrNil()
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "create")
+			return cli.NewExitError(err, 1)
+		}
 		opts := nodegroups.CreateOpts{
 			Name:             c.String("name"),
 			FlavorID:         c.String("flavor-id"),
 			ImageID:          c.String("image-id"),
+			Role:             role,
 			NodeCount:        c.Int("node-count"),
 			DockerVolumeSize: utils.IntToPointer(c.Int("docker-volume-size")),
 			Labels:           &labels,
@@ -275,11 +297,11 @@ var nodegroupCreateSubCommand = cli.Command{
 			if err != nil {
 				return nil, fmt.Errorf("cannot retrieve nodegroup ID from task info: %w", err)
 			}
-			network, err := nodegroups.Get(client, clusterID, nodegroupID).Extract()
+			nodegroup, err := nodegroups.Get(client, clusterID, nodegroupID).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get nodegroup with ID: %s. Error: %w", nodegroupID, err)
 			}
-			utils.ShowResults(network, c.String("format"))
+			utils.ShowResults(nodegroup, c.String("format"))
 			return nil, nil
 		})
 	},

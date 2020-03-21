@@ -2,6 +2,7 @@ package nodegroups
 
 import (
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/types"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 )
 
@@ -63,14 +64,15 @@ type CreateOptsBuilder interface {
 
 // CreateOpts represents options used to create a cluster nodegroup.
 type CreateOpts struct {
-	Name             string             `json:"name"`
-	FlavorID         string             `json:"flavor_id,omitempty"`
-	ImageID          string             `json:"image_id,omitempty"`
-	NodeCount        int                `json:"node_count"`
-	DockerVolumeSize *int               `json:"docker_volume_size,omitempty"`
-	Labels           *map[string]string `json:"labels,omitempty"`
-	MinNodeCount     *int               `json:"min_node_count,omitempty"`
-	MaxNodeCount     *int               `json:"max_node_count,omitempty"`
+	Name             string               `json:"name" required:"true"`
+	FlavorID         string               `json:"flavor_id,omitempty" required:"true"`
+	ImageID          string               `json:"image_id,omitempty" required:"true"`
+	NodeCount        int                  `json:"node_count" required:"true"`
+	Role             *types.NodegroupRole `json:"role,omitempty"`
+	DockerVolumeSize *int                 `json:"docker_volume_size,omitempty"`
+	Labels           *map[string]string   `json:"labels,omitempty"`
+	MinNodeCount     *int                 `json:"min_node_count,omitempty"`
+	MaxNodeCount     *int                 `json:"max_node_count,omitempty"`
 }
 
 // ToClusterNodeGroupCreateMap builds a request body from CreateOpts.
