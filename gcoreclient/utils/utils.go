@@ -311,17 +311,11 @@ func WaitTaskAndShowResult(
 		}
 		task := results.Tasks[0]
 		waitSeconds := c.Int("wait-seconds")
-		err := tasks.WaitForStatus(client, string(task), tasks.TaskStateFinished, waitSeconds, stopOnTaskError)
+		result, err := tasks.WaitTaskAndReturnResult(client, task, stopOnTaskError, waitSeconds, infoRetriever)
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
-		if infoRetriever != nil {
-			result, err := infoRetriever(task)
-			if err != nil {
-				return cli.NewExitError(err, 1)
-			}
-			ShowResults(result, c.String("format"))
-		}
+		ShowResults(result, c.String("format"))
 	} else {
 		ShowResults(results, c.String("format"))
 	}

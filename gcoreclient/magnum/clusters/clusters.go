@@ -136,11 +136,11 @@ var clusterResizeSubCommand = cli.Command{
 			if err != nil {
 				return nil, fmt.Errorf("cannot retrieve cluster ID from task info: %w", err)
 			}
-			network, err := clusters.Get(client, clusterID).Extract()
+			cluster, err := clusters.Get(client, clusterID).Extract()
 			if err != nil {
 				return nil, fmt.Errorf("cannot get cluster with ID: %s. Error: %w", clusterID, err)
 			}
-			utils.ShowResults(network, c.String("format"))
+			utils.ShowResults(cluster, c.String("format"))
 			return nil, nil
 		})
 
