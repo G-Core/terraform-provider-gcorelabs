@@ -99,7 +99,7 @@ var loadBalancerGetSubCommand = cli.Command{
 	ArgsUsage: "<loadbalancer_id>",
 	Category:  "loadbalancer",
 	Action: func(c *cli.Context) error {
-		clusterID, err := flags.GetFirstArg(c, loadBalancerIDText)
+		loadBalancerID, err := flags.GetFirstArg(c, loadBalancerIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "show")
 			return err
@@ -109,7 +109,7 @@ var loadBalancerGetSubCommand = cli.Command{
 			_ = cli.ShowAppHelp(c)
 			return cli.NewExitError(err, 1)
 		}
-		result, err := loadbalancers.Get(client, clusterID).Extract()
+		result, err := loadbalancers.Get(client, loadBalancerID).Extract()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
@@ -171,7 +171,7 @@ var loadBalancerUpdateSubCommand = cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		clusterID, err := flags.GetFirstArg(c, loadBalancerIDText)
+		loadBalancerID, err := flags.GetFirstArg(c, loadBalancerIDText)
 		if err != nil {
 			_ = cli.ShowCommandHelp(c, "update")
 			return err
@@ -184,7 +184,7 @@ var loadBalancerUpdateSubCommand = cli.Command{
 
 		opts := loadbalancers.UpdateOpts{Name: c.String("name")}
 
-		result, err := loadbalancers.Update(client, clusterID, opts).Extract()
+		result, err := loadbalancers.Update(client, loadBalancerID, opts).Extract()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
