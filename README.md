@@ -69,7 +69,8 @@ Test the provider
 To run tests, set the environment variables:
 ```
 TF_ACC
-OS_PROVIDER_JWT
+OS_PROVIDER_USERNAME
+OS_PROVIDER_PASSWORD
 TEST_PROJECT_ID or TEST_PROJECT_NAME
 TEST_REGION_ID or TEST_REGION_NAME
 ```
