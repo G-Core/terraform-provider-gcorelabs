@@ -277,7 +277,7 @@ func NewIdentity(client *gcorecloud.ProviderClient, eo gcorecloud.EndpointOpts) 
 func initClientOpts(client *gcorecloud.ProviderClient, eo gcorecloud.EndpointOpts, clientType string) (*gcorecloud.ServiceClient, error) {
 	sc := new(gcorecloud.ServiceClient)
 	eo.ApplyDefaults(clientType)
-	url, err := client.EndpointLocator(eo)
+	url, err := gcorecloud.DefaultEndpointLocator(client.IdentityBase)(eo)
 	if err != nil {
 		return sc, err
 	}
@@ -301,12 +301,7 @@ func TokenClientService(options gcorecloud.TokenOptions, eo gcorecloud.EndpointO
 	if err != nil {
 		return nil, err
 	}
-	provider.EndpointLocator = gcorecloud.DefaultEndpointLocator(provider.IdentityBase)
-	client, err := initClientOpts(provider, eo, eo.Type)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
+	return ClientServiceFromProvider(provider, eo)
 }
 
 func AuthClientService(options gcorecloud.AuthOptions, eo gcorecloud.EndpointOpts) (*gcorecloud.ServiceClient, error) {
@@ -314,7 +309,10 @@ func AuthClientService(options gcorecloud.AuthOptions, eo gcorecloud.EndpointOpt
 	if err != nil {
 		return nil, err
 	}
-	provider.EndpointLocator = gcorecloud.DefaultEndpointLocator(provider.IdentityBase)
+	return ClientServiceFromProvider(provider, eo)
+}
+
+func ClientServiceFromProvider(provider *gcorecloud.ProviderClient, eo gcorecloud.EndpointOpts) (*gcorecloud.ServiceClient, error) {
 	client, err := initClientOpts(provider, eo, eo.Type)
 	if err != nil {
 		return nil, err
