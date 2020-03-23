@@ -59,7 +59,7 @@ func TestList(t *testing.T) {
 		ng2 := actual[1]
 		require.Equal(t, NodeGroupList1, ng1)
 		require.Equal(t, NodeGroupList2, ng2)
-		require.Equal(t, ExpectedClusterNodeGroupSlice, actual)
+		require.Equal(t, ExpectedClusterListNodeGroupSlice, actual)
 		return true, nil
 	})
 
@@ -68,6 +68,61 @@ func TestList(t *testing.T) {
 	if count != 1 {
 		t.Errorf("Expected 1 page, got %d", count)
 	}
+}
+
+func TestAll(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+
+	th.Mux.HandleFunc(prepareListTestURL(), func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprint(w, ListResponse)
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	th.Mux.HandleFunc(prepareGetTestURL(NodeGroup1.UUID), func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		_, err := fmt.Fprint(w, GetResponse1)
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	th.Mux.HandleFunc(prepareGetTestURL(NodeGroup2.UUID), func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		_, err := fmt.Fprint(w, GetResponse2)
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	client := fake.ServiceTokenClient("magnum", "v1")
+
+	groups, err := nodegroups.ListAll(client, NodeGroup1.ClusterID)
+	require.NoError(t, err)
+	require.Len(t, groups, 2)
+	ng1 := groups[0]
+	ng2 := groups[1]
+	require.Equal(t, NodeGroup1, ng1)
+	require.Equal(t, NodeGroup2, ng2)
+	require.Equal(t, ExpectedClusterNodeGroupSlice, groups)
+
 }
 
 func TestGet(t *testing.T) {
@@ -82,7 +137,7 @@ func TestGet(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := fmt.Fprint(w, GetResponse)
+		_, err := fmt.Fprint(w, GetResponse1)
 		if err != nil {
 			log.Error(err)
 		}

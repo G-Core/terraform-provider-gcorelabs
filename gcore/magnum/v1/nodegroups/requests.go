@@ -162,3 +162,32 @@ func IDFromName(client *gcorecloud.ServiceClient, clusterID, name string) (strin
 		return "", gcorecloud.ErrMultipleResourcesFound{Name: name, Count: count, ResourceType: "nodegroups"}
 	}
 }
+
+// ListAll is a convenience function that returns a all cluster nodegroups.
+func ListAll(client *gcorecloud.ServiceClient, clusterID string) ([]ClusterNodeGroup, error) {
+
+	listOpts := ListOpts{}
+
+	var nodegroups []ClusterNodeGroup
+
+	pages, err := List(client, clusterID, listOpts).AllPages()
+	if err != nil {
+		return nil, err
+	}
+
+	all, err := ExtractClusterNodeGroups(pages)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range all {
+		nodegroup, err := Get(client, clusterID, s.UUID).Extract()
+		if err != nil {
+			return nil, err
+		}
+		nodegroups = append(nodegroups, *nodegroup)
+	}
+
+	return nodegroups, nil
+
+}
