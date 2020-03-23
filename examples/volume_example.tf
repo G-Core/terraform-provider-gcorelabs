@@ -1,4 +1,4 @@
-resource "gcore_volume" "volume_example" {
+resource "gcore_volumeV1" "volume_example" {
   name = "volume_example"
   size = 1
   type_name = "standard"
