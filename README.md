@@ -39,25 +39,25 @@ also in volume body you should set
 ### Import 
 Existing volumes can be loaded from the cloud. Firstly, create a new volume record for a loading volume in a ``.tf`` file:
 ```
-resource "gcore_volume" "<loading_volume_name>" {
+resource "gcore_volumeV1" "<loading_volume_name>" {
 }
 ```
 
 then run in a teminal:
 ```
-terraform import gcore_volume.<loading_volume_name> <project_id>:<region_id>:<loading_volume_uuid>
+terraform import gcore_volumeV1.<loading_volume_name> <project_id>:<region_id>:<loading_volume_uuid>
 ```
 
    ###### Example:
    in main.tf add:
       ```
-      resource "gcore_volume" "foo" {
+      resource "gcore_volumeV1" "foo" {
       }
       ```
    
    then in a command line:
       ```
-      terraform import gcore_volume.foo 2:1:7057f675-ed04-4001-9025-b58e34cd7327
+      terraform import gcore_volumeV1.foo 2:1:7057f675-ed04-4001-9025-b58e34cd7327
       ```
    where ``project id = 2``, ``regiont id = 1``. Project id and region id will be saved in state of this volume.
 
