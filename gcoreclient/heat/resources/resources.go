@@ -1,15 +1,23 @@
 package resources
 
 import (
+	"fmt"
+	"strings"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/heat/v1/stack/resources"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/heat/v1/stack/resources/types"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/flags"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcoreclient/utils"
 
 	"github.com/urfave/cli/v2"
 )
 
-var resourceNameText = "resource_id is mandatory argument"
-var stackIDText = "stack_id is mandatory argument"
+var (
+	resourceNameText      = "resource_id is mandatory argument"
+	stackIDText           = "stack_id is mandatory argument"
+	stackResourceActions  = types.StackResourceAction("").StringList()
+	stackResourceStatuses = types.StackResourceStatus("").StringList()
+)
 
 var resourceMetadataSubCommand = cli.Command{
 	Name:      "metadata",
@@ -123,6 +131,56 @@ var resourceListSubCommand = cli.Command{
 	Usage:     "Stack resources",
 	ArgsUsage: "<stack_id>",
 	Category:  "heat",
+	Flags: []cli.Flag{
+		&cli.StringSliceFlag{
+			Name:     "type",
+			Aliases:  []string{"t"},
+			Usage:    "Stack resource type",
+			Required: false,
+		},
+		&cli.StringSliceFlag{
+			Name:     "name",
+			Aliases:  []string{"n"},
+			Usage:    "Stack resource name",
+			Required: false,
+		},
+		&cli.StringSliceFlag{
+			Name:     "physical-resource-id",
+			Usage:    "Stack physical resource id",
+			Required: false,
+		},
+		&cli.StringSliceFlag{
+			Name:     "logical-resource-id",
+			Usage:    "Stack logical resource id",
+			Required: false,
+		},
+		&cli.GenericFlag{
+			Name: "status",
+			Value: &utils.EnumStringSliceValue{
+				Enum: stackResourceStatuses,
+			},
+			Usage:    fmt.Sprintf("output in %s", strings.Join(stackResourceStatuses, ", ")),
+			Required: false,
+		},
+		&cli.GenericFlag{
+			Name: "action",
+			Value: &utils.EnumStringSliceValue{
+				Enum: stackResourceActions,
+			},
+			Usage:    fmt.Sprintf("output in %s", strings.Join(stackResourceActions, ", ")),
+			Required: false,
+		},
+		&cli.IntFlag{
+			Name:     "nested-depth",
+			Usage:    "includes resources from nested stacks up to the nested-depth",
+			Required: false,
+		},
+		&cli.BoolFlag{
+			Name:     "with-detail",
+			Usage:    "enables detailed resource information",
+			Required: false,
+		},
+	},
 	Action: func(c *cli.Context) error {
 		stackID, err := flags.GetFirstArg(c, stackIDText)
 		if err != nil {
@@ -135,7 +193,29 @@ var resourceListSubCommand = cli.Command{
 			_ = cli.ShowAppHelp(c)
 			return cli.NewExitError(err, 1)
 		}
-		result, err := resources.ListAll(client, stackID)
+
+		var statuses []types.StackResourceStatus
+		var actions []types.StackResourceAction
+
+		for _, s := range utils.GetEnumStringSliceValue(c, "status") {
+			statuses = append(statuses, types.StackResourceStatus(s))
+		}
+		for _, a := range utils.GetEnumStringSliceValue(c, "action") {
+			actions = append(actions, types.StackResourceAction(a))
+		}
+
+		opts := resources.ListOpts{
+			Type:               c.StringSlice("type"),
+			Name:               c.StringSlice("name"),
+			Status:             statuses,
+			Action:             actions,
+			LogicalResourceID:  c.StringSlice("logical-resource-id"),
+			PhysicalResourceID: c.StringSlice("physical-resource-id"),
+			NestedDepth:        utils.IntToPointer(c.Int("nested-depth")),
+			WithDetail:         utils.BoolToPointer(c.Bool("with-detail")),
+		}
+
+		result, err := resources.ListAll(client, stackID, opts)
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}

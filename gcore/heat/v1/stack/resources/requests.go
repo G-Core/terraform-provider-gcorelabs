@@ -3,6 +3,8 @@ package resources
 import (
 	"bytes"
 
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/heat/v1/stack/resources/types"
+
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
@@ -34,13 +36,14 @@ type ListOptsBuilder interface {
 
 // ListOpts allows the filtering and sorting of paginated collections through the API.
 type ListOpts struct {
-	Type               []string `q:"type"`
-	Status             []string `q:"status"`
-	Name               []string `q:"name"`
-	LogicalResourceID  []string `q:"id"`
-	PhysicalResourceID []string `q:"physical_resource_id"`
-	NestedDepth        int      `q:"nested_depth"`
-	WithDetail         bool     `q:"with_detail"`
+	Type               []string                    `q:"type"`
+	Name               []string                    `q:"name"`
+	Status             []types.StackResourceStatus `q:"status"`
+	Action             []types.StackResourceAction `q:"name"`
+	LogicalResourceID  []string                    `q:"id"`
+	PhysicalResourceID []string                    `q:"physical_resource_id"`
+	NestedDepth        *int                        `q:"nested_depth"`
+	WithDetail         *bool                       `q:"with_detail"`
 }
 
 // ToListenerListQuery formats a ListOpts into a query string.
@@ -75,11 +78,8 @@ func Get(c *gcorecloud.ServiceClient, stackID, resourceName string) (r GetResult
 }
 
 // ListAll is a convenience function that returns a all stack resources.
-func ListAll(client *gcorecloud.ServiceClient, stackID string) ([]ResourceList, error) {
-
-	listOpts := ListOpts{}
-
-	pages, err := List(client, stackID, listOpts).AllPages()
+func ListAll(client *gcorecloud.ServiceClient, stackID string, opts ListOptsBuilder) ([]ResourceList, error) {
+	pages, err := List(client, stackID, opts).AllPages()
 	if err != nil {
 		return nil, err
 	}

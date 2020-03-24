@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"time"
 
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
@@ -20,6 +21,10 @@ import (
 	"github.com/fatih/structs"
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli/v2"
+)
+
+var (
+	slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 )
 
 type EnumValue struct {
@@ -44,6 +49,50 @@ func (e EnumValue) String() string {
 		return e.Default
 	}
 	return e.selected
+}
+
+type EnumStringSliceValue struct {
+	Enum     []string
+	Default  string
+	selected []string
+}
+
+func (e *EnumStringSliceValue) Set(value string) error {
+	for _, enum := range e.Enum {
+		if enum == value {
+			e.selected = append(e.selected, value)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("allowed values are %s", strings.Join(e.Enum, ", "))
+}
+
+func (e EnumStringSliceValue) String() string {
+	if len(e.selected) == 0 {
+		return fmt.Sprintf("%s", []string{e.Default})
+	}
+	return fmt.Sprintf("%s", e.selected)
+}
+
+// Serialize allows EnumStringSliceValue to fulfill Serializer
+func (e EnumStringSliceValue) Serialize() string {
+	jsonBytes, _ := json.Marshal(e.selected)
+	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
+}
+
+// Value returns the slice of strings set by this flag
+func (e EnumStringSliceValue) Value() []string {
+	return e.selected
+}
+
+// Get returns the slice of strings set by this flag
+func (e EnumStringSliceValue) Get() interface{} {
+	return e
+}
+
+func GetEnumStringSliceValue(c *cli.Context, name string) []string {
+	return c.Value(name).(EnumStringSliceValue).Value()
 }
 
 func BuildTokenClient(c *cli.Context, endpointName, endpointType string) (*gcorecloud.ServiceClient, error) {
