@@ -59,7 +59,7 @@ var stackGetSubCommand = cli.Command{
 }
 
 var StackCommands = cli.Command{
-	Name:  "stacks",
+	Name:  "stack",
 	Usage: "Heat stacks commands",
 	Subcommands: []*cli.Command{
 		&stackGetSubCommand,
