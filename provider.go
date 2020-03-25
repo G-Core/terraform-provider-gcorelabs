@@ -36,11 +36,11 @@ func Provider() terraform.ResourceProvider {
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	username := d.Get("username").(string)
 	if username == "" {
-		username = os.Getenv("OS_PROVIDER_USERNAME")
+		username = os.Getenv("GCORE_PROVIDER_USERNAME")
 	}
 	password := d.Get("password").(string)
 	if password == "" {
-		password = os.Getenv("OS_PROVIDER_PASSWORD")
+		password = os.Getenv("GCORE_PROVIDER_PASSWORD")
 	}
 	session, err := common.GetJwt(username, password)
 	return &session, err
