@@ -12,17 +12,35 @@ import (
 
 // Helper functions for work with projects and regions
 
+type Project struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type Projects struct {
+	Count   int       `json:"count"`
+	Results []Project `json:"results"`
+}
+
+type Region struct {
+	Id           int    `json:"id"`
+	DisplayName string `json:"display_name"`
+}
+
+type Regions struct {
+	Count   int      `json:"count"`
+	Results []Region `json:"results"`
+}
+
 // CheckValueExisting gets id and name and checks that only one value is filled in
 func CheckValueExisting(id int, name string, objectType string, infoMessage string) error {
 	if id == 0 && name == "" {
 		return fmt.Errorf("Missing value: set %s_id or %s_name to %s", objectType, objectType, infoMessage)
-	} else if id != 0 && name != "" {
-		return fmt.Errorf("Invalid value: use one of fields: %s_id or %s_name, - not together (%s)", objectType, objectType, infoMessage)
-	}
+	} 
 	return nil
 }
 
-func findProjectByName(arr []common.Project, name string) (int, error) {
+func findProjectByName(arr []Project, name string) (int, error) {
 	for _, el := range arr {
 		if el.Name == name {
 			return el.Id, nil
@@ -54,7 +72,7 @@ func GetProject(session *common.Session, d *schema.ResourceData, infoMessage str
 		return 0, fmt.Errorf("Can't get projects")
 	}
 
-	var projectsData common.Projects
+	var projectsData Projects
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return 0, err
@@ -72,9 +90,9 @@ func GetProject(session *common.Session, d *schema.ResourceData, infoMessage str
 	return projectID, nil
 }
 
-func findRegionByName(arr []common.Region, name string) (int, error) {
+func findRegionByName(arr []Region, name string) (int, error) {
 	for _, el := range arr {
-		if el.KeystoneName == name {
+		if el.DisplayName == name {
 			return el.Id, nil
 		}
 	}
@@ -103,7 +121,7 @@ func GetRegion(session *common.Session, d *schema.ResourceData, infoMessage stri
 		return 0, fmt.Errorf("Can't get regions")
 	}
 
-	var regionsData common.Regions
+	var regionsData Regions
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return 0, err

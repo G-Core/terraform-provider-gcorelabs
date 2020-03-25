@@ -10,13 +10,22 @@ import (
 	"git.gcore.com/terraform-provider-gcore/common"
 )
 
+type Task struct {
+	State            string      `json:"state"`
+	CreatedResources interface{} `json:"created_resources,omitempty"`
+}
+
+type TaskIds struct {
+	Ids []string `json:"tasks"`
+}
+
 func taskURL(taskID string) string {
 	return fmt.Sprintf("%stasks/%s", common.HOST, taskID)
 }
 
-func getTask(session *common.Session, url string) (common.Task, error) {
+func getTask(session *common.Session, url string) (Task, error) {
 	// do a request
-	var task = common.Task{}
+	var task = Task{}
 	resp, err := common.GetRequest(session, url)
 	if err != nil {
 		return task, err
@@ -56,8 +65,8 @@ func taskWait(session *common.Session, taskID string) (interface{}, error) {
 	return nil, nil
 }
 
-func fullTaskWait(session *common.Session, resp *http.Response) (interface{}, error) {
-	tasks := new(common.TaskIds)
+func FullTaskWait(session *common.Session, resp *http.Response) (interface{}, error) {
+	tasks := new(TaskIds)
 	err := json.NewDecoder(resp.Body).Decode(tasks)
 	if err != nil {
 		return nil, err

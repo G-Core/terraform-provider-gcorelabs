@@ -18,6 +18,16 @@ func Provider() terraform.ResourceProvider {
 			"password": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Sensitive: true,	// protection from logging
+			},
+			"platform_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Description: "Platform ulr is used for generate jwt.",
+			},
+			"host": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 
@@ -33,6 +43,11 @@ func Provider() terraform.ResourceProvider {
 	return provider
 }
 
+type config struct {
+	session	common.Session
+	host	string
+}
+
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	username := d.Get("username").(string)
 	if username == "" {
@@ -42,6 +57,24 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	if password == "" {
 		password = os.Getenv("GCORE_PROVIDER_PASSWORD")
 	}
-	session, err := common.GetJwt(username, password)
-	return &session, err
+
+	host := getProviderParameter(d, "host", "GCORE_HOST", common.DefaultGcoreCloudHost)
+	platformURL := getProviderParameter(d, "platform_url", "GCORE_PLATFORM_URL", common.DefaultPlatformUrl)
+	session, err := common.GetJwt(platformURL, username, password)
+	config := config{
+		session: session,
+		host: host,
+	}
+	return &config, err
+}
+
+func getProviderParameter(d *schema.ResourceData, parameterName string, envVariableName string, defaultValue string) string {
+	parameter := d.Get(parameterName).(string)
+	if parameter == ""{
+		parameter = os.Getenv(envVariableName)
+	}
+	if parameter == ""{
+		parameter = defaultValue
+	}
+	return parameter
 }
