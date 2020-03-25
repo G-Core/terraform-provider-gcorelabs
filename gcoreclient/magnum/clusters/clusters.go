@@ -2,6 +2,10 @@ package clusters
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/types"
 
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/clusters"
@@ -12,7 +16,10 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var clusterIDText = "cluster_id is mandatory argument"
+var (
+	clusterIDText     = "cluster_id is mandatory argument"
+	clusterUpdateOpts = types.ClusterUpdateOperation("").StringList()
+)
 
 var clusterListSubCommand = cli.Command{
 	Name:     "list",
@@ -189,6 +196,102 @@ var clusterUpgradeSubCommand = cli.Command{
 		}
 
 		results, err := clusters.Upgrade(client, clusterID, opts).ExtractTasks()
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+
+		return utils.WaitTaskAndShowResult(c, client, results, true, func(task tasks.TaskID) (interface{}, error) {
+			taskInfo, err := tasks.Get(client, string(task)).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+			}
+			clusterID, err := clusters.ExtractClusterIDFromTask(taskInfo)
+			if err != nil {
+				return nil, fmt.Errorf("cannot retrieve cluster ID from task info: %w", err)
+			}
+			network, err := clusters.Get(client, clusterID).Extract()
+			if err != nil {
+				return nil, fmt.Errorf("cannot get cluster with ID: %s. Error: %w", clusterID, err)
+			}
+			utils.ShowResults(network, c.String("format"))
+			return nil, nil
+		})
+
+	},
+}
+
+var clusterUpdateSubCommand = cli.Command{
+	Name:      "update",
+	Usage:     "Magnum update cluster",
+	ArgsUsage: "<cluster_id>",
+	Category:  "cluster",
+	Flags: append([]cli.Flag{
+		&cli.StringSliceFlag{
+			Name:     "path",
+			Aliases:  []string{"p"},
+			Usage:    "Update json path. Example /node/count",
+			Required: true,
+		},
+		&cli.StringSliceFlag{
+			Name:     "value",
+			Aliases:  []string{"v"},
+			Usage:    "Update json value",
+			Required: true,
+		},
+		&cli.GenericFlag{
+			Name:    "op",
+			Aliases: []string{"o"},
+			Value: &utils.EnumStringSliceValue{
+				Enum: clusterUpdateOpts,
+			},
+			Usage:    fmt.Sprintf("output in %s", strings.Join(clusterUpdateOpts, ", ")),
+			Required: false,
+		},
+	}, flags.WaitCommandFlags...),
+	Action: func(c *cli.Context) error {
+		clusterID, err := flags.GetFirstArg(c, clusterIDText)
+		if err != nil {
+			_ = cli.ShowCommandHelp(c, "update")
+			return cli.NewExitError(err, 1)
+		}
+		client, err := utils.BuildClient(c, "magnum", "")
+		if err != nil {
+			_ = cli.ShowAppHelp(c)
+			return cli.NewExitError(err, 1)
+		}
+
+		paths := c.StringSlice("path")
+		values := c.StringSlice("value")
+		ops := utils.GetEnumStringSliceValue(c, "op")
+
+		if len(paths) != len(values) || len(values) != len(ops) {
+			_ = cli.ShowCommandHelp(c, "update")
+			return cli.NewExitError(fmt.Errorf("path, value and op parameters number should be same"), 1)
+		}
+
+		var opts clusters.UpdateOpts
+
+		for idx, path := range paths {
+			if !strings.HasPrefix(path, "/") {
+				return cli.NewExitError(fmt.Errorf("path parameter should be in format /value"), 1)
+			}
+			var updateValue interface{}
+			value := values[idx]
+			intValue, err := strconv.Atoi(value)
+			if err == nil {
+				updateValue = intValue
+			} else {
+				updateValue = value
+			}
+			el := clusters.UpdateOptsElem{
+				Path:  path,
+				Value: updateValue,
+				Op:    types.ClusterUpdateOperation(ops[idx]),
+			}
+			opts = append(opts, el)
+		}
+
+		results, err := clusters.Update(client, clusterID, opts).ExtractTasks()
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
@@ -471,6 +574,7 @@ var ClusterCommands = cli.Command{
 		&clusterCreateSubCommand,
 		&clusterResizeSubCommand,
 		&clusterUpgradeSubCommand,
+		&clusterUpdateSubCommand,
 		&clusterConfigSubCommand,
 	},
 }

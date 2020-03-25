@@ -166,7 +166,7 @@ func TestListAll(t *testing.T) {
 
 	client := fake.ServiceTokenClient("heat", "v1")
 
-	actual, err := resources.ListAll(client, stackID)
+	actual, err := resources.ListAll(client, stackID, nil)
 	require.NoError(t, err)
 	ct := actual[0]
 	require.Equal(t, StackResourceList1, ct)

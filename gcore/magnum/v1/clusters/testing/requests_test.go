@@ -39,6 +39,10 @@ func prepareGetTestURL(id string) string {
 	return prepareGetTestURLParams(fake.ProjectID, fake.RegionID, id)
 }
 
+func prepareUpdateTestURL(id string) string {
+	return prepareGetTestURLParams(fake.ProjectID, fake.RegionID, id)
+}
+
 func prepareGetConfigTestURL(id string) string {
 	return prepareClusterTestURLParams(fake.ProjectID, fake.RegionID, id, "config")
 }
@@ -271,6 +275,38 @@ func TestUpgrade(t *testing.T) {
 
 	client := fake.ServiceTokenClient("magnum", "v1")
 	tasks, err := clusters.Upgrade(client, Cluster1.UUID, options).ExtractTasks()
+	require.NoError(t, err)
+	require.Equal(t, Tasks1, *tasks)
+
+}
+
+func TestUpdate(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+
+	th.Mux.HandleFunc(prepareUpdateTestURL(Cluster1.UUID), func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "PATCH")
+		th.TestHeader(t, r, "Authorization", fmt.Sprintf("Bearer %s", fake.AccessToken))
+		th.TestHeader(t, r, "Content-Type", "application/json")
+		th.TestHeader(t, r, "Accept", "application/json")
+		th.TestJSONRequest(t, r, UpdateRequest)
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+
+		_, err := fmt.Fprint(w, UpdateResponse)
+		if err != nil {
+			log.Error(err)
+		}
+	})
+
+	options := clusters.UpdateOpts{clusters.UpdateOptsElem{
+		Path:  "/node_count",
+		Value: 2,
+		Op:    "replace",
+	}}
+
+	client := fake.ServiceTokenClient("magnum", "v1")
+	tasks, err := clusters.Update(client, Cluster1.UUID, options).ExtractTasks()
 	require.NoError(t, err)
 	require.Equal(t, Tasks1, *tasks)
 

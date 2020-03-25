@@ -35,6 +35,52 @@ above.
 
 var trueTag = "true"
 
+func BuildSliceRequestBody(opts interface{}) ([]map[string]interface{}, error) { // nolint: gocyclo
+	optsValue := reflect.ValueOf(opts)
+	if optsValue.Kind() == reflect.Ptr {
+		optsValue = optsValue.Elem()
+	}
+
+	optsType := reflect.TypeOf(opts)
+	if optsType.Kind() == reflect.Ptr {
+		optsType = optsType.Elem()
+	}
+
+	optsSlice := make([]map[string]interface{}, 0)
+
+	if optsType.Kind() == reflect.Slice || (optsType.Kind() == reflect.Ptr && optsType.Elem().Kind() == reflect.Slice) {
+		sliceValue := optsValue
+		if sliceValue.Kind() == reflect.Ptr {
+			sliceValue = sliceValue.Elem()
+		}
+
+		for i := 0; i < sliceValue.Len(); i++ {
+			element := sliceValue.Index(i)
+			if element.Kind() == reflect.Struct || (element.Kind() == reflect.Ptr && element.Elem().Kind() == reflect.Struct) {
+				_, err := BuildRequestBody(element.Interface(), "")
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		b, err := json.Marshal(opts)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(b, &optsSlice)
+		if err != nil {
+			return nil, err
+		}
+
+		return optsSlice, nil
+
+	}
+	return nil, fmt.Errorf("options type is not a slice")
+
+}
+
 func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, error) { // nolint: gocyclo
 
 	optsValue := reflect.ValueOf(opts)

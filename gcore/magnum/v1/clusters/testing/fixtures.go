@@ -124,6 +124,16 @@ const ResizeRequest = `
 }
 `
 
+const UpdateRequest = `
+[
+	{
+		"path": "/node_count",
+		"value": 2,
+		"op": "replace"
+	}
+]
+`
+
 const UpgradeRequest = `
 {
     "cluster_template": "test",
@@ -147,6 +157,14 @@ const DeleteResponse = `
 }
 `
 const ResizeResponse = `
+{
+  "tasks": [
+    "50f53a35-42ed-40c4-82b2-5a37fb3e00bc"
+  ]
+}
+`
+
+const UpdateResponse = `
 {
   "tasks": [
     "50f53a35-42ed-40c4-82b2-5a37fb3e00bc"

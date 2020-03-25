@@ -32,6 +32,10 @@ func getURL(c *gcorecloud.ServiceClient, id string) string {
 	return resourceURL(c, id)
 }
 
+func updateURL(c *gcorecloud.ServiceClient, id string) string {
+	return resourceURL(c, id)
+}
+
 func listURL(c *gcorecloud.ServiceClient) string {
 	return rootURL(c)
 }

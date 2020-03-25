@@ -2,6 +2,7 @@ package clusters
 
 import (
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/magnum/v1/types"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/pagination"
 )
 
@@ -156,6 +157,39 @@ func Upgrade(c *gcorecloud.ServiceClient, clusterID string, opts UpgradeOptsBuil
 	return
 }
 
+// UpdateOptsBuilder allows extensions to add additional parameters to the Update request.
+type UpdateOptsBuilder interface {
+	ToClusterUpdateMap() ([]map[string]interface{}, error)
+}
+
+// UpdateOpts represents options used to update a cluster.
+type UpdateOpts []UpdateOptsElem
+
+// UpdateOptsElem represents options used to update a cluster.
+type UpdateOptsElem struct {
+	Path  string                       `json:"path" required:"true"`
+	Value interface{}                  `json:"value" required:"true"`
+	Op    types.ClusterUpdateOperation `json:"op" required:"true"`
+}
+
+// Update accepts a struct and updates an existing cluster using the values provided.
+func Update(c *gcorecloud.ServiceClient, clusterID string, opts UpdateOptsBuilder) (r UpdateResult) {
+	b, err := opts.ToClusterUpdateMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	_, r.Err = c.Patch(updateURL(c, clusterID), b, &r.Body, &gcorecloud.RequestOpts{
+		OkCodes: []int{200, 201},
+	})
+	return
+}
+
+// ToClusterUpdateMap builds a request body from UpdateOpts.
+func (opts UpdateOpts) ToClusterUpdateMap() ([]map[string]interface{}, error) {
+	return gcorecloud.BuildSliceRequestBody(opts)
+}
+
 // Delete accepts a unique ID and deletes the cluster associated with it.
 func Delete(c *gcorecloud.ServiceClient, clusterID string) (r DeleteResult) {
 	_, r.Err = c.DeleteWithResponse(deleteURL(c, clusterID), &r.Body, nil)
@@ -166,38 +200,4 @@ func Delete(c *gcorecloud.ServiceClient, clusterID string) (r DeleteResult) {
 func GetConfig(c *gcorecloud.ServiceClient, clusterID string) (r ConfigResult) {
 	_, r.Err = c.Get(configURL(c, clusterID), &r.Body, nil)
 	return
-}
-
-// IDFromName is a convenience function that returns a cluster ID, given its name.
-func IDFromName(client *gcorecloud.ServiceClient, name string) (string, error) {
-	count := 0
-	id := ""
-
-	listOpts := ListOpts{}
-
-	pages, err := List(client, listOpts).AllPages()
-	if err != nil {
-		return "", err
-	}
-
-	all, err := ExtractClusters(pages)
-	if err != nil {
-		return "", err
-	}
-
-	for _, s := range all {
-		if s.Name == name {
-			count++
-			id = s.UUID
-		}
-	}
-
-	switch count {
-	case 0:
-		return "", gcorecloud.ErrResourceNotFound{Name: name, ResourceType: "clusters"}
-	case 1:
-		return id, nil
-	default:
-		return "", gcorecloud.ErrMultipleResourcesFound{Name: name, Count: count, ResourceType: "clusters"}
-	}
 }
