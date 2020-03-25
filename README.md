@@ -20,7 +20,7 @@ provider "gcore" {
   password = "..."
 }
 ```
-or be set an enviroment variable ``OS_PROJECT_USERNAME`` and ``OS_PROJECT_PASSWORD``. Also you can set ``HOST`` and ``OS_TIMEOUT`` to change default values.
+or be set an enviroment variable ``GCORE_PROVIDER_USERNAME`` and ``GCORE_PROVIDER_PASSWORD``. Also you can set ``HOST`` and ``GCORE_TIMEOUT`` to change default values.
 
 Volume should have the fields:
 ```
@@ -69,8 +69,8 @@ Test the provider
 To run tests, set the environment variables:
 ```
 TF_ACC
-OS_PROVIDER_USERNAME
-OS_PROVIDER_PASSWORD
+GCORE_PROVIDER_USERNAME
+GCORE_PROVIDER_PASSWORD
 TEST_PROJECT_ID or TEST_PROJECT_NAME
 TEST_REGION_ID or TEST_REGION_NAME
 ```

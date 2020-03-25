@@ -7,7 +7,7 @@ import (
 )
 
 func getHost() string {
-	host := os.Getenv("OS_HOST")
+	host := os.Getenv("GCORE_HOST")
 	if host == "" {
 		host = "http://localhost:8888/v1/"
 	}
@@ -15,7 +15,7 @@ func getHost() string {
 }
 
 func getTimeout() time.Duration {
-	defaultTimeout := os.Getenv("OS_TIMEOUT")
+	defaultTimeout := os.Getenv("GCORE_TIMEOUT")
 	if defaultTimeout == "" {
 		defaultTimeout = "10"
 	}

@@ -27,8 +27,8 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if os.Getenv("OS_PROVIDER_JWT") == "" {
-		t.Fatal("OS_PROVIDER_JWT must be set for acceptance tests")
+	if os.Getenv("GCORE_PROVIDER_JWT") == "" {
+		t.Fatal("GCORE_PROVIDER_JWT must be set for acceptance tests")
 	}
 	checkNameAndID("PROJECT", t)
 	checkNameAndID("REGION", t)
