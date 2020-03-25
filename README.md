@@ -28,11 +28,11 @@ size        int    required
 source      string required, one of 'new-volume', 'image', 'snapshot'
 name        string required
 type_name   string optional, one of 'standard', 'ssd_hiiops', 'cold'
-image_id    string optional
-snapshot_id string optional
-count       int    optional
+image_id    string optional, it must be used when source is 'image'
+snapshot_id string optional, is must be used when source is 'snapshot'
+count       int    optional, set it if you want create more objects than one
 ```
-also in volume body you should set 
+also in volume body you must set 
 1. ``project_id``(int) or ``project_name``(string)
 2. ``region_id``(int) or ``region_name``(string)
 

@@ -7,17 +7,27 @@ import (
 )
 
 type respPlatform struct {
-	Access string `json: "access"`
+	AccessKey string `json: "access"`
 }
 
-func GetJwt(usename string, password string) (Session, error) {
+type auth struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type Session struct {
+	Jwt       string
+}
+
+func GetJwt(platformURL string, usename string, password string) (Session, error) {
 	var session = Session{}
-	var bodyData = Auth{usename, password}
+	var bodyData = auth{usename, password}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return session, err
 	}
-	resp, err := PostRequest(nil, "http://10.100.179.50:8000/auth/jwt/login", body)
+
+	resp, err := PostRequest(nil, platformURL, body)
 	if err != nil {
 		return session, err
 	}
@@ -33,9 +43,8 @@ func GetJwt(usename string, password string) (Session, error) {
 	if err != nil {
 		return session, err
 	}
-	log.Printf("Access!%s", parsedResp.Access)
+	log.Printf("Access!%s", parsedResp.AccessKey)
 	return Session{
-		Jwt:       parsedResp.Access,
-		UserAgent: "Terraform/Go",
+		Jwt:       parsedResp.AccessKey,
 	}, nil
 }

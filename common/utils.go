@@ -19,7 +19,7 @@ func PostRequest(session *Session, url string, body []byte) (*http.Response, err
 	req.Header.Set("Content-Type", "application/json")
 	if session != nil {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", session.Jwt))
-		req.Header.Add("User-Agent", session.UserAgent)
+		req.Header.Add("User-Agent", "Terraform/Go")
 	}
 
 	log.Printf("[DEBUG] Try to do request %v", req)
@@ -37,7 +37,7 @@ func SimpleRequest(session *Session, requestType string, url string) (*http.Resp
 		return nil, err
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", session.Jwt))
-	req.Header.Add("User-Agent", session.UserAgent)
+	req.Header.Add("User-Agent", "Terraform/Go")
 	log.Printf("[DEBUG] Try to do request %v", req)
 	resp, err := client.Do(req)
 	log.Printf("[DEBUG] HTTP Response Status: %d, %s", resp.StatusCode, http.StatusText(resp.StatusCode))
