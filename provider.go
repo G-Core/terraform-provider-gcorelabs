@@ -43,11 +43,6 @@ func Provider() terraform.ResourceProvider {
 	return provider
 }
 
-type config struct {
-	session	common.Session
-	host	string
-}
-
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	username := d.Get("username").(string)
 	if username == "" {
@@ -61,7 +56,7 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	host := getProviderParameter(d, "host", "GCORE_HOST", common.DefaultGcoreCloudHost)
 	platformURL := getProviderParameter(d, "platform_url", "GCORE_PLATFORM_URL", common.DefaultPlatformUrl)
 	session, err := common.GetJwt(platformURL, username, password)
-	config := config{
+	config := Config{
 		session: session,
 		host: host,
 	}
