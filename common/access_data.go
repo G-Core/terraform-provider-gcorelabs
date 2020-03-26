@@ -1,4 +1,4 @@
-package managers
+package common
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 
-	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -50,7 +49,7 @@ func findProjectByName(arr []Project, name string) (int, error) {
 }
 
 //GetProject returns valid projectID for a resource
-func GetProject(session *common.Session, d *schema.ResourceData, infoMessage string) (int, error) {
+func GetProject(config *Config, d *schema.ResourceData, infoMessage string) (int, error) {
 	log.Println("[DEBUG] Try to get project ID")
 	projectID := d.Get("project_id").(int)
 	projectName := d.Get("project_name").(string)
@@ -63,8 +62,8 @@ func GetProject(session *common.Session, d *schema.ResourceData, infoMessage str
 	if projectID != 0 {
 		return projectID, nil
 	}
-	url := fmt.Sprintf("%sprojects", common.HOST)
-	resp, err := common.GetRequest(session, url)
+	url := fmt.Sprintf("%sprojects", config.Host)
+	resp, err := GetRequest(config.Session, url)
 	if err != nil {
 		return 0, err
 	}
@@ -100,7 +99,7 @@ func findRegionByName(arr []Region, name string) (int, error) {
 }
 
 //GetRegion returns valid regionID for a resource
-func GetRegion(session *common.Session, d *schema.ResourceData, infoMessage string) (int, error) {
+func GetRegion(config *Config, d *schema.ResourceData, infoMessage string) (int, error) {
 	regionID := d.Get("region_id").(int)
 	regionName := d.Get("region_name").(string)
 	err := CheckValueExisting(regionID, regionName, "region", infoMessage)
@@ -112,8 +111,8 @@ func GetRegion(session *common.Session, d *schema.ResourceData, infoMessage stri
 	if regionID != 0 {
 		return regionID, nil
 	}
-	url := fmt.Sprintf("%sregions", common.HOST)
-	resp, err := common.GetRequest(session, url)
+	url := fmt.Sprintf("%sregions", config.Host)
+	resp, err := GetRequest(config.Session, url)
 	if err != nil {
 		return 0, err
 	}

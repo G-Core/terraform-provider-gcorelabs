@@ -2,12 +2,12 @@ package common
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
 )
 
 type respPlatform struct {
-	AccessKey string `json: "access"`
+	Access string `json: "access"`
 }
 
 type auth struct {
@@ -19,32 +19,38 @@ type Session struct {
 	Jwt       string
 }
 
-func GetJwt(platformURL string, usename string, password string) (Session, error) {
-	var session = Session{}
+type Config struct {
+	Session	Session
+	Host	string
+	Timeout int
+}
+
+func GetSession(platformURL string, usename string, password string) (*Session, error) {
 	var bodyData = auth{usename, password}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
-		return session, err
+		return nil, err
 	}
 
 	resp, err := PostRequest(nil, platformURL, body)
 	if err != nil {
-		return session, err
+		return nil, err
 	}
 	defer resp.Body.Close()
-
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return session, err
+		return nil, err
 	}
 
 	var parsedResp = respPlatform{}
 	err = json.Unmarshal([]byte(responseData), &parsedResp)
 	if err != nil {
-		return session, err
+		return nil, err
 	}
-	log.Printf("Access!%s", parsedResp.AccessKey)
-	return Session{
-		Jwt:       parsedResp.AccessKey,
+	if parsedResp.Access == "" {
+		return nil, fmt.Errorf("An empty access field in the platform respomse.")
+	}
+	return &Session{
+		Jwt:       parsedResp.Access,
 	}, nil
 }
