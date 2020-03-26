@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -25,7 +23,11 @@ type Volume struct {
 
 type OpenstackVolume struct {
 	Size     int    `json:"size"`
+	RegionID     int    `json:"region_id"`
+	ProjectID     int    `json:"project_id"`
 	TypeName string `json:"volume_type,omitempty"`
+	Source     string `json:"source"`
+	Name       string `json:"name"`
 }
 
 type VolumeIds struct {
@@ -45,7 +47,7 @@ func resourceVolumeV1() *schema.Resource {
 		Delete: resourceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				projectID, regionID, volumeID, err := getVolumeID(d.Id())
+				projectID, regionID, volumeID, err := common.ImportStringParser(d.Id())
 
 				if err != nil {
 					return nil, err
@@ -168,13 +170,16 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	resp, err := common.GetRequest(session, common.ResourceV1URL(config.Host, "volumes", projectID, regionID, volumeID))
+	volume, err := getVolume(session, config.Host, projectID, regionID, volumeID)
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Can't find a volume %s", volumeID)
-	}
+	d.Set("size", volume.Size)
+	d.Set("region_id", volume.RegionID)
+	d.Set("project_id", volume.ProjectID)
+	d.Set("source", volume.Source)
+	d.Set("name", volume.Name)
+	d.Set("type_name", volume.TypeName)
 	log.Println("[DEBUG] Finish volume reading")
 	return nil
 }
@@ -196,21 +201,21 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	volumeData, err := GetVolume(session, config.Host, projectID, regionID, volumeID)
+	volumeData, err := getVolume(session, config.Host, projectID, regionID, volumeID)
 	if err != nil {
 		return err
 	}
 
 	// size
 	if volumeData.Size != newVolumeData.Size {
-		volumeData, err = ExtendVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeData.Size)
+		err = ExtendVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeData.Size)
 		if err != nil {
 			return err
 		}
 	}
 	// type
 	if volumeData.TypeName != newVolumeData.TypeName {
-		volumeData, err = RetypeVolume(&session, config.Host, projectID, regionID, volumeID, newVolumeData.TypeName)
+		err = RetypeVolume(&session, config.Host, projectID, regionID, volumeID, newVolumeData.TypeName)
 		if err != nil {
 			return err
 		}
@@ -252,25 +257,6 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[DEBUG] Finish of volume deleting")
 	return nil
-}
-
-// getVolumeID is a helper function for the import module. It parses check and parse an input command line string (id part).
-func getVolumeID(UUIDstr string) (int, int, string, error) {
-	log.Printf("[DEBUG] Input id string: %s", UUIDstr)
-	infoStrings := strings.Split(UUIDstr, ":")
-	if len(infoStrings) != 3 {
-		return 0, 0, "", fmt.Errorf("Failed import: wrong input id: %s", UUIDstr)
-
-	}
-	projectID, err := strconv.Atoi(infoStrings[0])
-	if err != nil {
-		return 0, 0, "", err
-	}
-	regionID, err := strconv.Atoi(infoStrings[1])
-	if err != nil {
-		return 0, 0, "", err
-	}
-	return projectID, regionID, infoStrings[2], nil
 }
 
 // getVolumeData create a new instance of a Volume structure (from volume parameters in the configuration file)*
@@ -324,66 +310,57 @@ func parseJSONVolume(resp *http.Response) (OpenstackVolume, error) {
 }
 
 
-func GetVolume(session common.Session, host string, projectID int, regionID int, volumeID string) (OpenstackVolume, error) {
-	var volume = OpenstackVolume{}
+func getVolume(session common.Session, host string, projectID int, regionID int, volumeID string) (*OpenstackVolume, error) {
 	resp, err := common.GetRequest(session, common.ResourceV1URL(host, "volumes", projectID, regionID, volumeID))
 	if err != nil {
-		return volume, err
+		return nil, err
 	}
 	if resp.StatusCode != 200 {
-		return volume, fmt.Errorf("Can't find a volume %s", volumeID)
+		return nil, fmt.Errorf("Can't find a volume %s", volumeID)
 	}
-	volume, err = parseJSONVolume(resp)
-	return volume, err
+	volume, err := parseJSONVolume(resp)
+	return &volume, err
 }
 
 // ExtendVolume changes the volume size
-func ExtendVolume(config common.Config, host string, projectID int, regionID int, volumeID string, newSize int) (OpenstackVolume, error) {
-	var volume = OpenstackVolume{}
+func ExtendVolume(config common.Config, host string, projectID int, regionID int, volumeID string, newSize int) (error) {
 	var bodyData = Size{newSize}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
-		return volume, err
+		return err
 	}
 	resp, err := common.PostRequest(&config.Session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "extend"), body)
 	if err != nil {
-		return volume, err
+		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return volume, fmt.Errorf("Extend volume (%s) attempt failed", volumeID)
+		return fmt.Errorf("Extend volume (%s) attempt failed", volumeID)
 	}
 
 	log.Printf("[DEBUG] Try to get task id from a response.")
 	_, err = common.FullTaskWait(config, resp)
 	if err != nil {
-		return volume, err
+		return err
 	}
 	log.Printf("[DEBUG] Finish waiting.")
-
-	currentVolumeData, err := GetVolume(config.Session, host, projectID, regionID, volumeID)
-	if err != nil {
-		return volume, err
-	}
-	return currentVolumeData, nil
+	return nil
 }
 
 // RetypeVolume changes the volume type
-func RetypeVolume(session *common.Session, host string, projectID int, regionID int, volumeID string, newType string) (OpenstackVolume, error) {
-	var volume = OpenstackVolume{}
+func RetypeVolume(session *common.Session, host string, projectID int, regionID int, volumeID string, newType string) (error) {
 	var bodyData = Type{newType}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
-		return volume, err
+		return err
 	}
 	resp, err := common.PostRequest(session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "retype"), body)
 	if err != nil {
-		return volume, err
+		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return volume, fmt.Errorf("Retype volume (%s) attempt failed: %v", volumeID, resp)
+		return fmt.Errorf("Retype volume (%s) attempt failed: %v", volumeID, resp)
 	}
-	currentVolumeData, err := parseJSONVolume(resp)
-	return currentVolumeData, err
+	return err
 }

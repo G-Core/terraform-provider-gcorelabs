@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-//	"os"
+	"os"
 	"strconv"
 	"testing"
 
@@ -88,7 +88,7 @@ func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
 }
 
 func testAccVolumeTemplate(name string, size int, typeName string) string {
-	rr := fmt.Sprintf(`
+	return fmt.Sprintf(`
 	resource "gcore_volumeV1" "%s" {
 		name = "%s"
 		size = %d
@@ -98,7 +98,4 @@ func testAccVolumeTemplate(name string, size int, typeName string) string {
 		%s
 	}
 	`, name, name, size, typeName, regionInfo(), projectInfo())
-	fmt.Println("!!!")
-	fmt.Println(rr)
-	return rr
 }
