@@ -25,14 +25,14 @@ type Config struct {
 	Timeout int
 }
 
-func GetSession(platformURL string, usename string, password string) (*Session, error) {
+func GetSession(platformURL string, usename string, password string, timeout int) (*Session, error) {
 	var bodyData = auth{usename, password}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := PostRequest(nil, platformURL, body)
+	resp, err := PostRequest(nil, platformURL, body, timeout)
 	if err != nil {
 		return nil, err
 	}

@@ -66,7 +66,7 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	timeout := d.Get("timeout").(int)
 	host := d.Get("host").(string)
 	platformURL := d.Get("platform_url").(string)
-	session, err := common.GetSession(platformURL, username, password)
+	session, err := common.GetSession(platformURL, username, password, timeout)
 	config := common.Config{
 		Session:	*session,
 		Host:		host,

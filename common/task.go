@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Task struct {
@@ -21,10 +22,10 @@ func taskURL(host string, taskID string) string {
 	return fmt.Sprintf("%sv1/tasks/%s", host, taskID)
 }
 
-func getTask(session Session, url string) (Task, error) {
+func getTask(session Session, url string, timeout int) (Task, error) {
 	// do a request
 	var task = Task{}
-	resp, err := GetRequest(session, url)
+	resp, err := GetRequest(session, url, timeout)
 	if err != nil {
 		return task, err
 	}
@@ -39,12 +40,14 @@ func getTask(session Session, url string) (Task, error) {
 	return task, nil
 }
 
-func taskWait(config Config, taskID string) (interface{}, error) {
+func taskWait(config Config, taskID string, timeout int) (interface{}, error) {
 	log.Printf("[DEBUG] Start of waiting a task %s", taskID)
-	timeout := 180
-	pause := 5
+	dt := time.Now()
+	pause := 2
+	
+
 	for i := 0; i < timeout/pause; i++ {
-		task, err := getTask(config.Session, taskURL(config.Host, taskID))
+		task, err := getTask(config.Session, taskURL(config.Host, taskID), timeout)
 		if err != nil {
 			return nil, err
 		}
@@ -58,6 +61,7 @@ func taskWait(config Config, taskID string) (interface{}, error) {
 			// Error state
 			return nil, fmt.Errorf("Task %s failed and it's in an %s state", taskID, task.State)
 		}
+		time.Sleep(2)
 	}
 	log.Printf("[DEBUG] Finish waiting the task %s", taskID)
 	return nil, nil
@@ -70,5 +74,5 @@ func FullTaskWait(config Config, resp *http.Response) (interface{}, error) {
 		return nil, err
 	}
 	taskID := tasks.Ids[0]
-	return taskWait(config, taskID)
+	return taskWait(config, taskID, config.Timeout)
 }
