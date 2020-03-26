@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -14,20 +12,39 @@ func Provider() terraform.ResourceProvider {
 			"username": {
 				Type:     schema.TypeString,
 				Optional: true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"GCORE_PROVIDER_USERNAME",
+				}, nil),
 			},
 			"password": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Sensitive: true,	// protection from logging
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true, // protection from logging
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"GCORE_PROVIDER_PASSWORD",
+				}, nil),
 			},
 			"platform_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
 				Description: "Platform ulr is used for generate jwt.",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"GCORE_PLATFORM_URL",
+				}, common.DefaultPlatformUrl),
 			},
 			"host": {
 				Type:     schema.TypeString,
 				Optional: true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"GCORE_HOST",
+				}, common.DefaultGcoreCloudHost),
+			},
+			"timeout": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"GCORE_TIMEOUT",
+				}, 10),
 			},
 		},
 
@@ -45,31 +62,15 @@ func Provider() terraform.ResourceProvider {
 
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	username := d.Get("username").(string)
-	if username == "" {
-		username = os.Getenv("GCORE_PROVIDER_USERNAME")
-	}
 	password := d.Get("password").(string)
-	if password == "" {
-		password = os.Getenv("GCORE_PROVIDER_PASSWORD")
-	}
-
-	host := getProviderParameter(d, "host", "GCORE_HOST", common.DefaultGcoreCloudHost)
-	platformURL := getProviderParameter(d, "platform_url", "GCORE_PLATFORM_URL", common.DefaultPlatformUrl)
-	session, err := common.GetJwt(platformURL, username, password)
-	config := Config{
-		session: session,
-		host: host,
+	timeout := d.Get("timeout").(int)
+	host := d.Get("host").(string)
+	platformURL := d.Get("platform_url").(string)
+	session, err := common.GetSession(platformURL, username, password)
+	config := common.Config{
+		Session:	*session,
+		Host:		host,
+		Timeout:	timeout,
 	}
 	return &config, err
-}
-
-func getProviderParameter(d *schema.ResourceData, parameterName string, envVariableName string, defaultValue string) string {
-	parameter := d.Get(parameterName).(string)
-	if parameter == ""{
-		parameter = os.Getenv(envVariableName)
-	}
-	if parameter == ""{
-		parameter = defaultValue
-	}
-	return parameter
 }
