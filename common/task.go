@@ -12,6 +12,7 @@ import (
 type Task struct {
 	State            string      `json:"state"`
 	CreatedResources interface{} `json:"created_resources,omitempty"`
+	Error string `json:"error,omitempty"`
 }
 
 type TaskIds struct {
@@ -50,23 +51,23 @@ func taskWait(config Config, taskID string, requestIimeout int, resourceWaitTime
 			return nil, err
 		}
 		if task.State == "NEW" || task.State == "RUNNING" {
-			log.Printf("[DEBUG] The task %s is in progress (state=%s)", taskID, task.State)
+			log.Printf("[DEBUG] The task %s is in %s state.", taskID, task.State)
 		} else if task.State == "FINISHED" {
 			log.Printf("[DEBUG] The task %s finished", taskID)
 			log.Printf("[DEBUG] Created resources %s", task.CreatedResources)
 			return task.CreatedResources, nil
 		} else {
 			// Error state
-			return nil, fmt.Errorf("Task %s failed and it's in an %s state", taskID, task.State)
+			return nil, fmt.Errorf("Task %s failed and it's in an %s state: %s", taskID, task.State, task.Error)
 		}
 	case <- time.After(time.Duration(resourceWaitTimeout) * time.Second):
-		return nil, fmt.Errorf("Timeout error: task %s not finished.", taskID)
+		return nil, fmt.Errorf("Timeout error: task %s not finished", taskID)
 	}
 	log.Printf("[DEBUG] Finish waiting the task %s", taskID)
 	return nil, nil
 }
 
-func TasksWaiting(config Config, resp *http.Response, resourceWaitTimeout int) ([]interface{}, error) {
+func WaitForTasksInResponse(config Config, resp *http.Response, resourceWaitTimeout int) ([]interface{}, error) {
 	tasks := new(TaskIds)
 	err := json.NewDecoder(resp.Body).Decode(tasks)
 	if err != nil {

@@ -24,7 +24,7 @@ type Projects struct {
 }
 
 type Region struct {
-	Id           int    `json:"id"`
+	Id          int    `json:"id"`
 	DisplayName string `json:"display_name"`
 }
 
@@ -34,10 +34,10 @@ type Regions struct {
 }
 
 // CheckValueExisting gets id and name and checks that only one value is filled in
-func CheckValueExisting(id int, name string, objectType string, infoMessage string) error {
+func CheckValueExisting(id int, name string, objectType string, contextMessage string) error {
 	if id == 0 && name == "" {
-		return fmt.Errorf("Missing value: set %s_id or %s_name to %s", objectType, objectType, infoMessage)
-	} 
+		return fmt.Errorf("Missing value: set %s_id or %s_name to %s", objectType, objectType, contextMessage)
+	}
 	return nil
 }
 
@@ -51,11 +51,11 @@ func findProjectByName(arr []Project, name string) (int, error) {
 }
 
 //GetProject returns valid projectID for a resource
-func GetProject(config *Config, d *schema.ResourceData, infoMessage string) (int, error) {
+func GetProject(config *Config, d *schema.ResourceData, contextMessage string) (int, error) {
 	log.Println("[DEBUG] Try to get project ID")
 	projectID := d.Get("project_id").(int)
 	projectName := d.Get("project_name").(string)
-	err := CheckValueExisting(projectID, projectName, "project", infoMessage)
+	err := CheckValueExisting(projectID, projectName, "project", contextMessage)
 	if err != nil {
 		return 0, err
 	}
@@ -69,10 +69,10 @@ func GetProject(config *Config, d *schema.ResourceData, infoMessage string) (int
 	if err != nil {
 		return 0, err
 	}
-	if resp.StatusCode != 200 {
-		return 0, fmt.Errorf("Can't get projects")
+	err = CheckSuccessfulResponse(resp, "Can't get projects")
+	if err != nil {
+		return 0, err
 	}
-
 	var projectsData Projects
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -101,10 +101,10 @@ func findRegionByName(arr []Region, name string) (int, error) {
 }
 
 //GetRegion returns valid regionID for a resource
-func GetRegion(config *Config, d *schema.ResourceData, infoMessage string) (int, error) {
+func GetRegion(config *Config, d *schema.ResourceData, contextMessage string) (int, error) {
 	regionID := d.Get("region_id").(int)
 	regionName := d.Get("region_name").(string)
-	err := CheckValueExisting(regionID, regionName, "region", infoMessage)
+	err := CheckValueExisting(regionID, regionName, "region", contextMessage)
 	if err != nil {
 		return 0, err
 	}
@@ -118,8 +118,9 @@ func GetRegion(config *Config, d *schema.ResourceData, infoMessage string) (int,
 	if err != nil {
 		return 0, err
 	}
-	if resp.StatusCode != 200 {
-		return 0, fmt.Errorf("Can't get regions")
+	err = CheckSuccessfulResponse(resp, "Can't get regions")
+	if err != nil {
+		return 0, err
 	}
 
 	var regionsData Regions
