@@ -40,14 +40,12 @@ func getTask(session Session, url string, timeout int) (Task, error) {
 	return task, nil
 }
 
-func taskWait(config Config, taskID string, timeout int) (interface{}, error) {
+func taskWait(config Config, taskID string, requestIimeout int, resourceWaitTimeout int) (interface{}, error) {
 	log.Printf("[DEBUG] Start of waiting a task %s", taskID)
-	dt := time.Now()
-	pause := 2
-	
-
-	for i := 0; i < timeout/pause; i++ {
-		task, err := getTask(config.Session, taskURL(config.Host, taskID), timeout)
+	pause := time.Tick(2 * time.Second)
+	select {
+	case <- pause:
+		task, err := getTask(config.Session, taskURL(config.Host, taskID), requestIimeout)
 		if err != nil {
 			return nil, err
 		}
@@ -61,18 +59,27 @@ func taskWait(config Config, taskID string, timeout int) (interface{}, error) {
 			// Error state
 			return nil, fmt.Errorf("Task %s failed and it's in an %s state", taskID, task.State)
 		}
-		time.Sleep(2)
+	case <- time.After(time.Duration(resourceWaitTimeout) * time.Second):
+		return nil, fmt.Errorf("Timeout error: task %s not finished.", taskID)
 	}
 	log.Printf("[DEBUG] Finish waiting the task %s", taskID)
 	return nil, nil
 }
 
-func FullTaskWait(config Config, resp *http.Response) (interface{}, error) {
+func TasksWaiting(config Config, resp *http.Response, resourceWaitTimeout int) ([]interface{}, error) {
 	tasks := new(TaskIds)
 	err := json.NewDecoder(resp.Body).Decode(tasks)
 	if err != nil {
 		return nil, err
 	}
-	taskID := tasks.Ids[0]
-	return taskWait(config, taskID, config.Timeout)
+	n := len(tasks.Ids)
+	tasksData := make([]interface{}, n)
+	for i, taskID := range tasks.Ids {
+		taskData, err := taskWait(config, taskID, config.Timeout, resourceWaitTimeout)
+		if err != nil {
+			return nil, err
+		}
+		tasksData[i] = taskData
+	}
+	return tasksData, nil
 }
