@@ -114,17 +114,17 @@ func resourceVolumeV1() *schema.Resource {
 }
 
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
-	log.Println("[DEBUG] Start volume creating")
+	log.Println("[DEBUG] Start volume creation")
 	name := d.Get("name").(string)
-	infoMessage := fmt.Sprintf("create a %s volume", name)
+	contextMessage := fmt.Sprintf("create a %s volume", name)
 	config := m.(*common.Config)
 	session := config.Session
 
-	projectID, err := common.GetProject(config, d, infoMessage)
+	projectID, err := common.GetProject(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, infoMessage)
+	regionID, err := common.GetRegion(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
@@ -138,12 +138,13 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Create volume (%s) attempt failed", name)
+	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Create volume %s failed", name))
+	if err != nil {
+		return err
 	}
 
 	log.Printf("[DEBUG] Try to get task id from a response.")
-	taskData, err := common.TasksWaiting(*config, resp, volumeCreating)
+	taskData, err := common.WaitForTasksInResponse(*config, resp, volumeCreating)
 	volumeData := taskData[0]
 	if err != nil {
 		return err
@@ -165,12 +166,12 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	session := config.Session
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
-	infoMessage := fmt.Sprintf("get a volume %s", volumeID)
-	projectID, err := common.GetProject(config, d, infoMessage)
+	contextMessage := fmt.Sprintf("get a volume %s", volumeID)
+	projectID, err := common.GetProject(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, infoMessage)
+	regionID, err := common.GetRegion(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
@@ -195,12 +196,12 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 	config := m.(*common.Config)
 	session := config.Session
-	infoMessage := fmt.Sprintf("update a volume %s", volumeID)
-	projectID, err := common.GetProject(config, d, infoMessage)
+	contextMessage := fmt.Sprintf("update a volume %s", volumeID)
+	projectID, err := common.GetProject(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, infoMessage)
+	regionID, err := common.GetRegion(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
@@ -234,13 +235,13 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	session := config.Session
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
-	infoMessage := fmt.Sprintf("delete the %s volume", volumeID)
+	contextMessage := fmt.Sprintf("delete the %s volume", volumeID)
 
-	projectID, err := common.GetProject(config, d, infoMessage)
+	projectID, err := common.GetProject(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, infoMessage)
+	regionID, err := common.GetRegion(config, d, contextMessage)
 	if err != nil {
 		return err
 	}
@@ -249,12 +250,13 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Delete volume failed")
+	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Delete volume %s failed", volumeID))
+	if err != nil {
+		return err
 	}
 	defer resp.Body.Close()
 
-	_, err = common.TasksWaiting(*config, resp, volumeDeleting)
+	_, err = common.WaitForTasksInResponse(*config, resp, volumeDeleting)
 	if err != nil {
 		return err
 	}
@@ -318,8 +320,9 @@ func getVolume(session common.Session, host string, projectID int, regionID int,
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Can't find a volume %s", volumeID)
+	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Can't find the volume %s", volumeID))
+	if err != nil {
+		return nil, err
 	}
 	volume, err := parseJSONVolume(resp)
 	return &volume, err
@@ -337,12 +340,13 @@ func ExtendVolume(config common.Config, host string, projectID int, regionID int
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Extend volume (%s) attempt failed", volumeID)
+	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Extend volume %s failed", volumeID))
+	if err != nil {
+		return err
 	}
 
 	log.Printf("[DEBUG] Try to get task id from a response.")
-	_, err = common.TasksWaiting(config, resp, volumeExtending)
+	_, err = common.WaitForTasksInResponse(config, resp, volumeExtending)
 	if err != nil {
 		return err
 	}
@@ -362,8 +366,9 @@ func RetypeVolume(config common.Config, host string, projectID int, regionID int
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Retype volume (%s) attempt failed: %v", volumeID, resp)
+	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Retype volume %s failed", volumeID))
+	if err != nil {
+		return err
 	}
-	return err
+	return nil
 }

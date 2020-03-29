@@ -3,6 +3,7 @@ package common
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -50,4 +51,15 @@ func GetRequest(session Session, url string, timeout int) (*http.Response, error
 
 func DeleteRequest(session Session, url string, timeout int) (*http.Response, error) {
 	return SimpleRequest(session, "DELETE", url, timeout)
+}
+
+func CheckSuccessfulResponse(resp *http.Response, context string) error {
+	if resp.StatusCode != 200 {
+		responseData, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("%s. Response parsing failed: %v", context, err)
+		}
+		return fmt.Errorf("%s: %s", context, string(responseData))
+	}
+	return nil
 }
