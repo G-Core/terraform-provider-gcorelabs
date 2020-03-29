@@ -13,9 +13,10 @@ go build -o terraform-provider-gcore_v0.1
 
 Using the provider
 ------------------
-Provider can be created in ``.tf`` file or setting this environment variable
+###### Provider
+Provider can be created in ``.tf`` file or set the variables in an environment 
 
-| name in tf file    | name in environment       | type    | Required |
+| Name in tf file    | Alternative name in environment       | type    | Required |
 | :----------------: |:-------------------------:| :------:| :-------:|
 | username           | GCORE_PROVIDER_USERNAME   | string  | true     | 
 | password           | GCORE_PROVIDER_PASSWORD   | string  | true     | 
@@ -23,16 +24,19 @@ Provider can be created in ``.tf`` file or setting this environment variable
 | host               | GCORE_HOST                | string  | false    | 
 | timeout            | GCORE_TIMEOUT             | integer | false    | 
 
+example:
 ```
 provider "gcore" {
   username = "..."
   password = "..."
 }
 ```
-or be set an enviroment variable ``GCORE_PROVIDER_USERNAME`` and ``GCORE_PROVIDER_PASSWORD``. Also you can set ``HOST`` and ``GCORE_TIMEOUT`` to change default values.
+
+##### Volume 
 
 Volume should have the fields:
-```
+| Name | type   | Alternative name in environment       | type    | Required |
+| :----------------: |:-------------------------:| :------:| :-------:|
 size        int    required
 source      string required, one of 'new-volume', 'image', 'snapshot'
 name        string required
@@ -40,11 +44,14 @@ type_name   string optional, one of 'standard', 'ssd_hiiops', 'cold'
 image_id    string optional, it must be used when source is 'image'
 snapshot_id string optional, is must be used when source is 'snapshot'
 count       int    optional, set it if you want create more objects than one
-```
+
 also in volume body you must set 
 1. ``project_id``(int) or ``project_name``(string)
 2. ``region_id``(int) or ``region_name``(string)
 
+
+Terraform commands
+------------------
 ### Import 
 Existing volumes can be loaded from the cloud. Firstly, create a new volume record for a loading volume in a ``.tf`` file:
 ```
