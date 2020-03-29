@@ -16,12 +16,12 @@ type auth struct {
 }
 
 type Session struct {
-	Jwt       string
+	Jwt string
 }
 
 type Config struct {
-	Session	Session
-	Host	string
+	Session Session
+	Host    string
 	Timeout int
 }
 
@@ -51,6 +51,6 @@ func GetSession(platformURL string, usename string, password string, timeout int
 		return nil, fmt.Errorf("An empty access field in the platform respomse.")
 	}
 	return &Session{
-		Jwt:       parsedResp.Access,
+		Jwt: parsedResp.Access,
 	}, nil
 }

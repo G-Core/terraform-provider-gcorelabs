@@ -12,6 +12,10 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+const volumeDeleting int = 1200
+const volumeCreating int = 1200
+const volumeExtending int = 1200
+
 type Volume struct {
 	Size       int    `json:"size"`
 	Source     string `json:"source"`
@@ -22,12 +26,12 @@ type Volume struct {
 }
 
 type OpenstackVolume struct {
-	Size     int    `json:"size"`
-	RegionID     int    `json:"region_id"`
-	ProjectID     int    `json:"project_id"`
-	TypeName string `json:"volume_type,omitempty"`
-	Source     string `json:"source"`
-	Name       string `json:"name"`
+	Size      int    `json:"size"`
+	RegionID  int    `json:"region_id"`
+	ProjectID int    `json:"project_id"`
+	TypeName  string `json:"volume_type,omitempty"`
+	Source    string `json:"source"`
+	Name      string `json:"name"`
 }
 
 type VolumeIds struct {
@@ -37,7 +41,6 @@ type VolumeIds struct {
 type Type struct {
 	VolumeType string `json:"volume_type"`
 }
-
 
 func resourceVolumeV1() *schema.Resource {
 	return &schema.Resource{
@@ -63,23 +66,23 @@ func resourceVolumeV1() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
 				ConflictsWith: []string{"project_name"},
 			},
 			"region_id": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
 				ConflictsWith: []string{"region_name"},
 			},
 			"project_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
 				ConflictsWith: []string{"project_id"},
 			},
 			"region_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
 				ConflictsWith: []string{"region_id"},
 			},
 			"name": &schema.Schema{
@@ -130,7 +133,7 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	resp, err := common.PostRequest(&session, common.ResourcesV1URL(config.Host, "volumes", projectID, regionID), body)
+	resp, err := common.PostRequest(&session, common.ResourcesV1URL(config.Host, "volumes", projectID, regionID), body, config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -140,7 +143,8 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	log.Printf("[DEBUG] Try to get task id from a response.")
-	volumeData, err := common.FullTaskWait(*config, resp)
+	taskData, err := common.TasksWaiting(*config, resp, volumeCreating)
+	volumeData := taskData[0]
 	if err != nil {
 		return err
 	}
@@ -170,7 +174,7 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	volume, err := getVolume(session, config.Host, projectID, regionID, volumeID)
+	volume, err := getVolume(session, config.Host, projectID, regionID, volumeID, config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -201,7 +205,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	volumeData, err := getVolume(session, config.Host, projectID, regionID, volumeID)
+	volumeData, err := getVolume(session, config.Host, projectID, regionID, volumeID, config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -215,7 +219,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	// type
 	if volumeData.TypeName != newVolumeData.TypeName {
-		err = RetypeVolume(&session, config.Host, projectID, regionID, volumeID, newVolumeData.TypeName)
+		err = RetypeVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeData.TypeName)
 		if err != nil {
 			return err
 		}
@@ -241,7 +245,7 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	resp, err := common.DeleteRequest(session, common.ResourceV1URL(config.Host, "volumes", projectID, regionID, volumeID))
+	resp, err := common.DeleteRequest(session, common.ResourceV1URL(config.Host, "volumes", projectID, regionID, volumeID), config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -250,7 +254,7 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	}
 	defer resp.Body.Close()
 
-	_, err = common.FullTaskWait(*config, resp)
+	_, err = common.TasksWaiting(*config, resp, volumeDeleting)
 	if err != nil {
 		return err
 	}
@@ -309,9 +313,8 @@ func parseJSONVolume(resp *http.Response) (OpenstackVolume, error) {
 	return volume, err
 }
 
-
-func getVolume(session common.Session, host string, projectID int, regionID int, volumeID string) (*OpenstackVolume, error) {
-	resp, err := common.GetRequest(session, common.ResourceV1URL(host, "volumes", projectID, regionID, volumeID))
+func getVolume(session common.Session, host string, projectID int, regionID int, volumeID string, timeout int) (*OpenstackVolume, error) {
+	resp, err := common.GetRequest(session, common.ResourceV1URL(host, "volumes", projectID, regionID, volumeID), timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -323,13 +326,13 @@ func getVolume(session common.Session, host string, projectID int, regionID int,
 }
 
 // ExtendVolume changes the volume size
-func ExtendVolume(config common.Config, host string, projectID int, regionID int, volumeID string, newSize int) (error) {
+func ExtendVolume(config common.Config, host string, projectID int, regionID int, volumeID string, newSize int) error {
 	var bodyData = Size{newSize}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return err
 	}
-	resp, err := common.PostRequest(&config.Session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "extend"), body)
+	resp, err := common.PostRequest(&config.Session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "extend"), body, config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -339,7 +342,7 @@ func ExtendVolume(config common.Config, host string, projectID int, regionID int
 	}
 
 	log.Printf("[DEBUG] Try to get task id from a response.")
-	_, err = common.FullTaskWait(config, resp)
+	_, err = common.TasksWaiting(config, resp, volumeExtending)
 	if err != nil {
 		return err
 	}
@@ -348,13 +351,13 @@ func ExtendVolume(config common.Config, host string, projectID int, regionID int
 }
 
 // RetypeVolume changes the volume type
-func RetypeVolume(session *common.Session, host string, projectID int, regionID int, volumeID string, newType string) (error) {
+func RetypeVolume(config common.Config, host string, projectID int, regionID int, volumeID string, newType string) error {
 	var bodyData = Type{newType}
 	body, err := json.Marshal(&bodyData)
 	if err != nil {
 		return err
 	}
-	resp, err := common.PostRequest(session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "retype"), body)
+	resp, err := common.PostRequest(&config.Session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "retype"), body, config.Timeout)
 	if err != nil {
 		return err
 	}
