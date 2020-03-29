@@ -35,19 +35,18 @@ provider "gcore" {
 ##### Volume 
 
 Volume should have the fields:
-| Name | type   | Alternative name in environment       | type    | Required |
-| :----------------: |:-------------------------:| :------:| :-------:|
-size        int    required
-source      string required, one of 'new-volume', 'image', 'snapshot'
-name        string required
-type_name   string optional, one of 'standard', 'ssd_hiiops', 'cold'
-image_id    string optional, it must be used when source is 'image'
-snapshot_id string optional, is must be used when source is 'snapshot'
-count       int    optional, set it if you want create more objects than one
 
-also in volume body you must set 
-1. ``project_id``(int) or ``project_name``(string)
-2. ``region_id``(int) or ``region_name``(string)
+| Name | Type  |Required  | Alternative name      | Alternative type    | Note |
+| :----------------: |:-------------------------:| :------:| :-------:| :------:| :-------:| 
+|size       | int |   true| | | |
+|source     | string |true | | | one of 'new-volume', 'image', 'snapshot' |
+|name       | string | true| | | |
+|project_id| int | true| prject_name| string | |
+|region_id| int| true| region_name| string | |
+|type_name |  string | false | | | one of 'standard', 'ssd_hiiops', 'cold' |
+|image_id  |  string | false | | | it must be used when source is 'image' |
+|snapshot_id | string | false | | | is must be used when source is 'snapshot' |
+|count   | int | false | | | set it if you want create more objects than one |
 
 
 Terraform commands
