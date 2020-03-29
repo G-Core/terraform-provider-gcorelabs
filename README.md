@@ -14,6 +14,7 @@ go build -o terraform-provider-gcore_v0.1
 Using the provider
 ------------------
 Provider can be created in ``.tf`` file or setting this environment variable
+
 | name in tf file    | name in environment       | type    | Required |
 | :----------------: |:-------------------------:| :------:| :-------:|
 | username           | GCORE_PROVIDER_USERNAME   | string  | true     | 
