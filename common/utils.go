@@ -36,7 +36,7 @@ type Regions struct {
 // CheckValueExisting gets id and name and checks that only one value is filled in
 func CheckValueExisting(id int, name string, objectType string, contextMessage string) error {
 	if id == 0 && name == "" {
-		return fmt.Errorf("Missing value: set %s_id or %s_name to %s", objectType, objectType, contextMessage)
+		return fmt.Errorf("[%s] Missing value: set %s_id or %s_name", contextMessage, objectType, objectType)
 	}
 	return nil
 }
