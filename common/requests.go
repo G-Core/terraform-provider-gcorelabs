@@ -17,6 +17,11 @@ func PostRequest(session *Session, url string, body []byte, timeout int) (*http.
 	if err != nil {
 		return nil, err
 	}
+
+	// Fixed EOF errors when making multiple requests successively (face them in tests)
+	// see more: https://stackoverflow.com/questions/17714494/golang-http-request-results-in-eof-errors-when-making-multiple-requests-successi
+	req.Close = true
+
 	req.Header.Set("Content-Type", "application/json")
 	if session != nil {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", session.Jwt))
