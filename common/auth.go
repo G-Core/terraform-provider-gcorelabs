@@ -48,7 +48,7 @@ func GetSession(platformURL string, usename string, password string, timeout int
 		return nil, err
 	}
 	if parsedResp.Access == "" {
-		return nil, fmt.Errorf("An empty access field in the platform respomse.")
+		return nil, fmt.Errorf("An empty access field in the platform response")
 	}
 	return &Session{
 		Jwt: parsedResp.Access,

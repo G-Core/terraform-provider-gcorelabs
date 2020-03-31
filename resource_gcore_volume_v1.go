@@ -92,6 +92,7 @@ func resourceVolumeV1() *schema.Resource {
 			"source": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"size": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -162,6 +163,7 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume reading")
+	log.Printf("[DEBUG] Start volume reading%s", d.State())
 	config := m.(*common.Config)
 	session := config.Session
 	volumeID := d.Id()
@@ -182,21 +184,23 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("size", volume.Size)
 	d.Set("region_id", volume.RegionID)
 	d.Set("project_id", volume.ProjectID)
-	d.Set("source", volume.Source)
 	d.Set("name", volume.Name)
-	d.Set("type_name", volume.TypeName)
+
+	// optional
+	if d.Get("type_name").(string) != "" || volume.TypeName != "standard" {
+		d.Set("type_name", volume.TypeName)
+	}
 	log.Println("[DEBUG] Finish volume reading")
 	return nil
 }
 
 func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume updating")
-	newVolumeData := getVolumeData(d)
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 	config := m.(*common.Config)
 	session := config.Session
-	contextMessage := fmt.Sprintf("update a volume %s", volumeID)
+	contextMessage := fmt.Sprintf("Update a volume %s", volumeID)
 	projectID, err := common.GetProject(config, d, contextMessage)
 	if err != nil {
 		return err
@@ -206,21 +210,34 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	// Check invalid cases
+	immutableFields := [8]string{"name", "source", "project_id", "project_name", "region_id", "region_name", "image_id", "snapshot_id"}
+	for _, name := range immutableFields {
+		oldValue, newValue := d.GetChange(name)
+		if oldValue != newValue {
+			return fmt.Errorf("[%s] Validation error: unable to update %s field (from %s to %s) because it is immutable", contextMessage, name, oldValue, newValue)
+		}
+	}
+
+	// Valid cases
 	volumeData, err := getVolume(session, config.Host, projectID, regionID, volumeID, config.Timeout)
 	if err != nil {
 		return err
 	}
-
 	// size
-	if volumeData.Size != newVolumeData.Size {
-		err = ExtendVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeData.Size)
+	_, newValue := d.GetChange("size")
+	newVolumeSize := newValue.(int)
+	if volumeData.Size != newVolumeSize {
+		err = ExtendVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeSize)
 		if err != nil {
 			return err
 		}
 	}
 	// type
-	if volumeData.TypeName != newVolumeData.TypeName {
-		err = RetypeVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeData.TypeName)
+	_, newValue = d.GetChange("type_name")
+	newVolumeTypeName := newValue.(string)
+	if volumeData.TypeName != newVolumeTypeName {
+		err = RetypeVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeTypeName)
 		if err != nil {
 			return err
 		}
