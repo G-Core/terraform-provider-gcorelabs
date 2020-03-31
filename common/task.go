@@ -70,8 +70,6 @@ func taskWait(config Config, taskID string, requestIimeout int, resourceWaitTime
 			return nil, fmt.Errorf("Timeout error: task %s not finished", taskID)
 		}
 	}
-	// log.Printf("[DEBUG] Finish waiting the task %s", taskID)
-	// return nil, nil
 }
 
 func WaitForTasksInResponse(config Config, resp *http.Response, resourceWaitTimeout int) ([]interface{}, error) {
