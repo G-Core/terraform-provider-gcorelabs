@@ -66,24 +66,36 @@ func resourceVolumeV1() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
-				Type:          schema.TypeInt,
-				Optional:      true,
-				ConflictsWith: []string{"project_name"},
+				Type:     schema.TypeInt,
+				Optional: true,
+				ExactlyOneOf: []string{
+					"project_id",
+					"project_name",
+				},
 			},
 			"region_id": &schema.Schema{
-				Type:          schema.TypeInt,
-				Optional:      true,
-				ConflictsWith: []string{"region_name"},
+				Type:     schema.TypeInt,
+				Optional: true,
+				ExactlyOneOf: []string{
+					"region_id",
+					"region_name",
+				},
 			},
 			"project_name": &schema.Schema{
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: []string{"project_id"},
+				Type:     schema.TypeString,
+				Optional: true,
+				ExactlyOneOf: []string{
+					"project_id",
+					"project_name",
+				},
 			},
 			"region_name": &schema.Schema{
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: []string{"region_id"},
+				Type:     schema.TypeString,
+				Optional: true,
+				ExactlyOneOf: []string{
+					"region_id",
+					"region_name",
+				},
 			},
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -117,15 +129,14 @@ func resourceVolumeV1() *schema.Resource {
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume creation")
 	name := d.Get("name").(string)
-	contextMessage := fmt.Sprintf("create a %s volume", name)
 	config := m.(*common.Config)
 	session := config.Session
 
-	projectID, err := common.GetProject(config, d, contextMessage)
+	projectID, err := common.GetProject(config, d)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, contextMessage)
+	regionID, err := common.GetRegion(config, d)
 	if err != nil {
 		return err
 	}
@@ -168,12 +179,11 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	session := config.Session
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
-	contextMessage := fmt.Sprintf("get a volume %s", volumeID)
-	projectID, err := common.GetProject(config, d, contextMessage)
+	projectID, err := common.GetProject(config, d)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, contextMessage)
+	regionID, err := common.GetRegion(config, d)
 	if err != nil {
 		return err
 	}
@@ -201,11 +211,11 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	config := m.(*common.Config)
 	session := config.Session
 	contextMessage := fmt.Sprintf("Update a volume %s", volumeID)
-	projectID, err := common.GetProject(config, d, contextMessage)
+	projectID, err := common.GetProject(config, d)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, contextMessage)
+	regionID, err := common.GetRegion(config, d)
 	if err != nil {
 		return err
 	}
@@ -252,13 +262,12 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	session := config.Session
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
-	contextMessage := fmt.Sprintf("delete the %s volume", volumeID)
 
-	projectID, err := common.GetProject(config, d, contextMessage)
+	projectID, err := common.GetProject(config, d)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d, contextMessage)
+	regionID, err := common.GetRegion(config, d)
 	if err != nil {
 		return err
 	}

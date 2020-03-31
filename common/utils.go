@@ -33,14 +33,6 @@ type Regions struct {
 	Results []Region `json:"results"`
 }
 
-// CheckValueExisting gets id and name and checks that only one value is filled in
-func CheckValueExisting(id int, name string, objectType string, contextMessage string) error {
-	if id == 0 && name == "" {
-		return fmt.Errorf("[%s] Missing value: set %s_id or %s_name", contextMessage, objectType, objectType)
-	}
-	return nil
-}
-
 func findProjectByName(arr []Project, name string) (int, error) {
 	for _, el := range arr {
 		if el.Name == name {
@@ -51,14 +43,10 @@ func findProjectByName(arr []Project, name string) (int, error) {
 }
 
 //GetProject returns valid projectID for a resource
-func GetProject(config *Config, d *schema.ResourceData, contextMessage string) (int, error) {
+func GetProject(config *Config, d *schema.ResourceData) (int, error) {
 	log.Println("[DEBUG] Try to get project ID")
 	projectID := d.Get("project_id").(int)
 	projectName := d.Get("project_name").(string)
-	err := CheckValueExisting(projectID, projectName, "project", contextMessage)
-	if err != nil {
-		return 0, err
-	}
 
 	// valid cases
 	if projectID != 0 {
@@ -101,13 +89,9 @@ func findRegionByName(arr []Region, name string) (int, error) {
 }
 
 //GetRegion returns valid regionID for a resource
-func GetRegion(config *Config, d *schema.ResourceData, contextMessage string) (int, error) {
+func GetRegion(config *Config, d *schema.ResourceData) (int, error) {
 	regionID := d.Get("region_id").(int)
 	regionName := d.Get("region_name").(string)
-	err := CheckValueExisting(regionID, regionName, "region", contextMessage)
-	if err != nil {
-		return 0, err
-	}
 
 	// valid cases
 	if regionID != 0 {
