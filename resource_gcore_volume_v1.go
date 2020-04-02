@@ -104,7 +104,6 @@ func resourceVolumeV1() *schema.Resource {
 			"source": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 			"size": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -213,10 +212,12 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	contextMessage := fmt.Sprintf("Update a volume %s", volumeID)
 	projectID, err := common.GetProject(config, d)
 	if err != nil {
+		reverVolumeState(d)
 		return err
 	}
 	regionID, err := common.GetRegion(config, d)
 	if err != nil {
+		reverVolumeState(d)
 		return err
 	}
 
@@ -225,6 +226,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	for _, name := range immutableFields {
 		oldValue, newValue := d.GetChange(name)
 		if oldValue != newValue {
+			reverVolumeState(d)
 			return fmt.Errorf("[%s] Validation error: unable to update %s field (from %s to %s) because it is immutable", contextMessage, name, oldValue, newValue)
 		}
 	}
@@ -232,6 +234,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	// Valid cases
 	volumeData, err := getVolume(session, config.Host, projectID, regionID, volumeID, config.Timeout)
 	if err != nil {
+		reverVolumeState(d)
 		return err
 	}
 	// size
@@ -240,6 +243,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	if volumeData.Size != newVolumeSize {
 		err = ExtendVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeSize)
 		if err != nil {
+			reverVolumeState(d)
 			return err
 		}
 	}
@@ -249,6 +253,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	if volumeData.TypeName != newVolumeTypeName {
 		err = RetypeVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeTypeName)
 		if err != nil {
+			reverVolumeState(d)
 			return err
 		}
 	}
@@ -397,4 +402,12 @@ func RetypeVolume(config common.Config, host string, projectID int, regionID int
 		return err
 	}
 	return nil
+}
+
+func reverVolumeState(d *schema.ResourceData) {
+	arrayOfStringFieldNames := [7]string{"name", "source", "type_name", "project_name", "region_name", "image_id", "snapshot_id"}
+	stringFieldNames := arrayOfStringFieldNames[0:7]
+	arrayOfIntFieldNames := [3]string{"size", "project_id", "region_id"}
+	intFieldNames := arrayOfIntFieldNames[0:3]
+	common.RevertState(d, "volume", stringFieldNames, intFieldNames)
 }

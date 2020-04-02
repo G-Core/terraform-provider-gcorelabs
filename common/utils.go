@@ -143,3 +143,21 @@ func ImportStringParser(infoStr string) (int, int, string, error) {
 	}
 	return projectID, regionID, infoStrings[2], nil
 }
+
+// RevertState reverts resource state to the state before updating. If desired, the number of input arguments can be increased.
+func RevertState(d *schema.ResourceData, resourceType string, stringFieldNames []string, intFieldNames []string) {
+	for _, name := range stringFieldNames {
+		oldValue, newValue := d.GetChange(name)
+		if oldValue != newValue {
+			d.Set(name, oldValue.(string))
+			log.Printf("[DEBUG] Revert %s of %s %s to %s", name, resourceType, d.Id(), oldValue.(string))
+		}
+	}
+	for _, name := range intFieldNames {
+		oldValue, newValue := d.GetChange(name)
+		if oldValue != newValue {
+			d.Set(name, oldValue.(int))
+			log.Printf("[DEBUG] Revert %s of %s %s to %d", name, resourceType, d.Id(), oldValue.(int))
+		}
+	}
+}
