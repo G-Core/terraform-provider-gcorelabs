@@ -64,6 +64,8 @@ func taskWait(config Config, taskID string, requestIimeout int, resourceWaitTime
 				return task.CreatedResources, nil
 			} else {
 				// Error state
+				log.Printf("[DEBUG] Task state: %s", task.State)
+				log.Printf("[DEBUG] Error task message: %s", task.Error)
 				return nil, fmt.Errorf("Task %s failed and it's in an %s state: %s", taskID, task.State, task.Error)
 			}
 		case <-ctx.Done():
