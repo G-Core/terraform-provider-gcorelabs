@@ -1,6 +1,7 @@
 package main
 
 import (
+	//	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -75,5 +76,7 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 		Host:    host,
 		Timeout: timeout,
 	}
+	//gcorecloud.ProviderClient{}
+
 	return &config, err
 }

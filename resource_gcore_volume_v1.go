@@ -7,13 +7,16 @@ import (
 	"log"
 	"net/http"
 
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks/utils"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/volume/v1/volumes"
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/mitchellh/mapstructure"
 )
 
 const volumeDeleting int = 1200
-const volumeCreating int = 1200
+const volumeCreatingTimeout int = 1200
 const volumeExtending int = 1200
 
 type Volume struct {
@@ -129,7 +132,7 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume creation")
 	name := d.Get("name").(string)
 	config := m.(*common.Config)
-	session := config.Session
+	//session := config.Session
 
 	projectID, err := common.GetProject(config, d)
 	if err != nil {
@@ -140,32 +143,67 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	body, err := createVolumeRequestBody(d)
+	settings, err := gcore.NewGCloudTokenAPISettingsFromEnv()
 	if err != nil {
 		return err
 	}
-	resp, err := common.PostRequest(&session, common.ResourcesV1URL(config.Host, "volumes", projectID, regionID), body, config.Timeout)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Create volume %s failed", name))
+	settings.Project = projectID
+	settings.Region = regionID
+	settings.Name = "volumes"
+	settings.Type = ""
+
+	err = settings.Validate()
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[DEBUG] Try to get task id from a response.")
-	taskData, err := common.WaitForTasksInResponse(*config, resp, volumeCreating)
-	volumeData := taskData[0]
+	options := settings.ToTokenOptions()
+	eo := settings.ToEndpointOptions()
+	client, err := gcore.TokenClientService(options, eo)
 	if err != nil {
 		return err
 	}
-	log.Printf("[DEBUG] Finish waiting.")
-	result := &VolumeIds{}
-	log.Printf("[DEBUG] Get volume id from %s", volumeData)
-	mapstructure.Decode(volumeData, &result)
-	volumeID := result.Volumes[0]
-	log.Printf("[DEBUG] Volume %s created.", volumeID)
+	client.SetDebug(settings.Debug)
+	source := volumes.VolumeSource(d.Get("source").(string))
+	err = source.IsValid()
+	if err != nil {
+		return err
+	}
+	volumeType, err := volumes.VolumeType(d.Get("type").(string)).ValidOrNil()
+	if err != nil {
+		return err
+	}
+	opts := volumes.CreateOpts{
+		Source:               source,
+		Name:                 name,
+		Size:                 d.Get("size").(int),
+		TypeName:             *volumeType,
+		ImageID:              d.Get("image_id").(string),
+		SnapshotID:           d.Get("snapshot_id").(string),
+		InstanceIDToAttachTo: "",
+	}
+	results, err := volumes.Create(client, opts).ExtractTasks()
+	if err != nil {
+		return err
+	}
+	taskID := results.Tasks[0]
+	log.Printf("[DEBUG]TaskID (%s)", taskID)
+	volumeID, err := utils.WaitTaskAndReturnResult(client, taskID, true, volumeCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+		taskInfo, err := tasks.Get(client, string(task)).Extract()
+		if err != nil {
+			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+		}
+		volumeID, err := volumes.ExtractVolumeIDFromTask(taskInfo)
+		if err != nil {
+			return nil, fmt.Errorf("cannot retrieve volume ID from task info: %w", err)
+		}
+		return volumeID, nil
+	},
+	)
+	log.Printf("[DEBUG] Finish volume creating (%s)", volumeID)
+	if err != nil {
+		return err
+	}
 	d.SetId(volumeID)
 	log.Printf("[DEBUG] Finish volume creating (%s)", volumeID)
 	return resourceVolumeRead(d, m)
