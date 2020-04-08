@@ -1,7 +1,6 @@
 package main
 
 import (
-	//	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"

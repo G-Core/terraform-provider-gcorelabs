@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks/utils"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/volume/v1/volumes"
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -130,65 +130,25 @@ func resourceVolumeV1() *schema.Resource {
 
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume creation")
-	name := d.Get("name").(string)
 	config := m.(*common.Config)
-	//session := config.Session
 
-	projectID, err := common.GetProject(config, d)
-	if err != nil {
-		return err
-	}
-	regionID, err := common.GetRegion(config, d)
+	client, err := CreateClient(config, d)
 	if err != nil {
 		return err
 	}
 
-	settings, err := gcore.NewGCloudTokenAPISettingsFromEnv()
+	// create volume
+	opts, err := getVolumeData(d)
 	if err != nil {
 		return err
-	}
-	settings.Project = projectID
-	settings.Region = regionID
-	settings.Name = "volumes"
-	settings.Type = ""
-
-	err = settings.Validate()
-	if err != nil {
-		return err
-	}
-
-	options := settings.ToTokenOptions()
-	eo := settings.ToEndpointOptions()
-	client, err := gcore.TokenClientService(options, eo)
-	if err != nil {
-		return err
-	}
-	client.SetDebug(settings.Debug)
-	source := volumes.VolumeSource(d.Get("source").(string))
-	err = source.IsValid()
-	if err != nil {
-		return err
-	}
-	volumeType, err := volumes.VolumeType(d.Get("type").(string)).ValidOrNil()
-	if err != nil {
-		return err
-	}
-	opts := volumes.CreateOpts{
-		Source:               source,
-		Name:                 name,
-		Size:                 d.Get("size").(int),
-		TypeName:             *volumeType,
-		ImageID:              d.Get("image_id").(string),
-		SnapshotID:           d.Get("snapshot_id").(string),
-		InstanceIDToAttachTo: "",
 	}
 	results, err := volumes.Create(client, opts).ExtractTasks()
 	if err != nil {
 		return err
 	}
 	taskID := results.Tasks[0]
-	log.Printf("[DEBUG]TaskID (%s)", taskID)
-	volumeID, err := utils.WaitTaskAndReturnResult(client, taskID, true, volumeCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+	log.Printf("[DEBUG] Task id (%s)", taskID)
+	volumeID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, volumeCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
 		taskInfo, err := tasks.Get(client, string(task)).Extract()
 		if err != nil {
 			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
@@ -200,11 +160,11 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 		return volumeID, nil
 	},
 	)
-	log.Printf("[DEBUG] Finish volume creating (%s)", volumeID)
+	log.Printf("[DEBUG] Volume id (%s)", volumeID)
 	if err != nil {
 		return err
 	}
-	d.SetId(volumeID)
+	d.SetId(volumeID.(string))
 	log.Printf("[DEBUG] Finish volume creating (%s)", volumeID)
 	return resourceVolumeRead(d, m)
 }
@@ -213,29 +173,27 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume reading")
 	log.Printf("[DEBUG] Start volume reading%s", d.State())
 	config := m.(*common.Config)
-	session := config.Session
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
-	projectID, err := common.GetProject(config, d)
+
+	client, err := CreateClient(config, d)
 	if err != nil {
 		return err
 	}
-	regionID, err := common.GetRegion(config, d)
+
+	volume, err := volumes.Get(client, volumeID).Extract()
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot get volume with ID: %s. Error: %w", volumeID, err)
 	}
-	volume, err := getVolume(session, config.Host, projectID, regionID, volumeID, config.Timeout)
-	if err != nil {
-		return err
-	}
+
 	d.Set("size", volume.Size)
 	d.Set("region_id", volume.RegionID)
 	d.Set("project_id", volume.ProjectID)
 	d.Set("name", volume.Name)
 
 	// optional
-	if d.Get("type_name").(string) != "" || volume.TypeName != "standard" {
-		d.Set("type_name", volume.TypeName)
+	if d.Get("type_name").(string) != "" || volume.VolumeType != "standard" {
+		d.Set("type_name", volume.VolumeType)
 	}
 	log.Println("[DEBUG] Finish volume reading")
 	return nil
@@ -335,34 +293,44 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 // getVolumeData create a new instance of a Volume structure (from volume parameters in the configuration file)*
-func getVolumeData(d *schema.ResourceData) Volume {
-	name := d.Get("name").(string)
-	size := d.Get("size").(int)
-	typeName := d.Get("type_name").(string)
+func getVolumeData(d *schema.ResourceData) (*volumes.CreateOpts, error) {
 	imageID := d.Get("image_id").(string)
 	snapshotID := d.Get("snapshot_id").(string)
-	source := d.Get("source").(string)
 
-	volumeData := Volume{
-		Size:   size,
-		Source: source,
-		Name:   name,
+	source := volumes.VolumeSource(d.Get("source").(string))
+	err := source.IsValid()
+	if err != nil {
+		return nil, err
 	}
+	typeName := d.Get("type_name").(string)
+	volumeData := volumes.CreateOpts{
+		Source: source,
+		Name:   d.Get("name").(string),
+		Size:   d.Get("size").(int),
+	}
+
 	if imageID != "" {
 		volumeData.ImageID = imageID
 	}
 	if typeName != "" {
-		volumeData.TypeName = typeName
+		modifiedTypeName, err := volumes.VolumeType(typeName).ValidOrNil()
+		if err != nil {
+			return nil, err
+		}
+		volumeData.TypeName = *modifiedTypeName
 	}
 	if snapshotID != "" {
 		volumeData.SnapshotID = snapshotID
 	}
-	return volumeData
+	return &volumeData, nil
 }
 
 // createVolumeRequestBody forms a json string for a new post request (from volume parameters in the configuration file)*
 func createVolumeRequestBody(d *schema.ResourceData) ([]byte, error) {
-	volumeData := getVolumeData(d)
+	volumeData, err := getVolumeData(d)
+	if err != nil {
+		return nil, err
+	}
 	body, err := json.Marshal(&volumeData)
 	if err != nil {
 		return nil, err
@@ -448,4 +416,37 @@ func reverVolumeState(d *schema.ResourceData) {
 	arrayOfIntFieldNames := [3]string{"size", "project_id", "region_id"}
 	intFieldNames := arrayOfIntFieldNames[0:3]
 	common.RevertState(d, "volume", stringFieldNames, intFieldNames)
+}
+
+func CreateClient(config *common.Config, d *schema.ResourceData) (*gcorecloud.ServiceClient, error) {
+	projectID, err := common.GetProject(config, d)
+	if err != nil {
+		return nil, err
+	}
+	regionID, err := common.GetRegion(config, d)
+	if err != nil {
+		return nil, err
+	}
+	settings, err := gcore.NewGCloudTokenAPISettingsFromEnv()
+	if err != nil {
+		return nil, err
+	}
+	settings.Project = projectID
+	settings.Region = regionID
+	settings.Name = "volumes"
+	settings.Type = ""
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	options := settings.ToTokenOptions()
+	eo := settings.ToEndpointOptions()
+	client, err := gcore.TokenClientService(options, eo)
+	if err != nil {
+		return nil, err
+	}
+	client.SetDebug(settings.Debug)
+	return client, nil
 }
