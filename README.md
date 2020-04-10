@@ -20,8 +20,8 @@ Provider can be created in ``.tf`` file or set the variables in an environment
 | :----------------: |:-------------------------:| :------:| :-------:|
 | username           | GCORE_PROVIDER_USERNAME   | string  | true     | 
 | password           | GCORE_PROVIDER_PASSWORD   | string  | true     | 
-| platform_url       | GCORE_PLATFORM_URL        | string  | false    | 
-| host               | GCORE_HOST                | string  | false    | 
+| platform_host       | GCORE_PLATFORM_HOST        | string  | false    | 
+| gcore_host               | GCORE_HOST                | string  | false    | 
 | timeout            | GCORE_TIMEOUT             | integer | false    | 
 
 example:
