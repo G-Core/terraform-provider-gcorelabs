@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 )
 
 type respPlatform struct {
@@ -20,9 +22,10 @@ type Session struct {
 }
 
 type Config struct {
-	Session Session
-	Host    string
-	Timeout int
+	Session  Session
+	Host     string
+	Timeout  int
+	Provider *gcorecloud.ProviderClient
 }
 
 func GetSession(platformURL string, usename string, password string, timeout int) (*Session, error) {

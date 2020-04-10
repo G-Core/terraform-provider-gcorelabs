@@ -427,26 +427,17 @@ func CreateClient(config *common.Config, d *schema.ResourceData) (*gcorecloud.Se
 	if err != nil {
 		return nil, err
 	}
-	settings, err := gcore.NewGCloudTokenAPISettingsFromEnv()
-	if err != nil {
-		return nil, err
-	}
-	settings.Project = projectID
-	settings.Region = regionID
-	settings.Name = "volumes"
-	settings.Type = ""
 
-	err = settings.Validate()
-	if err != nil {
-		return nil, err
-	}
+	provider := config.Provider
+	client, err := gcore.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+		Name:    "volumes",
+		Region:  regionID,
+		Project: projectID,
+		Version: "v1",
+	})
 
-	options := settings.ToTokenOptions()
-	eo := settings.ToEndpointOptions()
-	client, err := gcore.TokenClientService(options, eo)
 	if err != nil {
 		return nil, err
 	}
-	client.SetDebug(settings.Debug)
 	return client, nil
 }
