@@ -8,6 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
+var (
+	DefaultPlatformHost   = "http://10.100.179.50:8000"
+	DefaultGcoreCloudHost = "http://localhost:8888"
+)
+
 func Provider() terraform.ResourceProvider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -26,20 +31,20 @@ func Provider() terraform.ResourceProvider {
 					"GCORE_PROVIDER_PASSWORD",
 				}, nil),
 			},
-			"platform_url": {
+			"platform_host": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Platform ulr is used for generate jwt.",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
-					"GCORE_PLATFORM_URL",
-				}, common.DefaultPlatformUrl),
+					"GCORE_PLATFORM_HOST",
+				}, DefaultPlatformHost),
 			},
-			"host": {
+			"gcore_host": {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
 					"GCORE_HOST",
-				}, common.DefaultGcoreCloudHost),
+				}, DefaultGcoreCloudHost),
 			},
 			"timeout": {
 				Type:     schema.TypeInt,
@@ -66,16 +71,12 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
 	timeout := d.Get("timeout").(int)
-	host := d.Get("host").(string)
-	platformURL := d.Get("platform_url").(string)
-	session, err := common.GetSession(platformURL, username, password, timeout)
-	if err != nil {
-		return nil, err
-	}
+	gcoreHost := d.Get("gcore_host").(string)	
+	platformHost := d.Get("platform_host").(string)
 
 	provider, err := gcore.AuthenticatedClient(gcorecloud.AuthOptions{
-		APIURL:      common.DefaultGcoreCloudHost2,
-		AuthURL:     common.DefaultPlatformHost2,
+		APIURL:      gcoreHost,
+		AuthURL:     platformHost,
 		Username:    username,
 		Password:    password,
 		AllowReauth: true,
@@ -84,8 +85,7 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 		return nil, err
 	}
 	config := common.Config{
-		Session:  *session,
-		Host:     host,
+		Host:     gcoreHost,	
 		Timeout:  timeout,
 		Provider: provider,
 	}

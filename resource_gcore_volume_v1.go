@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
@@ -146,6 +144,8 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	// wait
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
 	volumeID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, volumeCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
@@ -204,16 +204,9 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 	config := m.(*common.Config)
-	session := config.Session
 	contextMessage := fmt.Sprintf("Update a volume %s", volumeID)
-	projectID, err := common.GetProject(config, d)
+	client, err := CreateClient(config, d)
 	if err != nil {
-		reverVolumeState(d)
-		return err
-	}
-	regionID, err := common.GetRegion(config, d)
-	if err != nil {
-		reverVolumeState(d)
 		return err
 	}
 
@@ -228,26 +221,35 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Valid cases
-	volumeData, err := getVolume(session, config.Host, projectID, regionID, volumeID, config.Timeout)
+	volume, err := volumes.Get(client, volumeID).Extract()
 	if err != nil {
 		reverVolumeState(d)
 		return err
 	}
-	// size
+
+	// change size
 	_, newValue := d.GetChange("size")
 	newVolumeSize := newValue.(int)
-	if volumeData.Size != newVolumeSize {
-		err = ExtendVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeSize)
+	if volume.Size != newVolumeSize {
+		err = ExtendVolume(client, volumeID, newVolumeSize)
 		if err != nil {
 			reverVolumeState(d)
 			return err
 		}
 	}
-	// type
+
+	// change type
 	_, newValue = d.GetChange("type_name")
-	newVolumeTypeName := newValue.(string)
-	if volumeData.TypeName != newVolumeTypeName {
-		err = RetypeVolume(*config, config.Host, projectID, regionID, volumeID, newVolumeTypeName)
+	newVolumeTypeStr := newValue.(string)
+	newVolumeType, err := volumes.VolumeType(newVolumeTypeStr).ValidOrNil()
+	if err != nil {
+		return err
+	}
+	if volume.VolumeType != *newVolumeType {
+		opts := volumes.VolumeTypePropertyOperationOpts{
+			VolumeType: *newVolumeType,
+		}
+		_, err := volumes.Retype(client, volumeID, opts).Extract()
 		if err != nil {
 			reverVolumeState(d)
 			return err
@@ -260,30 +262,35 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume deleting")
 	config := m.(*common.Config)
-	session := config.Session
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 
-	projectID, err := common.GetProject(config, d)
-	if err != nil {
-		return err
-	}
-	regionID, err := common.GetRegion(config, d)
+	client, err := CreateClient(config, d)
 	if err != nil {
 		return err
 	}
 
-	resp, err := common.DeleteRequest(session, common.ResourceV1URL(config.Host, "volumes", projectID, regionID, volumeID), config.Timeout)
+	opts := volumes.DeleteOpts{
+		Snapshots: [](string){d.Get("snapshot_id").(string)},
+	}
+	results, err := volumes.Delete(client, volumeID, opts).ExtractTasks()
 	if err != nil {
 		return err
 	}
-	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Delete volume %s failed", volumeID))
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	_, err = common.WaitForTasksInResponse(*config, resp, volumeDeleting)
+	taskID := results.Tasks[0]
+	log.Printf("[DEBUG] Task id (%s)", taskID)
+	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, volumeDeleting, func(task tasks.TaskID) (interface{}, error) {
+		_, err := volumes.Get(client, volumeID).Extract()
+		if err == nil {
+			return nil, fmt.Errorf("cannot delete volume with ID: %s", volumeID)
+		}
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	})
 	if err != nil {
 		return err
 	}
@@ -342,71 +349,26 @@ type Size struct {
 	Size int `json:"size"`
 }
 
-func parseJSONVolume(resp *http.Response) (OpenstackVolume, error) {
-	var volume = OpenstackVolume{}
-	responseData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return volume, err
-	}
-	err = json.Unmarshal([]byte(responseData), &volume)
-	return volume, err
-}
-
-func getVolume(session common.Session, host string, projectID int, regionID int, volumeID string, timeout int) (*OpenstackVolume, error) {
-	resp, err := common.GetRequest(session, common.ResourceV1URL(host, "volumes", projectID, regionID, volumeID), timeout)
-	if err != nil {
-		return nil, err
-	}
-	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Can't find the volume %s", volumeID))
-	if err != nil {
-		return nil, err
-	}
-	volume, err := parseJSONVolume(resp)
-	return &volume, err
-}
-
 // ExtendVolume changes the volume size
-func ExtendVolume(config common.Config, host string, projectID int, regionID int, volumeID string, newSize int) error {
-	var bodyData = Size{newSize}
-	body, err := json.Marshal(&bodyData)
-	if err != nil {
-		return err
+func ExtendVolume(client *gcorecloud.ServiceClient, volumeID string, newSize int) error {
+	opts := volumes.SizePropertyOperationOpts{
+		Size: newSize,
 	}
-	resp, err := common.PostRequest(&config.Session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "extend"), body, config.Timeout)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Extend volume %s failed", volumeID))
-	if err != nil {
-		return err
-	}
+	results, err := volumes.Extend(client, volumeID, opts).ExtractTasks()
+	taskID := results.Tasks[0]
+	log.Printf("[DEBUG] Task id (%s)", taskID)
+	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, volumeExtending, func(task tasks.TaskID) (interface{}, error) {
+		_, err := volumes.Get(client, volumeID).Extract()
+		if err != nil {
+			return nil, fmt.Errorf("cannot get volume with ID: %s. Error: %w", volumeID, err)
+		}
+		return nil, nil
+	})
 
-	log.Printf("[DEBUG] Try to get task id from a response.")
-	_, err = common.WaitForTasksInResponse(config, resp, volumeExtending)
 	if err != nil {
 		return err
 	}
 	log.Printf("[DEBUG] Finish waiting.")
-	return nil
-}
-
-// RetypeVolume changes the volume type
-func RetypeVolume(config common.Config, host string, projectID int, regionID int, volumeID string, newType string) error {
-	var bodyData = Type{newType}
-	body, err := json.Marshal(&bodyData)
-	if err != nil {
-		return err
-	}
-	resp, err := common.PostRequest(&config.Session, common.ExpandedResourceV1URL(host, "volumes", projectID, regionID, volumeID, "retype"), body, config.Timeout)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	err = common.CheckSuccessfulResponse(resp, fmt.Sprintf("Retype volume %s failed", volumeID))
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

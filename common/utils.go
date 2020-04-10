@@ -53,7 +53,7 @@ func GetProject(config *Config, d *schema.ResourceData) (int, error) {
 		return projectID, nil
 	}
 	url := fmt.Sprintf("%sprojects", config.Host)
-	resp, err := GetRequest(config.Session, url, config.Timeout)
+	resp, err := GetRequest(config.Provider.AccessToken(), url, config.Timeout)
 	if err != nil {
 		return 0, err
 	}
@@ -98,7 +98,7 @@ func GetRegion(config *Config, d *schema.ResourceData) (int, error) {
 		return regionID, nil
 	}
 	url := fmt.Sprintf("%sregions", config.Host)
-	resp, err := GetRequest(config.Session, url, config.Timeout)
+	resp, err := GetRequest(config.Provider.AccessToken(), url, config.Timeout)
 	if err != nil {
 		return 0, err
 	}
