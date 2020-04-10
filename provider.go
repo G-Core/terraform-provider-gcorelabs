@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
+	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
 	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -70,12 +72,23 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	config := common.Config{
-		Session: *session,
-		Host:    host,
-		Timeout: timeout,
+
+	provider, err := gcore.AuthenticatedClient(gcorecloud.AuthOptions{
+		APIURL:      common.DefaultGcoreCloudHost2,
+		AuthURL:     common.DefaultPlatformHost2,
+		Username:    username,
+		Password:    password,
+		AllowReauth: true,
+	})
+	if err != nil {
+		return nil, err
 	}
-	//gcorecloud.ProviderClient{}
+	config := common.Config{
+		Session:  *session,
+		Host:     host,
+		Timeout:  timeout,
+		Provider: provider,
+	}
 
 	return &config, err
 }
