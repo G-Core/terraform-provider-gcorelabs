@@ -22,7 +22,6 @@ Provider can be created in ``.tf`` file or set the variables in an environment
 | password           | GCORE_PROVIDER_PASSWORD   | string  | true     | 
 | platform_host       | GCORE_PLATFORM_HOST        | string  | false    | 
 | gcore_host               | GCORE_HOST                | string  | false    | 
-| timeout            | GCORE_TIMEOUT             | integer | false    | 
 
 example:
 ```

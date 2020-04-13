@@ -3,7 +3,6 @@ package main
 import (
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
-	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -46,13 +45,6 @@ func Provider() terraform.ResourceProvider {
 					"GCORE_HOST",
 				}, DefaultGcoreCloudHost),
 			},
-			"timeout": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
-					"GCORE_TIMEOUT",
-				}, 10),
-			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -70,8 +62,7 @@ func Provider() terraform.ResourceProvider {
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
-	timeout := d.Get("timeout").(int)
-	gcoreHost := d.Get("gcore_host").(string)	
+	gcoreHost := d.Get("gcore_host").(string)
 	platformHost := d.Get("platform_host").(string)
 
 	provider, err := gcore.AuthenticatedClient(gcorecloud.AuthOptions{
@@ -84,9 +75,7 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	config := common.Config{
-		Host:     gcoreHost,	
-		Timeout:  timeout,
+	config := Config{
 		Provider: provider,
 	}
 
