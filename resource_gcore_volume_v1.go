@@ -9,7 +9,6 @@ import (
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
 	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/volume/v1/volumes"
-	"git.gcore.com/terraform-provider-gcore/common"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -51,7 +50,7 @@ func resourceVolumeV1() *schema.Resource {
 		Delete: resourceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				projectID, regionID, volumeID, err := common.ImportStringParser(d.Id())
+				projectID, regionID, volumeID, err := ImportStringParser(d.Id())
 
 				if err != nil {
 					return nil, err
@@ -128,9 +127,10 @@ func resourceVolumeV1() *schema.Resource {
 
 func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume creation")
-	config := m.(*common.Config)
+	config := m.(*Config)
+	provider := config.Provider
 
-	client, err := CreateClient(config, d)
+	client, err := CreateClient(provider, d)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	results, err := volumes.Create(client, opts).ExtractTasks()
+	results, err := volumes.Create(client, opts).Extract()
 	if err != nil {
 		return err
 	}
@@ -172,11 +172,12 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume reading")
 	log.Printf("[DEBUG] Start volume reading%s", d.State())
-	config := m.(*common.Config)
+	config := m.(*Config)
+	provider := config.Provider
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 
-	client, err := CreateClient(config, d)
+	client, err := CreateClient(provider, d)
 	if err != nil {
 		return err
 	}
@@ -203,9 +204,10 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume updating")
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
-	config := m.(*common.Config)
+	config := m.(*Config)
+	provider := config.Provider
 	contextMessage := fmt.Sprintf("Update a volume %s", volumeID)
-	client, err := CreateClient(config, d)
+	client, err := CreateClient(provider, d)
 	if err != nil {
 		return err
 	}
@@ -261,11 +263,12 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("[DEBUG] Start volume deleting")
-	config := m.(*common.Config)
+	config := m.(*Config)
+	provider := config.Provider
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 
-	client, err := CreateClient(config, d)
+	client, err := CreateClient(provider, d)
 	if err != nil {
 		return err
 	}
@@ -273,7 +276,7 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	opts := volumes.DeleteOpts{
 		Snapshots: [](string){d.Get("snapshot_id").(string)},
 	}
-	results, err := volumes.Delete(client, volumeID, opts).ExtractTasks()
+	results, err := volumes.Delete(client, volumeID, opts).Extract()
 	if err != nil {
 		return err
 	}
@@ -354,7 +357,7 @@ func ExtendVolume(client *gcorecloud.ServiceClient, volumeID string, newSize int
 	opts := volumes.SizePropertyOperationOpts{
 		Size: newSize,
 	}
-	results, err := volumes.Extend(client, volumeID, opts).ExtractTasks()
+	results, err := volumes.Extend(client, volumeID, opts).Extract()
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
 	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, volumeExtending, func(task tasks.TaskID) (interface{}, error) {
@@ -377,20 +380,19 @@ func reverVolumeState(d *schema.ResourceData) {
 	stringFieldNames := arrayOfStringFieldNames[0:7]
 	arrayOfIntFieldNames := [3]string{"size", "project_id", "region_id"}
 	intFieldNames := arrayOfIntFieldNames[0:3]
-	common.RevertState(d, "volume", stringFieldNames, intFieldNames)
+	RevertState(d, "volume", stringFieldNames, intFieldNames)
 }
 
-func CreateClient(config *common.Config, d *schema.ResourceData) (*gcorecloud.ServiceClient, error) {
-	projectID, err := common.GetProject(config, d)
+func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData) (*gcorecloud.ServiceClient, error) {
+	projectID, err := GetProject(provider, d)
 	if err != nil {
 		return nil, err
 	}
-	regionID, err := common.GetRegion(config, d)
+	regionID, err := GetRegion(provider, d)
 	if err != nil {
 		return nil, err
 	}
 
-	provider := config.Provider
 	client, err := gcore.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
 		Name:    "volumes",
 		Region:  regionID,
