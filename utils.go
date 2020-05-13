@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/project/v1/projects"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/region/v1/regions"
+	gcorecloud "github.com/G-Core/gcorelabscloud-go"
+	"github.com/G-Core/gcorelabscloud-go/gcore"
+	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
+	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
