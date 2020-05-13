@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
+	gcorecloud "github.com/G-Core/gcorelabscloud-go"
+	"github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )

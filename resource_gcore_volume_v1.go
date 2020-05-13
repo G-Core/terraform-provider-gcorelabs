@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/task/v1/tasks"
-	"bitbucket.gcore.lu/gcloud/gcorecloud-go/gcore/volume/v1/volumes"
+	gcorecloud "github.com/G-Core/gcorelabscloud-go"
+	"github.com/G-Core/gcorelabscloud-go/gcore"
+	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
+	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
