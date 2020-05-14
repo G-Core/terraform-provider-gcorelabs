@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccCreateVolumeV1(t *testing.T) {
+func TestAccCreateVolumeV1_(t *testing.T) {
 	name := "create_test"
 	fullName := fmt.Sprintf("gcore_volumeV1.%s", name)
 	size := 1
@@ -20,8 +21,9 @@ func TestAccCreateVolumeV1(t *testing.T) {
 	newTypeName := "ssd_hiiops"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVolumeTemplate(name, size, typeName),
@@ -49,7 +51,7 @@ func TestAccCreateVolumeV1(t *testing.T) {
 	})
 }
 
-func TestAccVolumeV1UpdateChecker(t *testing.T) {
+func TestAccVolumeV1UpdateChecker_(t *testing.T) {
 	name := "invalid_update"
 	fullName := fmt.Sprintf("gcore_volumeV1.%s", name)
 	size := 1
@@ -62,8 +64,9 @@ func TestAccVolumeV1UpdateChecker(t *testing.T) {
 	newImageID := "4aceaf03-a5b2-47b8-aad9-8feb655557a8"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVolumeFullTemplate(name, name, size, source, typeName, "", ""),
@@ -93,14 +96,15 @@ func TestAccVolumeV1UpdateChecker(t *testing.T) {
 	})
 }
 
-func TestAccImportVolumeV1(t *testing.T) {
+func TestAccImportVolumeV1_(t *testing.T) {
 	name := "import_test"
 	fullName := fmt.Sprintf("gcore_volumeV1.%s", name)
 	importStateIDPrefix := fmt.Sprintf("%s:%s:", os.Getenv("TEST_PROJECT_ID"), os.Getenv("TEST_REGION_ID"))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVolumeTemplate(name, 1, "standard"),
@@ -115,6 +119,27 @@ func TestAccImportVolumeV1(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckVolumeDestroy(s *terraform.State) error {
+	config := testAccProvider.Meta().(*Config)
+	provider := config.Provider
+	client, err := CreateTestClient(provider)
+	if err != nil {
+		return err
+	}
+	allPages, err := volumes.List(client, nil).AllPages()
+	if err != nil {
+		return err
+	}
+	allVolumes, err := volumes.ExtractVolumes(allPages)
+	if err != nil {
+		return err
+	}
+	if len(allVolumes) > 0 {
+		return fmt.Errorf("Test client has volumes: %v", allVolumes)
+	}
+	return nil
 }
 
 func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {

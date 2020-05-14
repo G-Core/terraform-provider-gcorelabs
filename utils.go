@@ -10,7 +10,6 @@ import (
 	"github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 type Config struct {
@@ -47,11 +46,8 @@ func findProjectByName(arr []projects.Project, name string) (int, error) {
 }
 
 //GetProject returns valid projectID for a resource
-func GetProject(provider *gcorecloud.ProviderClient, d *schema.ResourceData) (int, error) {
+func GetProject(provider *gcorecloud.ProviderClient, projectID int, projectName string) (int, error) {
 	log.Println("[DEBUG] Try to get project ID")
-	projectID := d.Get("project_id").(int)
-	projectName := d.Get("project_name").(string)
-
 	// valid cases
 	if projectID != 0 {
 		return projectID, nil
@@ -88,10 +84,7 @@ func findRegionByName(arr []regions.Region, name string) (int, error) {
 }
 
 //GetRegion returns valid regionID for a resource
-func GetRegion(provider *gcorecloud.ProviderClient, d *schema.ResourceData) (int, error) {
-	regionID := d.Get("region_id").(int)
-	regionName := d.Get("region_name").(string)
-
+func GetRegion(provider *gcorecloud.ProviderClient, regionID int, regionName string) (int, error) {
 	// valid cases
 	if regionID != 0 {
 		return regionID, nil
@@ -132,22 +125,4 @@ func ImportStringParser(infoStr string) (int, int, string, error) {
 		return 0, 0, "", err
 	}
 	return projectID, regionID, infoStrings[2], nil
-}
-
-// RevertState reverts resource state to the state before updating. If desired, the number of input arguments can be increased.
-func RevertState(d *schema.ResourceData, resourceType string, stringFieldNames []string, intFieldNames []string) {
-	for _, name := range stringFieldNames {
-		oldValue, newValue := d.GetChange(name)
-		if oldValue != newValue {
-			d.Set(name, oldValue.(string))
-			log.Printf("[DEBUG] Revert %s of %s %s to %s", name, resourceType, d.Id(), oldValue.(string))
-		}
-	}
-	for _, name := range intFieldNames {
-		oldValue, newValue := d.GetChange(name)
-		if oldValue != newValue {
-			d.Set(name, oldValue.(int))
-			log.Printf("[DEBUG] Revert %s of %s %s to %d", name, resourceType, d.Id(), oldValue.(int))
-		}
-	}
 }

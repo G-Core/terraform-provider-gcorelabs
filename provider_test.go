@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
+	gcorecloud "github.com/G-Core/gcorelabscloud-go"
+	"github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -51,13 +54,6 @@ func checkNameAndID(resourceType string, t *testing.T) {
 	}
 }
 
-func providerData() string {
-	return fmt.Sprintf(`
-	provider "gcore" {
-		jwt = "%s"
-	}`, os.Getenv("TEST_PROVIDER_JWT"))
-}
-
 func regionInfo() string {
 	return objectInfo("REGION")
 }
@@ -74,4 +70,44 @@ func objectInfo(resourceType string) string {
 		return fmt.Sprintf(`%s_id = %s`, strings.ToLower(resourceType), regionID)
 	}
 	return fmt.Sprintf(`%s_name = "%s"`, strings.ToLower(resourceType), os.Getenv(keyNane))
+}
+
+func CreateTestClient(provider *gcorecloud.ProviderClient) (*gcorecloud.ServiceClient, error) {
+	projectID := 0
+	err := fmt.Errorf("")
+	if strProjectID, exists := os.LookupEnv("TEST_PROJECT_ID"); exists {
+		projectID, err = strconv.Atoi(strProjectID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		projectID, err = GetProject(provider, 0, os.Getenv("TEST_PROJECT_NAME"))
+		if err != nil {
+			return nil, err
+		}
+	}
+	regionID := 0
+	if strRegionID, exists := os.LookupEnv("TEST_REGION_ID"); exists {
+		regionID, err = strconv.Atoi(strRegionID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		regionID, err = GetProject(provider, 0, os.Getenv("TEST_REGION_NAME"))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	client, err := gcore.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+		Name:    "volumes",
+		Region:  regionID,
+		Project: projectID,
+		Version: "v1",
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }
