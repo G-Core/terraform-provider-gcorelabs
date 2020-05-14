@@ -148,7 +148,7 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	// wait
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
-	metaVolumeID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, volumeCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+	VolumeID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, volumeCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
 		taskInfo, err := tasks.Get(client, string(task)).Extract()
 		if err != nil {
 			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
@@ -160,12 +160,12 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		return volumeID, nil
 	},
 	)
-	log.Printf("[DEBUG] Volume id (%s)", metaVolumeID)
+	log.Printf("[DEBUG] Volume id (%s)", VolumeID)
 	if err != nil {
 		return err
 	}
-	d.SetId(metaVolumeID.(string))
-	log.Printf("[DEBUG] Finish volume creating (%s)", metaVolumeID)
+	d.SetId(VolumeID.(string))
+	log.Printf("[DEBUG] Finish volume creating (%s)", VolumeID)
 	return resourceVolumeRead(d, meta)
 }
 
