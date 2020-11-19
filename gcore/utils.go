@@ -1,4 +1,4 @@
-package main
+package gcore
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 	"strings"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
-	"github.com/G-Core/gcorelabscloud-go/gcore"
+	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type Config struct {
@@ -52,7 +53,7 @@ func GetProject(provider *gcorecloud.ProviderClient, projectID int, projectName 
 	if projectID != 0 {
 		return projectID, nil
 	}
-	client, err := gcore.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
 		Name:    "projects",
 		Region:  0,
 		Project: 0,
@@ -89,7 +90,7 @@ func GetRegion(provider *gcorecloud.ProviderClient, regionID int, regionName str
 	if regionID != 0 {
 		return regionID, nil
 	}
-	client, err := gcore.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
 		Name:    "regions",
 		Region:  0,
 		Project: 0,
@@ -125,4 +126,42 @@ func ImportStringParser(infoStr string) (int, int, string, error) {
 		return 0, 0, "", err
 	}
 	return projectID, regionID, infoStrings[2], nil
+}
+
+func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, endpoint string) (*gcorecloud.ServiceClient, error) {
+	projectID, err := GetProject(provider, d.Get("project_id").(int), d.Get("project_name").(string))
+	if err != nil {
+		return nil, err
+	}
+	regionID, err := GetRegion(provider, d.Get("region_id").(int), d.Get("region_name").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+		Name:    endpoint,
+		Region:  regionID,
+		Project: projectID,
+		Version: "v1",
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+func revertState(d *schema.ResourceData, schemaFields *[]string) {
+	for _, field := range *schemaFields {
+		if d.HasChange(field) {
+			oldValue, _ := d.GetChange(field)
+			switch oldValue.(type) {
+			case int:
+				d.Set(field, oldValue.(int))
+			case string:
+				d.Set(field, oldValue.(string))
+			}
+			log.Printf("[DEBUG] Revert (%s) '%s' field", d.Id(), field)
+		}
+	}
 }

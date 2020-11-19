@@ -1,0 +1,11 @@
+
+terraform.tfplan
+terraform.tfstate
+dist/
+modules-dev/
+/pkg/
+*.backup
+./*.tfstate
+.terraform/
+*.log
+.idea

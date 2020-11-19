@@ -1,61 +1,36 @@
-package main
+package gcore
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
-	"github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const volumeDeleting int = 1200
 const volumeCreatingTimeout int = 1200
 const volumeExtending int = 1200
+const volumesPoint = "volumes"
 
-type Volume struct {
-	Size       int    `json:"size"`
-	Source     string `json:"source"`
-	Name       string `json:"name"`
-	TypeName   string `json:"type_name,omitempty"`
-	ImageID    string `json:"image_id,omitempty"`
-	SnapshotID string `json:"snapshot_id,omitempty"`
-}
-
-type OpenstackVolume struct {
-	Size      int    `json:"size"`
-	RegionID  int    `json:"region_id"`
-	ProjectID int    `json:"project_id"`
-	TypeName  string `json:"volume_type,omitempty"`
-	Source    string `json:"source"`
-	Name      string `json:"name"`
-}
-
-type VolumeIds struct {
-	Volumes []string `json:"volumes"`
-}
-
-type Type struct {
-	VolumeType string `json:"volume_type"`
-}
-
-func resourceVolumeV1() *schema.Resource {
+func resourceVolume() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceVolumeCreate,
-		Read:   resourceVolumeRead,
-		Update: resourceVolumeUpdate,
-		Delete: resourceVolumeDelete,
+		CreateContext: resourceVolumeCreate,
+		ReadContext:   resourceVolumeRead,
+		UpdateContext: resourceVolumeUpdate,
+		DeleteContext: resourceVolumeDelete,
 		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, regionID, volumeID, err := ImportStringParser(d.Id())
 
 				if err != nil {
 					return nil, err
 				}
-
 				d.Set("project_id", projectID)
 				d.Set("region_id", regionID)
 				d.SetId(volumeID)
@@ -121,28 +96,34 @@ func resourceVolumeV1() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"last_updated": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
-	log.Println("[DEBUG] Start volume creation")
-	config := meta.(*Config)
+func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	log.Println("[DEBUG] Start volume creating")
+	var diags diag.Diagnostics
+	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClient(provider, d)
+	client, err := CreateClient(provider, d, volumesPoint)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// create volume
 	opts, err := getVolumeData(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	results, err := volumes.Create(client, opts).Extract()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// wait
@@ -162,29 +143,30 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	)
 	log.Printf("[DEBUG] Volume id (%s)", VolumeID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(VolumeID.(string))
 	log.Printf("[DEBUG] Finish volume creating (%s)", VolumeID)
-	return resourceVolumeRead(d, meta)
+	return diags
 }
 
-func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
+func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start volume reading")
 	log.Printf("[DEBUG] Start volume reading%s", d.State())
-	config := meta.(*Config)
+	var diags diag.Diagnostics
+	config := m.(*Config)
 	provider := config.Provider
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 
-	client, err := CreateClient(provider, d)
+	client, err := CreateClient(provider, d, volumesPoint)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	volume, err := volumes.Get(client, volumeID).Extract()
 	if err != nil {
-		return fmt.Errorf("cannot get volume with ID: %s. Error: %w", volumeID, err)
+		return diag.Errorf("cannot get volume with ID: %s. Error: %s", volumeID, err)
 	}
 
 	d.Set("size", volume.Size)
@@ -197,80 +179,89 @@ func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("type_name", volume.VolumeType)
 	}
 	log.Println("[DEBUG] Finish volume reading")
-	return nil
+	return diags
 }
 
-func resourceVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start volume updating")
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
-	config := meta.(*Config)
+	config := m.(*Config)
 	provider := config.Provider
 	contextMessage := fmt.Sprintf("Update a volume %s", volumeID)
-	client, err := CreateClient(provider, d)
+	client, err := CreateClient(provider, d, volumesPoint)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Check invalid cases
 	immutableFields := [8]string{"name", "source", "project_id", "project_name", "region_id", "region_name", "image_id", "snapshot_id"}
-	for _, name := range immutableFields {
-		oldValue, newValue := d.GetChange(name)
-		if oldValue != newValue {
-			reverVolumeState(d)
-			return fmt.Errorf("[%s] Validation error: unable to update %s field (from %s to %s) because it is immutable", contextMessage, name, oldValue, newValue)
+	schemaFields := []string{"name", "source", "size", "type_name", "project_id", "project_name", "region_id", "region_name", "image_id", "snapshot_id"}
+	for _, field := range immutableFields {
+		if d.HasChange(field) {
+			revertState(d, &schemaFields)
+			return diag.Errorf("[%s] Validation error: unable to update '%s' field because it is immutable", contextMessage, field)
 		}
 	}
 
 	// Valid cases
 	volume, err := volumes.Get(client, volumeID).Extract()
 	if err != nil {
-		reverVolumeState(d)
-		return err
+		revertState(d, &schemaFields)
+		return diag.FromErr(err)
 	}
 
 	// change size
-	newValue := d.Get("size")
-	newVolumeSize := newValue.(int)
-	if volume.Size != newVolumeSize {
-		err = ExtendVolume(client, volumeID, newVolumeSize)
-		if err != nil {
-			reverVolumeState(d)
-			return err
+	if d.HasChange("size") {
+		newValue := d.Get("size")
+		newSize := newValue.(int)
+		if volume.Size < newSize {
+			err = ExtendVolume(client, volumeID, newSize)
+			if err != nil {
+				revertState(d, &schemaFields)
+				return diag.FromErr(err)
+			}
+			d.Set("last_updated", time.Now().Format(time.RFC850))
+		} else {
+			return diag.Errorf("Validation error: unable to update size field because new volume size must be greater than current size")
 		}
 	}
 
 	// change type
-	newValue = d.Get("type_name")
-	newVolumeTypeStr := newValue.(string)
-	newVolumeType, err := volumes.VolumeType(newVolumeTypeStr).ValidOrNil()
-	if err != nil {
-		return err
-	}
-	if volume.VolumeType != *newVolumeType {
+	if d.HasChange("type_name") {
+		newTN := d.Get("type_name")
+		newVolumeType, err := volumes.VolumeType(newTN.(string)).ValidOrNil()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		opts := volumes.VolumeTypePropertyOperationOpts{
 			VolumeType: *newVolumeType,
 		}
-		_, err := volumes.Retype(client, volumeID, opts).Extract()
+		_, err = volumes.Retype(client, volumeID, opts).Extract()
 		if err != nil {
-			reverVolumeState(d)
-			return err
+			revertState(d, &schemaFields)
+			return diag.FromErr(err)
 		}
+
+		d.Set("last_updated", time.Now().Format(time.RFC850))
 	}
+
 	log.Println("[DEBUG] Finish volume updating")
-	return resourceVolumeRead(d, meta)
+	return resourceVolumeRead(ctx, d, m)
 }
 
-func resourceVolumeDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start volume deleting")
-	config := meta.(*Config)
+	var diags diag.Diagnostics
+	config := m.(*Config)
 	provider := config.Provider
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 
-	client, err := CreateClient(provider, d)
+	client, err := CreateClient(provider, d, volumesPoint)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	opts := volumes.DeleteOpts{
@@ -278,7 +269,7 @@ func resourceVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 	results, err := volumes.Delete(client, volumeID, opts).Extract()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
@@ -295,14 +286,14 @@ func resourceVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		}
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
+	d.SetId("")
 	log.Printf("[DEBUG] Finish of volume deleting")
-	return nil
+	return diags
 }
 
-// getVolumeData create a new instance of a Volume structure (from volume parameters in the configuration file)*
 func getVolumeData(d *schema.ResourceData) (*volumes.CreateOpts, error) {
 	imageID := d.Get("image_id").(string)
 	snapshotID := d.Get("snapshot_id").(string)
@@ -335,24 +326,6 @@ func getVolumeData(d *schema.ResourceData) (*volumes.CreateOpts, error) {
 	return &volumeData, nil
 }
 
-// createVolumeRequestBody forms a json string for a new post request (from volume parameters in the configuration file)*
-func createVolumeRequestBody(d *schema.ResourceData) ([]byte, error) {
-	volumeData, err := getVolumeData(d)
-	if err != nil {
-		return nil, err
-	}
-	body, err := json.Marshal(&volumeData)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
-}
-
-type Size struct {
-	Size int `json:"size"`
-}
-
-// ExtendVolume changes the volume size
 func ExtendVolume(client *gcorecloud.ServiceClient, volumeID string, newSize int) error {
 	opts := volumes.SizePropertyOperationOpts{
 		Size: newSize,
@@ -373,81 +346,4 @@ func ExtendVolume(client *gcorecloud.ServiceClient, volumeID string, newSize int
 	}
 	log.Printf("[DEBUG] Finish waiting.")
 	return nil
-}
-
-func reverVolumeState(d *schema.ResourceData) {
-	oldValue, newValue := d.GetChange("name")
-	if oldValue != newValue {
-		d.Set("name", oldValue.(string))
-		log.Printf("[DEBUG] Revert volume (%s) name from %s to %s", d.Id(), oldValue.(string), oldValue.(string))
-	}
-	oldValue, newValue = d.GetChange("source")
-	if oldValue != newValue {
-		d.Set("source", oldValue.(string))
-		log.Printf("[DEBUG] Revert volume (%s) source from %s to %s", d.Id(), oldValue.(string), oldValue.(string))
-	}
-	oldValue, newValue = d.GetChange("type_name")
-	if oldValue != newValue {
-		d.Set("type_name", oldValue.(string))
-		log.Printf("[DEBUG] Revert volume (%s) type_name from %s to %s", d.Id(), oldValue.(string), oldValue.(string))
-	}
-	oldValue, newValue = d.GetChange("region_name")
-	if oldValue != newValue {
-		d.Set("region_name", oldValue.(string))
-		log.Printf("[DEBUG] Revert volume (%s) region_name from %s to %s", d.Id(), oldValue.(string), oldValue.(string))
-	}
-	oldValue, newValue = d.GetChange("project_name")
-	if oldValue != newValue {
-		d.Set("project_name", oldValue.(string))
-		log.Printf("[DEBUG] Revert volume (%s) project_name from %s to %s", d.Id(), oldValue.(string), oldValue.(string))
-	}
-	oldValue, newValue = d.GetChange("image_id")
-	if oldValue != newValue {
-		d.Set("image_id", oldValue.(string))
-		log.Printf("[DEBUG] Revert volume (%s) image_id from %s to %s", d.Id(), oldValue.(string), oldValue.(string))
-	}
-	oldValue, newValue = d.GetChange("snapshot_id")
-	if oldValue != newValue {
-		d.Set("snapshot_id", oldValue.(string))
-		log.Printf("[DEBUG] Revert volume (%s) snapshot_id from %s to %s", d.Id(), oldValue.(string), oldValue.(string))
-	}
-
-	oldValue, newValue = d.GetChange("size")
-	if oldValue != newValue {
-		d.Set("size", oldValue.(int))
-		log.Printf("[DEBUG] Revert volume (%s) size from %d to %d", d.Id(), oldValue.(int), oldValue.(int))
-	}
-	oldValue, newValue = d.GetChange("project_id")
-	if oldValue != newValue {
-		d.Set("project_id", oldValue.(int))
-		log.Printf("[DEBUG] Revert volume (%s) project_id from %d to %d", d.Id(), oldValue.(int), oldValue.(int))
-	}
-	oldValue, newValue = d.GetChange("region_id")
-	if oldValue != newValue {
-		d.Set("region_id", oldValue.(int))
-		log.Printf("[DEBUG] Revert volume (%s) region_id from %d to %d", d.Id(), oldValue.(int), oldValue.(int))
-	}
-}
-
-func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData) (*gcorecloud.ServiceClient, error) {
-	projectID, err := GetProject(provider, d.Get("project_id").(int), d.Get("project_name").(string))
-	if err != nil {
-		return nil, err
-	}
-	regionID, err := GetRegion(provider, d.Get("region_id").(int), d.Get("region_name").(string))
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := gcore.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
-		Name:    "volumes",
-		Region:  regionID,
-		Project: projectID,
-		Version: "v1",
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }

@@ -1,40 +1,43 @@
-package main
+package gcore
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
-	"github.com/G-Core/gcorelabscloud-go/gcore"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	gc "github.com/G-Core/gcorelabscloud-go/gcore"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
+var testAccProviders map[string]func() (*schema.Provider, error)
 
 func init() {
-	testAccProvider = Provider().(*schema.Provider)
-	testAccProviders = map[string]terraform.ResourceProvider{
-		"gcore": testAccProvider,
+	testAccProvider = Provider()
+	testAccProviders = map[string]func() (*schema.Provider, error){
+		"gcore": func() (*schema.Provider, error) {
+			return testAccProvider, nil
+		},
 	}
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
+	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
 func testAccPreCheck(t *testing.T) {
-	if os.Getenv("GCORE_PROVIDER_USERNAME") == "" {
-		t.Fatal("GCORE_PROVIDER_USERNAME must be set for acceptance tests")
+	if os.Getenv("GCORE_USERNAME") == "" {
+		t.Fatal("GCORE_USERNAME must be set for acceptance tests")
 	}
-	if os.Getenv("GCORE_PROVIDER_PASSWORD") == "" {
-		t.Fatal("GCORE_PROVIDER_PASSWORD must be set for acceptance tests")
+	if os.Getenv("GCORE_PASSWORD") == "" {
+		t.Fatal("GCORE_PASSWORD must be set for acceptance tests")
 	}
 	checkNameAndID("PROJECT", t)
 	checkNameAndID("REGION", t)
@@ -72,7 +75,7 @@ func objectInfo(resourceType string) string {
 	return fmt.Sprintf(`%s_name = "%s"`, strings.ToLower(resourceType), os.Getenv(keyNane))
 }
 
-func CreateTestClient(provider *gcorecloud.ProviderClient) (*gcorecloud.ServiceClient, error) {
+func CreateTestClient(provider *gcorecloud.ProviderClient, endpoint string) (*gcorecloud.ServiceClient, error) {
 	projectID := 0
 	err := fmt.Errorf("")
 	if strProjectID, exists := os.LookupEnv("TEST_PROJECT_ID"); exists {
@@ -99,8 +102,8 @@ func CreateTestClient(provider *gcorecloud.ProviderClient) (*gcorecloud.ServiceC
 		}
 	}
 
-	client, err := gcore.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
-		Name:    "volumes",
+	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+		Name:    endpoint,
 		Region:  regionID,
 		Project: projectID,
 		Version: "v1",
@@ -110,4 +113,19 @@ func CreateTestClient(provider *gcorecloud.ProviderClient) (*gcorecloud.ServiceC
 		return nil, err
 	}
 	return client, nil
+}
+
+func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		// retrieve the resource by name from state
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("Widget ID is not set")
+		}
+		return nil
+	}
 }
