@@ -36,7 +36,8 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"gcore_volume": resourceVolume(),
+			"gcore_volume":  resourceVolume(),
+			"gcore_network": resourceNetwork(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
