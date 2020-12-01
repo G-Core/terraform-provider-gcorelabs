@@ -8,7 +8,6 @@ provider gcore {
 resource "gcore_volume" "volume" {
   name = "volume_example"
   type_name = "standard"
-  source = "new-volume"
   size = 1
   region_id = 1
   project_id = 1

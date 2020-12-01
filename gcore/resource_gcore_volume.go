@@ -76,13 +76,9 @@ func resourceVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"source": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			"size": &schema.Schema{
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
 			},
 			"type_name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -116,7 +112,6 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	// create volume
 	opts, err := getVolumeData(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -126,7 +121,6 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	// wait
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
 	VolumeID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, volumeCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
@@ -145,7 +139,10 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(VolumeID.(string))
+	resourceVolumeRead(ctx, d, m)
+
 	log.Printf("[DEBUG] Finish volume creating (%s)", VolumeID)
 	return diags
 }
@@ -169,15 +166,15 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.Errorf("cannot get volume with ID: %s. Error: %s", volumeID, err)
 	}
 
+	d.Set("name", volume.Name)
 	d.Set("size", volume.Size)
+	d.Set("type_name", volume.VolumeType)
 	d.Set("region_id", volume.RegionID)
 	d.Set("project_id", volume.ProjectID)
-	d.Set("name", volume.Name)
 
-	// optional
-	if d.Get("type_name").(string) != "" || volume.VolumeType != "standard" {
-		d.Set("type_name", volume.VolumeType)
-	}
+	fields := []string{"image_id", "snapshot_id"}
+	revertState(d, &fields)
+
 	log.Println("[DEBUG] Finish volume reading")
 	return diags
 }
@@ -188,46 +185,29 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 	config := m.(*Config)
 	provider := config.Provider
-	contextMessage := fmt.Sprintf("Update a volume %s", volumeID)
 	client, err := CreateClient(provider, d, volumesPoint)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Check invalid cases
-	immutableFields := [8]string{"name", "source", "project_id", "project_name", "region_id", "region_name", "image_id", "snapshot_id"}
-	schemaFields := []string{"name", "source", "size", "type_name", "project_id", "project_name", "region_id", "region_name", "image_id", "snapshot_id"}
-	for _, field := range immutableFields {
-		if d.HasChange(field) {
-			revertState(d, &schemaFields)
-			return diag.Errorf("[%s] Validation error: unable to update '%s' field because it is immutable", contextMessage, field)
-		}
-	}
-
-	// Valid cases
 	volume, err := volumes.Get(client, volumeID).Extract()
 	if err != nil {
-		revertState(d, &schemaFields)
 		return diag.FromErr(err)
 	}
 
-	// change size
 	if d.HasChange("size") {
 		newValue := d.Get("size")
 		newSize := newValue.(int)
 		if volume.Size < newSize {
 			err = ExtendVolume(client, volumeID, newSize)
 			if err != nil {
-				revertState(d, &schemaFields)
 				return diag.FromErr(err)
 			}
-			d.Set("last_updated", time.Now().Format(time.RFC850))
 		} else {
 			return diag.Errorf("Validation error: unable to update size field because new volume size must be greater than current size")
 		}
 	}
 
-	// change type
 	if d.HasChange("type_name") {
 		newTN := d.Get("type_name")
 		newVolumeType, err := volumes.VolumeType(newTN.(string)).ValidOrNil()
@@ -240,13 +220,11 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		_, err = volumes.Retype(client, volumeID, opts).Extract()
 		if err != nil {
-			revertState(d, &schemaFields)
 			return diag.FromErr(err)
 		}
-
-		d.Set("last_updated", time.Now().Format(time.RFC850))
 	}
 
+	d.Set("last_updated", time.Now().Format(time.RFC850))
 	log.Println("[DEBUG] Finish volume updating")
 	return resourceVolumeRead(ctx, d, m)
 }
@@ -295,24 +273,27 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func getVolumeData(d *schema.ResourceData) (*volumes.CreateOpts, error) {
+	volumeData := volumes.CreateOpts{}
+	volumeData.Source = volumes.NewVolume
+	volumeData.Name = d.Get("name").(string)
+	volumeData.Size = d.Get("size").(int)
+
 	imageID := d.Get("image_id").(string)
-	snapshotID := d.Get("snapshot_id").(string)
-
-	source := volumes.VolumeSource(d.Get("source").(string))
-	err := source.IsValid()
-	if err != nil {
-		return nil, err
-	}
-	typeName := d.Get("type_name").(string)
-	volumeData := volumes.CreateOpts{
-		Source: source,
-		Name:   d.Get("name").(string),
-		Size:   d.Get("size").(int),
-	}
-
 	if imageID != "" {
+		volumeData.Source = volumes.Image
 		volumeData.ImageID = imageID
 	}
+
+	snapshotID := d.Get("snapshot_id").(string)
+	if snapshotID != "" {
+		volumeData.Source = volumes.Snapshot
+		volumeData.SnapshotID = snapshotID
+		if volumeData.Size != 0 {
+			log.Println("[DEBUG] Size must be equal or larger to respective snapshot size")
+		}
+	}
+
+	typeName := d.Get("type_name").(string)
 	if typeName != "" {
 		modifiedTypeName, err := volumes.VolumeType(typeName).ValidOrNil()
 		if err != nil {
@@ -320,9 +301,7 @@ func getVolumeData(d *schema.ResourceData) (*volumes.CreateOpts, error) {
 		}
 		volumeData.TypeName = *modifiedTypeName
 	}
-	if snapshotID != "" {
-		volumeData.SnapshotID = snapshotID
-	}
+
 	return &volumeData, nil
 }
 

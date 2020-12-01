@@ -1,5 +1,10 @@
 Terraform G-Core Labs Provider
-==============================
+------------------------------
+- Website: https://gcorelabs.com 
+- Technical partner: https://itkey.com
+
+<img src="https://gcorelabs.com/img/logo.svg" data-src="https://gcorelabs.com/img/logo.svg" alt="G-Core Labs" width="500px" width="500px"> 
+=========================================================================================
 
 - Website: https://www.terraform.io
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
@@ -25,10 +30,10 @@ $ make build
 
 Using the provider
 ------------------
-To use the provider, prepare configuration files based on examples from .
+To use the provider, prepare configuration files based on examples
 
 ```sh
-$ cp ./examples/credentials/provider.tf .
+$ cp ./examples/... .
 $ terraform init
 ```
 
