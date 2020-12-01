@@ -2,12 +2,11 @@ package gcore
 
 import (
 	"fmt"
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
 	"os"
-	"regexp"
 	"strconv"
 	"testing"
 
-	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -20,8 +19,6 @@ func TestAccNetwork(t *testing.T) {
 		Mtu  int
 	}
 
-	fullName := "gcore_network.acctest"
-
 	create := Params{
 		Name: "create_test",
 		Mtu:  1450,
@@ -29,16 +26,10 @@ func TestAccNetwork(t *testing.T) {
 	}
 
 	update_name := Params{
-		Name: "update_test",
-	}
+		Name: "update_test"}
 
-	update_mtu := Params{
-		Mtu: 1300,
-	}
-
-	update_type := Params{
-		Type: "vlan",
-	}
+	fullName := "gcore_network.acctest"
+	importStateIDPrefix := fmt.Sprintf("%s:%s:", os.Getenv("TEST_PROJECT_ID"), os.Getenv("TEST_REGION_ID"))
 
 	NetworkTemplate := func(params *Params) string {
 		template := fmt.Sprintf(`
@@ -82,43 +73,6 @@ func TestAccNetwork(t *testing.T) {
 				),
 			},
 			{
-				Config:      NetworkTemplate(&update_mtu),
-				ExpectError: regexp.MustCompile(`[Update a Network [0-9a-zA-Z\-]{36}] Validation error: unable to update 'mtu' field because it is immutable`),
-			},
-			{
-				Config:      NetworkTemplate(&update_type),
-				ExpectError: regexp.MustCompile(`[Update a Network [0-9a-zA-Z\-]{36}] Validation error: unable to update 'type' field because it is immutable`),
-			},
-		},
-	})
-}
-
-func TestAccImportNetwork(t *testing.T) {
-	fullName := "gcore_network.import_acctest"
-	importStateIDPrefix := fmt.Sprintf("%s:%s:", os.Getenv("TEST_PROJECT_ID"), os.Getenv("TEST_REGION_ID"))
-
-	var NetworkTemplate = fmt.Sprintf(`
-		resource "gcore_network" "import_acctest" {
-   			name = "import_test"
-           	mtu = 1200
-           	type = "vxlan"
-			%s
-			%s
-       	}
-		`, regionInfo(), projectInfo())
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccNetworkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: NetworkTemplate,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResourceExists(fullName),
-				),
-			},
-			{
 				ImportStateIdPrefix: importStateIDPrefix,
 				ResourceName:        fullName,
 				ImportState:         true,
@@ -133,16 +87,16 @@ func testAccNetworkDestroy(s *terraform.State) error {
 	if err != nil {
 		return err
 	}
-	allPages, err := networks.List(client).AllPages()
-	if err != nil {
-		return err
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "gcore_network" {
+			continue
+		}
+
+		_, err := networks.Get(client, rs.Primary.ID).Extract()
+		if err == nil {
+			return fmt.Errorf("Network still exists")
+		}
 	}
-	allNetworks, err := networks.ExtractNetworks(allPages)
-	if err != nil {
-		return err
-	}
-	if len(allNetworks) > 0 {
-		return fmt.Errorf("Test client has networks: %v", allNetworks)
-	}
+
 	return nil
 }

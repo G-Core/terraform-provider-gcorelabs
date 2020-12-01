@@ -116,10 +116,9 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	// wait
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
-	NetworkID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, NetworkCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+	networkID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, NetworkCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
 		taskInfo, err := tasks.Get(client, string(task)).Extract()
 		if err != nil {
 			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
@@ -131,15 +130,15 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return NetworkID, nil
 	},
 	)
-	log.Printf("[DEBUG] Network id (%s)", NetworkID)
+	log.Printf("[DEBUG] Network id (%s)", networkID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(NetworkID.(string))
+	d.SetId(networkID.(string))
 	resourceNetworkRead(ctx, d, m)
 
-	log.Printf("[DEBUG] Finish Network creating (%s)", NetworkID)
+	log.Printf("[DEBUG] Finish Network creating (%s)", networkID)
 	return diags
 }
 
@@ -168,7 +167,6 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("region_id", network.RegionID)
 	d.Set("project_id", network.ProjectID)
 
-	// optional
 	log.Println("[DEBUG] Finish network reading")
 	return diags
 }
@@ -179,19 +177,9 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	log.Printf("[DEBUG] Volume id = %s", networkID)
 	config := m.(*Config)
 	provider := config.Provider
-	contextMessage := fmt.Sprintf("Update a network %s", networkID)
 	client, err := CreateClient(provider, d, networksPoint)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	immutableFields := [2]string{"mtu", "type"}
-	schemaFields := []string{"name", "mtu", "type", "project_id", "project_name", "region_id", "region_name"}
-	for _, field := range immutableFields {
-		if d.HasChange(field) {
-			revertState(d, &schemaFields)
-			return diag.Errorf("[%s] Validation error: unable to update '%s' field because it is immutable", contextMessage, field)
-		}
 	}
 
 	if d.HasChange("name") {

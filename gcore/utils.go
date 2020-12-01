@@ -3,6 +3,8 @@ package gcore
 import (
 	"fmt"
 	"log"
+	"net"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -11,6 +13,7 @@ import (
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/mitchellh/mapstructure"
 )
 
 type Config struct {
@@ -35,6 +38,46 @@ type Region struct {
 type Regions struct {
 	Count   int      `json:"count"`
 	Results []Region `json:"results"`
+}
+
+var config = &mapstructure.DecoderConfig{
+	TagName: "json",
+}
+
+func MapStructureDecoder(strct interface{}, v *map[string]interface{}, config *mapstructure.DecoderConfig) error {
+	config.Result = strct
+	decoder, _ := mapstructure.NewDecoder(config)
+	err := decoder.Decode(*v)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func StringToNetHookFunc() mapstructure.DecodeHookFuncType {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{}) (interface{}, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		if t == reflect.TypeOf(gcorecloud.CIDR{}) {
+			var gccidr gcorecloud.CIDR
+			_, net, err := net.ParseCIDR(data.(string))
+			gccidr.IP = net.IP
+			gccidr.Mask = net.Mask
+			return gccidr, err
+		}
+		if t == reflect.TypeOf(net.IP{}) {
+			ip := net.ParseIP(data.(string))
+			if ip == nil {
+				return net.IP{}, fmt.Errorf("failed parsing ip %v", data)
+			}
+			return ip, nil
+		}
+		return data, nil
+	}
 }
 
 func findProjectByName(arr []projects.Project, name string) (int, error) {
