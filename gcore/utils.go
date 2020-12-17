@@ -12,6 +12,8 @@ import (
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
+	"github.com/G-Core/gcorelabscloud-go/gcore/router/v1/routers"
+	"github.com/G-Core/gcorelabscloud-go/gcore/subnet/v1/subnets"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
 )
@@ -78,6 +80,48 @@ func StringToNetHookFunc() mapstructure.DecodeHookFuncType {
 		}
 		return data, nil
 	}
+}
+
+func extractHostRoutesMap(v []interface{}) ([]subnets.HostRoute, error) {
+	var config = &mapstructure.DecoderConfig{
+		DecodeHook: StringToNetHookFunc(),
+	}
+
+	HostRoutes := make([]subnets.HostRoute, len(v))
+	for i, hostroute := range v {
+		hs := hostroute.(map[string]interface{})
+		var H subnets.HostRoute
+		err := MapStructureDecoder(&H, &hs, config)
+		if err != nil {
+			return nil, err
+		}
+		HostRoutes[i] = H
+	}
+	return HostRoutes, nil
+}
+
+func extractExternalGatewayInfoMap(gw []interface{}) (routers.GatewayInfo, error) {
+	gateway := gw[0].(map[string]interface{})
+	var GW routers.GatewayInfo
+	err := MapStructureDecoder(&GW, &gateway, config)
+	if err != nil {
+		return GW, err
+	}
+	return GW, nil
+}
+
+func extractInterfacesMap(interfaces []interface{}) ([]routers.Interface, error) {
+	Interfaces := make([]routers.Interface, len(interfaces))
+	for i, iface := range interfaces {
+		inter := iface.(map[string]interface{})
+		var I routers.Interface
+		err := MapStructureDecoder(&I, &inter, config)
+		if err != nil {
+			return nil, err
+		}
+		Interfaces[i] = I
+	}
+	return Interfaces, nil
 }
 
 func findProjectByName(arr []projects.Project, name string) (int, error) {
@@ -194,15 +238,17 @@ func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, e
 	return client, nil
 }
 
-func revertState(d *schema.ResourceData, schemaFields *[]string) {
-	for _, field := range *schemaFields {
-		if d.HasChange(field) {
-			oldValue, _ := d.GetChange(field)
-			switch oldValue.(type) {
-			case int:
-				d.Set(field, oldValue.(int))
-			case string:
-				d.Set(field, oldValue.(string))
+func revertState(d *schema.ResourceData, fields *[]string) {
+	if d.Get("last_updated").(string) != "" {
+		for _, field := range *fields {
+			if d.HasChange(field) {
+				oldValue, _ := d.GetChange(field)
+				switch oldValue.(type) {
+				case int:
+					d.Set(field, oldValue.(int))
+				case string:
+					d.Set(field, oldValue.(string))
+				}
 			}
 			log.Printf("[DEBUG] Revert (%s) '%s' field", d.Id(), field)
 		}

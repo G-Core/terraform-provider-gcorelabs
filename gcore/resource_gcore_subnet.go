@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/mitchellh/mapstructure"
 )
 
 const SubnetDeleting int = 1200
@@ -379,22 +378,4 @@ func resourceSubnetDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	d.SetId("")
 	log.Printf("[DEBUG] Finish of subnet deleting")
 	return diags
-}
-
-func extractHostRoutesMap(v []interface{}) ([]subnets.HostRoute, error) {
-	var config = &mapstructure.DecoderConfig{
-		DecodeHook: StringToNetHookFunc(),
-	}
-
-	HostRoutes := make([]subnets.HostRoute, len(v))
-	for i, hostroute := range v {
-		hs := hostroute.(map[string]interface{})
-		var H subnets.HostRoute
-		err := MapStructureDecoder(&H, &hs, config)
-		if err != nil {
-			return nil, err
-		}
-		HostRoutes[i] = H
-	}
-	return HostRoutes, nil
 }
