@@ -14,6 +14,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var (
+	GCORE_USERNAME    = os.Getenv("GCORE_USERNAME")
+	GCORE_PASSWORD    = os.Getenv("GCORE_PASSWORD")
+	GCORE_EXT_NET     = os.Getenv("GCORE_EXT_NET")
+	GCORE_PRIV_SUBNET = os.Getenv("GCORE_PRIV_SUBNET")
+)
+
 var testAccProvider *schema.Provider
 var testAccProviders map[string]func() (*schema.Provider, error)
 
@@ -33,14 +40,29 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if os.Getenv("GCORE_USERNAME") == "" {
-		t.Fatal("GCORE_USERNAME must be set for acceptance tests")
+	Vars := map[string]interface{}{
+		"GCORE_USERNAME": GCORE_USERNAME,
+		"GCORE_PASSWORD": GCORE_PASSWORD,
 	}
-	if os.Getenv("GCORE_PASSWORD") == "" {
-		t.Fatal("GCORE_PASSWORD must be set for acceptance tests")
+	for k, v := range Vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
 	}
 	checkNameAndID("PROJECT", t)
 	checkNameAndID("REGION", t)
+}
+
+func testAccPreCheckRouter(t *testing.T) {
+	Vars := map[string]interface{}{
+		"GCORE_EXT_NET":     GCORE_EXT_NET,
+		"GCORE_PRIV_SUBNET": GCORE_PRIV_SUBNET,
+	}
+	for k, v := range Vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
 }
 
 func checkNameAndID(resourceType string, t *testing.T) {
