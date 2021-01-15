@@ -17,7 +17,10 @@ import (
 var (
 	GCORE_USERNAME    = os.Getenv("GCORE_USERNAME")
 	GCORE_PASSWORD    = os.Getenv("GCORE_PASSWORD")
+	GCORE_IMAGE       = os.Getenv("GCORE_IMAGE")
+	GCORE_SECGROUP    = os.Getenv("GCORE_SECGROUP")
 	GCORE_EXT_NET     = os.Getenv("GCORE_EXT_NET")
+	GCORE_PRIV_NET    = os.Getenv("GCORE_PRIV_NET")
 	GCORE_PRIV_SUBNET = os.Getenv("GCORE_PRIV_SUBNET")
 )
 
@@ -56,6 +59,20 @@ func testAccPreCheck(t *testing.T) {
 func testAccPreCheckRouter(t *testing.T) {
 	Vars := map[string]interface{}{
 		"GCORE_EXT_NET":     GCORE_EXT_NET,
+		"GCORE_PRIV_SUBNET": GCORE_PRIV_SUBNET,
+	}
+	for k, v := range Vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckInstance(t *testing.T) {
+	Vars := map[string]interface{}{
+		"GCORE_IMAGE":       GCORE_IMAGE,
+		"GCORE_SECGROUP":    GCORE_SECGROUP,
+		"GCORE_PRIV_NET":    GCORE_PRIV_NET,
 		"GCORE_PRIV_SUBNET": GCORE_PRIV_SUBNET,
 	}
 	for k, v := range Vars {
