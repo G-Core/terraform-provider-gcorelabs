@@ -2,6 +2,7 @@ package gcore
 
 import (
 	"fmt"
+	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"log"
 	"net"
 	"reflect"
@@ -17,6 +18,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
 )
+
+const versionPointV1 = "v1"
+const versionPointV2 = "v2"
 
 type Config struct {
 	Provider *gcorecloud.ProviderClient
@@ -124,6 +128,70 @@ func extractInterfacesMap(interfaces []interface{}) ([]routers.Interface, error)
 	return Interfaces, nil
 }
 
+func extractVolumesMap(volumes []interface{}) ([]instances.CreateVolumeOpts, error) {
+	Volumes := make([]instances.CreateVolumeOpts, len(volumes))
+	for i, volume := range volumes {
+		vol := volume.(map[string]interface{})
+		var V instances.CreateVolumeOpts
+		err := MapStructureDecoder(&V, &vol, config)
+		if err != nil {
+			return nil, err
+		}
+		Volumes[i] = V
+	}
+	return Volumes, nil
+}
+
+func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.CreateInterfaceOpts, error) {
+	Interfaces := make([]instances.CreateInterfaceOpts, len(interfaces))
+	for i, iface := range interfaces {
+		inter := iface.(map[string]interface{})
+
+		switch inter["floating_ip"].(type) {
+		case string:
+			delete(inter, "floating_ip")
+		}
+
+		var I instances.CreateInterfaceOpts
+		err := MapStructureDecoder(&I, &inter, config)
+		if err != nil {
+			return nil, err
+		}
+		Interfaces[i] = I
+	}
+	return Interfaces, nil
+}
+
+func extractSecurityGroupsMap(secgroups []interface{}) ([]gcorecloud.ItemID, error) {
+	SecGroups := make([]gcorecloud.ItemID, len(secgroups))
+	for i, secgroup := range secgroups {
+		group := secgroup.(map[string]interface{})
+		var SG gcorecloud.ItemID
+		err := MapStructureDecoder(&SG, &group, config)
+		if err != nil {
+			return nil, err
+		}
+		SecGroups[i] = SG
+	}
+	return SecGroups, nil
+}
+
+func extractMetadataMap(metadata []interface{}) (instances.MetadataSetOpts, error) {
+	MetaData := make([]instances.MetadataOpts, len(metadata))
+	var MetadataSetOpts instances.MetadataSetOpts
+	for i, meta := range metadata {
+		md := meta.(map[string]interface{})
+		var MD instances.MetadataOpts
+		err := MapStructureDecoder(&MD, &md, config)
+		if err != nil {
+			return MetadataSetOpts, err
+		}
+		MetaData[i] = MD
+	}
+	MetadataSetOpts.Metadata = MetaData
+	return MetadataSetOpts, nil
+}
+
 func findProjectByName(arr []projects.Project, name string) (int, error) {
 	for _, el := range arr {
 		if el.Name == name {
@@ -215,7 +283,7 @@ func ImportStringParser(infoStr string) (int, int, string, error) {
 	return projectID, regionID, infoStrings[2], nil
 }
 
-func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, endpoint string) (*gcorecloud.ServiceClient, error) {
+func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, endpoint string, version string) (*gcorecloud.ServiceClient, error) {
 	projectID, err := GetProject(provider, d.Get("project_id").(int), d.Get("project_name").(string))
 	if err != nil {
 		return nil, err
@@ -229,7 +297,7 @@ func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, e
 		Name:    endpoint,
 		Region:  regionID,
 		Project: projectID,
-		Version: "v1",
+		Version: version,
 	})
 
 	if err != nil {

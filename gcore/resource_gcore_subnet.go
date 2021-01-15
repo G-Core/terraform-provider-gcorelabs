@@ -146,7 +146,7 @@ func resourceSubnetCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClient(provider, d, subnetPoint)
+	client, err := CreateClient(provider, d, subnetPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,7 +237,7 @@ func resourceSubnetRead(ctx context.Context, d *schema.ResourceData, m interface
 	subnetID := d.Id()
 	log.Printf("[DEBUG] Subnet id = %s", subnetID)
 
-	client, err := CreateClient(provider, d, subnetPoint)
+	client, err := CreateClient(provider, d, subnetPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -288,7 +288,7 @@ func resourceSubnetUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[DEBUG] Subnet id = %s", subnetID)
 	config := m.(*Config)
 	provider := config.Provider
-	client, err := CreateClient(provider, d, subnetPoint)
+	client, err := CreateClient(provider, d, subnetPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -348,7 +348,7 @@ func resourceSubnetDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	subnetID := d.Id()
 	log.Printf("[DEBUG] Subnet id = %s", subnetID)
 
-	client, err := CreateClient(provider, d, subnetPoint)
+	client, err := CreateClient(provider, d, subnetPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}

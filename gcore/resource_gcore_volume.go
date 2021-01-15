@@ -107,7 +107,7 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClient(provider, d, volumesPoint)
+	client, err := CreateClient(provider, d, volumesPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,7 +156,7 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 
-	client, err := CreateClient(provider, d, volumesPoint)
+	client, err := CreateClient(provider, d, volumesPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,7 +185,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 	config := m.(*Config)
 	provider := config.Provider
-	client, err := CreateClient(provider, d, volumesPoint)
+	client, err := CreateClient(provider, d, volumesPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,7 +237,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	volumeID := d.Id()
 	log.Printf("[DEBUG] Volume id = %s", volumeID)
 
-	client, err := CreateClient(provider, d, volumesPoint)
+	client, err := CreateClient(provider, d, volumesPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -100,7 +100,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClient(provider, d, networksPoint)
+	client, err := CreateClient(provider, d, networksPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,7 +151,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	networkID := d.Id()
 	log.Printf("[DEBUG] Network id = %s", networkID)
 
-	client, err := CreateClient(provider, d, networksPoint)
+	client, err := CreateClient(provider, d, networksPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,7 +177,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	log.Printf("[DEBUG] Volume id = %s", networkID)
 	config := m.(*Config)
 	provider := config.Provider
-	client, err := CreateClient(provider, d, networksPoint)
+	client, err := CreateClient(provider, d, networksPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -203,7 +203,7 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 	networkID := d.Id()
 	log.Printf("[DEBUG] Network id = %s", networkID)
 
-	client, err := CreateClient(provider, d, networksPoint)
+	client, err := CreateClient(provider, d, networksPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
