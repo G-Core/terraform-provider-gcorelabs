@@ -36,10 +36,11 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"gcore_volume":  resourceVolume(),
-			"gcore_network": resourceNetwork(),
-			"gcore_subnet":  resourceSubnet(),
-			"gcore_router":  resourceRouter(),
+			"gcore_volume":   resourceVolume(),
+			"gcore_network":  resourceNetwork(),
+			"gcore_subnet":   resourceSubnet(),
+			"gcore_router":   resourceRouter(),
+			"gcore_instance": resourceInstance(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
