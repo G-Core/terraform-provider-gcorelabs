@@ -92,11 +92,11 @@ func resourceInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"source": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Required: true,
 						},
 						"boot_index": {
 							Type:     schema.TypeInt,
@@ -112,6 +112,14 @@ func resourceInstance() *schema.Resource {
 						},
 						"size": {
 							Type:     schema.TypeInt,
+							Optional: true,
+						},
+						"volume_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"attachment_tag": {
+							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"id": {
@@ -362,6 +370,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	results, err := instances.Create(clientv2, createOpts).Extract()
+	log.Println(results, err)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -536,6 +545,32 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			err := instances.MetadataCreate(client, instanceID, createOpts).Err
 			if err != nil {
 				return diag.Errorf("cannot create metadata. Error: %s", err)
+			}
+		}
+	}
+
+	if d.HasChange("security_groups") {
+		osg, nsg := d.GetChange("security_groups")
+		if len(osg.([]interface{})) > 0 {
+			for _, secgr := range osg.([]interface{}) {
+				var delOpts instances.SecurityGroupOpts
+				sg := secgr.(map[string]interface{})
+				delOpts.Name = sg["name"].(string)
+				err := instances.UnAssignSecurityGroup(client, instanceID, delOpts).Err
+				if err != nil {
+					return diag.Errorf("cannot unassign security group: %s. Error: %s", delOpts.Name, err)
+				}
+			}
+		}
+		if len(nsg.([]interface{})) > 0 {
+			for _, secgr := range nsg.([]interface{}) {
+				var createOpts instances.SecurityGroupOpts
+				sg := secgr.(map[string]interface{})
+				createOpts.Name = sg["name"].(string)
+				err := instances.AssignSecurityGroup(client, instanceID, createOpts).Err
+				if err != nil {
+					return diag.Errorf("cannot assign security group: %s. Error: %s", createOpts.Name, err)
+				}
 			}
 		}
 	}

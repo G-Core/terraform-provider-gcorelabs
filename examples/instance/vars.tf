@@ -3,35 +3,6 @@ variable "names" {
   default = ["instance_example"]
 }
 
-variable "volumes" {
-  type = list(object({
-    source = string
-    boot_index = number
-    type_name = string
-    size = number
-    name = string
-    image_id = string
-  }))
-  default = [
-    {
-      source = "image"
-      type_name = "ssd_hiiops"
-      size = 5
-      name = "boot volume"
-      boot_index = 0
-      image_id = "f3847215-e4d7-4e64-8e69-14637e68e27f"
-    },
-    {
-      source = "new-volume"
-      type_name = "ssd_hiiops"
-      size = 5
-      name = "empty volume"
-      boot_index = 1
-      image_id = null
-    },
-  ]
-}
-
 variable "interfaces" {
   type = list(object({
     type = string
@@ -57,10 +28,12 @@ variable "interfaces" {
 variable "security_groups" {
   type = list(object({
     id = string
+    name = string
   }))
   default = [
     {
       id = "81e6dfd9-b646-4a5f-9064-cc224c63e545"
+      name = null
     },
   ]
 }

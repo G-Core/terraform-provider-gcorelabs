@@ -5,20 +5,38 @@ provider gcore {
   gcore_api = "http://10.100.179.92:33081"
 }
 
+resource "gcore_volume" "first_volume" {
+  name = "boot volume"
+  type_name = "ssd_hiiops"
+  size = 5
+  image_id = "f3847215-e4d7-4e64-8e69-14637e68e27f"
+  region_id = 1
+  project_id = 1
+}
+
+resource "gcore_volume" "second_volume" {
+  name = "second volume"
+  type_name = "ssd_hiiops"
+  size = 5
+  region_id = 1
+  project_id = 1
+}
+
+locals {
+  volumes_ids = [gcore_volume.first_volume.id, gcore_volume.second_volume.id]
+}
+
 resource "gcore_instance" "instance" {
   flavor_id = "g1-standard-2-4"
   name = var.names
 
   dynamic volumes {
   iterator = vol
-  for_each = var.volumes
+  for_each = local.volumes_ids
   content {
-    source = vol.value.source
-    type_name = vol.value.type_name
-    size = vol.value.size
-    name = vol.value.name
-    boot_index = vol.value.boot_index
-    image_id = vol.value.image_id
+    boot_index = index(local.volumes_ids, vol.value)
+    source = "existing-volume"
+    volume_id = vol.value
     }
   }
 
@@ -37,6 +55,7 @@ resource "gcore_instance" "instance" {
   for_each = var.security_groups
   content {
     id = sg.value.id
+    name = sg.value.name
     }
   }
 

@@ -2,17 +2,17 @@ package gcore
 
 import (
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
-	"github.com/pkg/errors"
-
 	"log"
 	"net"
 	"reflect"
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
+	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
 	"github.com/G-Core/gcorelabscloud-go/gcore/router/v1/routers"
