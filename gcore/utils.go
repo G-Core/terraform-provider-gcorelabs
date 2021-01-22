@@ -3,6 +3,8 @@ package gcore
 import (
 	"fmt"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
+	"github.com/pkg/errors"
+
 	"log"
 	"net"
 	"reflect"
@@ -302,6 +304,24 @@ func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, e
 
 	if err != nil {
 		return nil, err
+	}
+	return client, nil
+}
+
+func CreateClientWithoutRegion(provider *gcorecloud.ProviderClient, d *schema.ResourceData, endpoint string, version string) (*gcorecloud.ServiceClient, error) {
+	projectID, ok := d.Get("project_id").(int)
+	if !ok {
+		return nil, errors.New("cannot cast project_id to int")
+	}
+
+	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+		Name:    endpoint,
+		Project: projectID,
+		Version: version,
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "ClientServiceFromProvider")
 	}
 	return client, nil
 }

@@ -41,6 +41,7 @@ func Provider() *schema.Provider {
 			"gcore_subnet":   resourceSubnet(),
 			"gcore_router":   resourceRouter(),
 			"gcore_instance": resourceInstance(),
+			"gcore_keypair":  resourceKeypair(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
