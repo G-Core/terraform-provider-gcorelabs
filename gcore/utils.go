@@ -2,12 +2,13 @@ package gcore
 
 import (
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"log"
 	"net"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
@@ -298,6 +299,20 @@ func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, e
 	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
 		Name:    endpoint,
 		Region:  regionID,
+		Project: projectID,
+		Version: version,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+func CreateClientWithoutRegion(provider *gcorecloud.ProviderClient, d *schema.ResourceData, endpoint string, version string) (*gcorecloud.ServiceClient, error) {
+	projectID := d.Get("project_id").(int)
+	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
+		Name:    endpoint,
 		Project: projectID,
 		Version: version,
 	})
