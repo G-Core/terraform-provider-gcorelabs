@@ -20,12 +20,10 @@ variable "interfaces" {
     type = string
     subnet_id = string
     network_id = string
+    fip_source = string
+    existing_fip_id = string
     port_id = string
     ip_address = string
-    floating_ip = list(object({
-                    source = string
-                    existing_floating_id = string
-                    }))
   }))
   default = [
     {
@@ -34,12 +32,8 @@ variable "interfaces" {
       subnet_id = "9bc36cf6-407c-4a74-bc83-ce3aa3854c3d"
       port_id = null
       ip_address = null
-      floating_ip = [
-        {
-          source = null
-          existing_floating_id = null
-        }
-      ]
+      fip_source = null
+      existing_fip_id = null
     },
   ]
 }
