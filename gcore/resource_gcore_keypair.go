@@ -20,8 +20,21 @@ func resourceKeypair() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,
-				Required: true,
 				ForceNew: true,
+				Optional: true,
+				ExactlyOneOf: []string{
+					"project_id",
+					"project_name",
+				},
+			},
+			"project_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ExactlyOneOf: []string{
+					"project_id",
+					"project_name",
+				},
 			},
 			"public_key": &schema.Schema{
 				Type:     schema.TypeString,
@@ -52,7 +65,7 @@ func resourceKeypairCreate(ctx context.Context, d *schema.ResourceData, m interf
 	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClientWithoutRegion(provider, d, keypairsPoint, versionPointV2)
+	client, err := CreateClient(provider, d, keypairsPoint, versionPointV2)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,7 +97,7 @@ func resourceKeypairRead(ctx context.Context, d *schema.ResourceData, m interfac
 	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClientWithoutRegion(provider, d, keypairsPoint, versionPointV2)
+	client, err := CreateClient(provider, d, keypairsPoint, versionPointV2)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -112,7 +125,7 @@ func resourceKeypairDelete(ctx context.Context, d *schema.ResourceData, m interf
 	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClientWithoutRegion(provider, d, keypairsPoint, versionPointV2)
+	client, err := CreateClient(provider, d, keypairsPoint, versionPointV2)
 	if err != nil {
 		return diag.FromErr(err)
 	}

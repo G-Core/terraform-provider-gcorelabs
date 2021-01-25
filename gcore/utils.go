@@ -291,28 +291,20 @@ func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, e
 	if err != nil {
 		return nil, err
 	}
-	regionID, err := GetRegion(provider, d.Get("region_id").(int), d.Get("region_name").(string))
-	if err != nil {
-		return nil, err
+
+	var regionID int
+	rawRegionID := d.Get("region_id")
+	rawRegionName := d.Get("region_name")
+	if rawRegionID != nil && rawRegionName != nil {
+		regionID, err = GetRegion(provider, rawRegionID.(int), rawRegionName.(string))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
 		Name:    endpoint,
 		Region:  regionID,
-		Project: projectID,
-		Version: version,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
-}
-
-func CreateClientWithoutRegion(provider *gcorecloud.ProviderClient, d *schema.ResourceData, endpoint string, version string) (*gcorecloud.ServiceClient, error) {
-	projectID := d.Get("project_id").(int)
-	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
-		Name:    endpoint,
 		Project: projectID,
 		Version: version,
 	})
