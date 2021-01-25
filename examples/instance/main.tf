@@ -47,16 +47,10 @@ resource "gcore_instance" "instance" {
     type = iface.value.type
     network_id = iface.value.network_id
     subnet_id = iface.value.subnet_id
+    fip_source = iface.value.fip_source
+    existing_fip_id =iface.value.existing_fip_id
     port_id = iface.value.port_id
     ip_address = iface.value.ip_address
-    dynamic floating_ip {
-    iterator = fip
-    for_each = iface.value.floating_ip
-    content {
-      source = fip.value.source
-      existing_floating_id = fip.value.existing_floating_id
-      }
-    }
     }
   }
 

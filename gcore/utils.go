@@ -2,7 +2,6 @@ package gcore
 
 import (
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"log"
 	"net"
 	"reflect"
@@ -11,6 +10,8 @@ import (
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
+	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
+	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
 	"github.com/G-Core/gcorelabscloud-go/gcore/router/v1/routers"
@@ -147,17 +148,21 @@ func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.Interfa
 	for i, iface := range interfaces {
 		inter := iface.(map[string]interface{})
 
-		fip := inter["floating_ip"].([]interface{})[0]
-		if fip == nil {
-			delete(inter, "floating_ip")
-		} else {
-			inter["floating_ip"] = fip.(map[string]interface{})
-		}
-
 		var I instances.InterfaceOpts
 		err := MapStructureDecoder(&I, &inter, config)
 		if err != nil {
 			return nil, err
+		}
+
+		if inter["fip_source"] != "" {
+			var fip instances.CreateNewInterfaceFloatingIPOpts
+			if inter["existing_fip_id"] != "" {
+				fip.Source = types.ExistingFloatingIP
+				fip.ExistingFloatingID = inter["existing_fip_id"].(string)
+			} else {
+				fip.Source = types.NewFloatingIP
+			}
+			I.FloatingIP = &fip
 		}
 		Interfaces[i] = I
 	}
@@ -290,9 +295,15 @@ func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, e
 	if err != nil {
 		return nil, err
 	}
-	regionID, err := GetRegion(provider, d.Get("region_id").(int), d.Get("region_name").(string))
-	if err != nil {
-		return nil, err
+
+	var regionID int
+	rawRegionID := d.Get("region_id")
+	rawRegionName := d.Get("region_name")
+	if rawRegionID != nil && rawRegionName != nil {
+		regionID, err = GetRegion(provider, rawRegionID.(int), rawRegionName.(string))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{

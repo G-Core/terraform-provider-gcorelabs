@@ -153,21 +153,14 @@ func resourceInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"floating_ip": {
-							Type:     schema.TypeList,
-							Required: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"source": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"existing_floating_id": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
+						//nested map is not supported, in this case, you do not need to use the list for the map
+						"fip_source": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"existing_fip_id": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 						"port_id": {
 							Type:     schema.TypeString,

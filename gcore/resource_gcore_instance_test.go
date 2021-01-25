@@ -2,7 +2,7 @@ package gcore
 
 import (
 	"fmt"
-	"log"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -21,17 +21,43 @@ func checkInstanceAttrs(resourceName string, opts *instances.CreateOpts) resourc
 		checksStore := []resource.TestCheckFunc{
 			resource.TestCheckResourceAttr(resourceName, "name.0", opts.Names[0]),
 			resource.TestCheckResourceAttr(resourceName, "flavor_id", opts.Flavor),
+			resource.TestCheckResourceAttr(resourceName, "keypair_name", opts.Keypair),
+			resource.TestCheckResourceAttr(resourceName, "password", opts.Password),
+			resource.TestCheckResourceAttr(resourceName, "username", opts.Username),
 		}
 
 		for i, volume := range opts.Volumes {
 			checksStore = append(checksStore,
-				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.name`, i), volume.Name),
 				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.source`, i), volume.Source.String()),
 				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.boot_index`, i), strconv.Itoa(volume.BootIndex)),
-				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.size`, i), strconv.Itoa(volume.Size)),
-				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.type_name`, i), volume.TypeName.String()),
-				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.image_id`, i), volume.ImageID),
-				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.attachment_tag`, i), volume.AttachmentTag),
+			)
+		}
+
+		for i, iface := range opts.Interfaces {
+			checksStore = append(checksStore,
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`interfaces.%d.type`, i), iface.Type.String()),
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`interfaces.%d.network_id`, i), iface.NetworkID),
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`interfaces.%d.subnet_id`, i), iface.SubnetID),
+			)
+		}
+
+		for i, secgroup := range opts.SecurityGroups {
+			checksStore = append(checksStore,
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`security_groups.%d.id`, i), secgroup.ID),
+			)
+		}
+
+		for i, md := range opts.Metadata.Metadata {
+			checksStore = append(checksStore,
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`metadata.%d.key`, i), md.Key),
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`metadata.%d.value`, i), md.Value),
+			)
+		}
+
+		for i, cfg := range opts.Configuration.Metadata {
+			checksStore = append(checksStore,
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`configuration.%d.key`, i), cfg.Key),
+				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`configuration.%d.value`, i), cfg.Value),
 			)
 		}
 
@@ -42,20 +68,12 @@ func checkInstanceAttrs(resourceName string, opts *instances.CreateOpts) resourc
 func TestAccInstance(t *testing.T) {
 	volumes := []instances.CreateVolumeOpts{
 		{
-			Name:          "boot volume",
-			Source:        "image",
-			BootIndex:     0,
-			Size:          5,
-			TypeName:      "ssd_hiiops",
-			ImageID:       GCORE_IMAGE,
-			AttachmentTag: "some tag",
+			Source:    "existing-volume",
+			BootIndex: 0,
 		},
 		{
-			Name:      "empty volume",
-			Source:    "new-volume",
+			Source:    "existing-volume",
 			BootIndex: 1,
-			Size:      5,
-			TypeName:  "ssd_hiiops",
 		},
 	}
 	interfaces := []instances.InterfaceOpts{
@@ -65,9 +83,20 @@ func TestAccInstance(t *testing.T) {
 			SubnetID:  GCORE_PRIV_SUBNET,
 		},
 	}
+	update_interfaces := []instances.InterfaceOpts{
+		{
+			Type:     "subnet",
+			SubnetID: GCORE_PRIV_SUBNET,
+		},
+	}
 	secgroups := []gcorecloud.ItemID{
 		{
 			ID: GCORE_SECGROUP,
+		},
+	}
+	update_sg := []gcorecloud.ItemID{
+		{
+			ID: "someid",
 		},
 	}
 	metadata := instances.MetadataSetOpts{}
@@ -77,6 +106,13 @@ func TestAccInstance(t *testing.T) {
 			Value: "somevalue",
 		},
 	}
+	update_metadata := instances.MetadataSetOpts{}
+	update_metadata.Metadata = []instances.MetadataOpts{
+		{
+			Key:   "newsomekey",
+			Value: "newsomevalue",
+		},
+	}
 
 	createFixt := instances.CreateOpts{
 		Names:          []string{"create_instance"},
@@ -84,7 +120,7 @@ func TestAccInstance(t *testing.T) {
 		Flavor:         "g1-standard-2-4",
 		Password:       "password",
 		Username:       "user",
-		Keypair:        "mykey",
+		Keypair:        "acctest",
 		Volumes:        volumes,
 		Interfaces:     interfaces,
 		SecurityGroups: secgroups,
@@ -92,10 +128,25 @@ func TestAccInstance(t *testing.T) {
 		Configuration:  &metadata,
 	}
 
+	update_interfaceFixt := createFixt
+	update_interfaceFixt.Interfaces = update_interfaces
+
+	update_secgroupsFixt := createFixt
+	update_interfaceFixt.SecurityGroups = update_sg
+
+	updateFixt := createFixt
+	updateFixt.Flavor = "g1-standard-2-8"
+	updateFixt.Metadata = &update_metadata
+	updateFixt.Configuration = &update_metadata
+
 	type Params struct {
 		Name           []string
 		Flavor         string
-		Volumes        []map[string]string
+		Password       string
+		Username       string
+		Keypair        string
+		Publickey      string
+		Image          string
 		Interfaces     []map[string]string
 		SecurityGroups []map[string]string
 		MetaData       []map[string]string
@@ -103,14 +154,16 @@ func TestAccInstance(t *testing.T) {
 	}
 
 	create := Params{
-		Name:   []string{"create_instance"},
-		Flavor: "g1-standard-2-4",
-		Volumes: []map[string]string{
-			{"name": "boot volume", "source": "image", "boot_index": "0", "size": "5",
-				"type_name": "ssd_hiiops", "image_id": GCORE_IMAGE, "attachment_tag": "some tag"},
-			{"name": "empty volume", "source": "new-volume", "boot_index": "1", "size": "5",
-				"type_name": "ssd_hiiops", "image_id": "", "attachment_tag": ""},
-		},
+		Name:     []string{"create_instance"},
+		Flavor:   "g1-standard-2-4",
+		Password: "password",
+		Username: "user",
+		Keypair:  "acctest",
+		Publickey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1bdbQYquD/swsZpFPXagY9KvhlNUTKYMdhRNtlGglAMgRxJS3Q0V74BNElJtP+UU/" +
+			"AbZD4H2ZAwW3PLLD/maclnLlrA48xg/ez9IhppBop0WADZ/nB4EcvQfR/Db7nHDTZERW6EiiGhV6CkHVasK2sY/WNRXqPveeWUlwCqtSnU90l/" +
+			"s9kQCoEfkM2auO6ppJkVrXbs26vcRclS8KL7Cff4HwdVpV7b+edT5seZdtrFUCbkEof9D9nGpahNvg8mYWf0ofx4ona4kaXm1NdPID+ljvE/" +
+			"dbYUX8WZRmyLjMvVQS+VxDJtsiDQIVtwbC4w+recqwDvHhLWwoeczsbEsp ondi@ds",
+		Image: GCORE_IMAGE,
 		Interfaces: []map[string]string{
 			{"type": "subnet", "network_id": GCORE_PRIV_NET, "subnet_id": GCORE_PRIV_SUBNET},
 		},
@@ -119,61 +172,40 @@ func TestAccInstance(t *testing.T) {
 		Configuration:  []map[string]string{{"key": "somekey", "value": "somevalue"}},
 	}
 
+	update_interface := create
+	update_interface.Interfaces = []map[string]string{{"type": "subnet", "subnet_id": GCORE_PRIV_SUBNET}}
+
+	update_secgroups := create
+	update_secgroups.SecurityGroups = []map[string]string{{"id": "someid", "name": "somegroup"}}
+
+	update := create
+	update.Flavor = "g1-standard-2-8"
+	update.MetaData = []map[string]string{{"key": "newsomekey", "value": "newsomevalue"}}
+	update.Configuration = []map[string]string{{"key": "newsomekey", "value": "newsomevalue"}}
+
 	instanceTemplate := func(params *Params) string {
 		template := `
 		locals {`
 
 		template += fmt.Sprintf(`
 			names = ["%s"]
-			volumes = [`, params.Name[0])
+            volumes_ids = [gcore_volume.first_volume.id, gcore_volume.second_volume.id]`, params.Name[0])
 
-		for i, _ := range params.Volumes {
-			template += fmt.Sprintf(`
-			{
-				source = "%s"
-				type_name = "%s"
-				size = %s
-				name = "%s"
-				boot_index = %s
-				`, params.Volumes[i]["source"], params.Volumes[i]["type_name"], params.Volumes[i]["size"],
-				params.Volumes[i]["name"], params.Volumes[i]["boot_index"])
-			if params.Volumes[i]["image_id"] != "" && params.Volumes[i]["attachment_tag"] != "" {
-				template += fmt.Sprintf(`
-				image_id = "%s"
-				attachment_tag = "%s"
-			},`, params.Volumes[i]["image_id"], params.Volumes[i]["attachment_tag"])
-			} else {
-				template += fmt.Sprintf(`
-				image_id = %s
-				attachment_tag = %s
-			},`, "null", "null")
-			}
-		}
-
-		template += fmt.Sprintf(`]
+		template += fmt.Sprintf(`
 			interfaces = [`)
 		for i, _ := range params.Interfaces {
-			if params.Interfaces[i]["network_id"] != "" {
-				template += fmt.Sprintf(`
+			template += fmt.Sprintf(`
 			{
 				type = "%s"
 				network_id = "%s"
 				subnet_id = "%s"
-				floating_ip = [
-				{
-					source = null
-					existing_floating_id = null
-				},
-			]
+                fip_source = null
+                existing_fip_id = null
+                port_id = null
+                ip_address = null
+				
 			},`, params.Interfaces[i]["type"], params.Interfaces[i]["network_id"], params.Interfaces[i]["subnet_id"])
-			} else {
-				template += fmt.Sprintf(`
-			{
-				type = "%s"
-				subnet_id = "%s"
-				network_id = null
-			},`, params.Interfaces[i]["type"], params.Interfaces[i]["subnet_id"])
-			}
+
 		}
 		template += fmt.Sprintf(`]
 			security_groups = [`)
@@ -204,41 +236,60 @@ func TestAccInstance(t *testing.T) {
 		}
 		template += fmt.Sprintf(`]
         }
+
+        resource "gcore_volume" "first_volume" {
+  			name = "boot volume"
+  			type_name = "ssd_hiiops"
+  			size = 5
+  			image_id = "%[1]s"
+  			%[7]s
+			%[8]s
+		}
+
+		resource "gcore_volume" "second_volume" {
+  			name = "second volume"
+  			type_name = "ssd_hiiops"
+  			size = 5
+  			%[7]s
+			%[8]s
+		}
+
+        resource "gcore_keypair" "kp" {
+  			sshkey_name = "%[2]s"
+            public_key = "%[3]s"
+            %[8]s
+		}
+
         resource "gcore_instance" "acctest" {
-           flavor_id =  "%s"
-           name = local.names
+			flavor_id = "%[4]s"
+           	name = local.names
+           	keypair_name = gcore_keypair.kp.sshkey_name
+           	password = "%[5]s"
+           	username = "%[6]s"
 
-           dynamic volumes {
-           iterator = vol
-           for_each = local.volumes
-           content {
-           		boot_index = vol.value.boot_index
-    			source = vol.value.source
-                type_name = vol.value.type_name
-                size = vol.value.size
-                name = vol.value.name
-                image_id = vol.value.image_id
-                attachment_tag = vol.value.attachment_tag
-    			}
-  			}
+			dynamic volumes {
+		  	iterator = vol
+		  	for_each = local.volumes_ids
+		  	content {
+				boot_index = index(local.volumes_ids, vol.value)
+				source = "existing-volume"
+				volume_id = vol.value
+				}
+		  	}
 
-        	dynamic interfaces {
+			dynamic interfaces {
 			iterator = ifaces
 			for_each = local.interfaces
 			content {
 				type = ifaces.value.type
-                network_id = ifaces.value.network_id
+				network_id = ifaces.value.network_id
 				subnet_id = ifaces.value.subnet_id
-                dynamic floating_ip {
-                iterator = fip
-                for_each = ifaces.value.floating_ip
-                content {
-                	source = fip.value.source
-                    existing_floating_id = fip.value.existing_floating_id
-      			    }
-                }
-                }
-  			}
+                fip_source = ifaces.value.fip_source
+				existing_fip_id = ifaces.value.existing_fip_id
+                port_id = ifaces.value.port_id
+                ip_address = ifaces.value.ip_address
+				}
+			}
 
 			dynamic security_groups {
 			iterator = sg
@@ -267,11 +318,10 @@ func TestAccInstance(t *testing.T) {
 				}
 			}
 
-            %s
-			%s
+            %[7]s
+			%[8]s
 
-		`, params.Flavor, regionInfo(), projectInfo())
-		log.Println(template)
+		`, params.Image, params.Keypair, params.Publickey, params.Flavor, params.Password, params.Username, regionInfo(), projectInfo())
 		return template + "\n}"
 	}
 
@@ -287,6 +337,29 @@ func TestAccInstance(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					checkInstanceAttrs(fullName, &createFixt),
+				),
+			},
+			{
+				Config: instanceTemplate(&update_interface),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					checkInstanceAttrs(fullName, &update_interfaceFixt),
+				),
+				ExpectError: regexp.MustCompile("Error: cannot attach interface: subnet. Error: Cannot attach instance to the same subnet twice.*"),
+			},
+			{
+				Config: instanceTemplate(&update_secgroups),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					checkInstanceAttrs(fullName, &update_secgroupsFixt),
+				),
+				ExpectError: regexp.MustCompile("Error: cannot assign security group: somegroup. Error: Security group somegroup is not found for project.*"),
+			},
+			{
+				Config: instanceTemplate(&update),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					checkInstanceAttrs(fullName, &updateFixt),
 				),
 			},
 		},
