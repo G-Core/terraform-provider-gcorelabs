@@ -305,7 +305,7 @@ func resourceReservedFixedIPDelete(ctx context.Context, d *schema.ResourceData, 
 	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, ReservedFixedIPCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
 		_, err := reservedfixedips.Get(client, id).Extract()
 		if err == nil {
-			return nil, fmt.Errorf("cannot delete subnet with ID: %s", id)
+			return nil, fmt.Errorf("cannot delete reserved fixed ip with ID: %s", id)
 		}
 		switch err.(type) {
 		case gcorecloud.ErrDefault404:
