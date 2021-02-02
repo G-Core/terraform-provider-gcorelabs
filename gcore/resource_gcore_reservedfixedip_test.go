@@ -65,7 +65,7 @@ func TestAccReservedFixedIP(t *testing.T) {
 
 func testAccReservedFixedIPDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, keypairsPoint)
+	client, err := CreateTestClient(config.Provider, floatingIPsPoint)
 	if err != nil {
 		return err
 	}

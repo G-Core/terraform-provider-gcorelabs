@@ -43,6 +43,7 @@ func Provider() *schema.Provider {
 			"gcore_instance":        resourceInstance(),
 			"gcore_keypair":         resourceKeypair(),
 			"gcore_reservedfixedip": resourceReservedFixedIP(),
+			"gcore_floatingip":      resourceFloatingIP(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
