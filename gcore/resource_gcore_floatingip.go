@@ -198,7 +198,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("fixed_ip_address") || d.HasChange("port_id") {
+	if d.HasChanges("fixed_ip_address", "port_id") {
 		oldFixedIP, newFixedIP := d.GetChange("fixed_ip_address")
 		oldPortID, newPortID := d.GetChange("port_id")
 		if oldPortID.(string) != "" || oldFixedIP.(string) != "" {
