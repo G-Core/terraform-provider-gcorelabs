@@ -12,6 +12,8 @@ import (
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/lbpools"
+	typesLb "github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
 	"github.com/G-Core/gcorelabscloud-go/gcore/router/v1/routers"
@@ -334,4 +336,65 @@ func revertState(d *schema.ResourceData, fields *[]string) {
 			log.Printf("[DEBUG] Revert (%s) '%s' field", d.Id(), field)
 		}
 	}
+}
+
+func extractSessionPersistenceMap(d *schema.ResourceData) *lbpools.CreateSessionPersistenceOpts {
+	var sessionOpts *lbpools.CreateSessionPersistenceOpts
+	sessionPers := d.Get("session_persistence").([]interface{})
+	if len(sessionPers) > 0 {
+		sm := sessionPers[0].(map[string]interface{})
+		sessionOpts = &lbpools.CreateSessionPersistenceOpts{
+			Type: typesLb.PersistenceType(sm["type"].(string)),
+		}
+
+		granularity := sm["persistence_granularity"]
+		if granularity != nil {
+			sessionOpts.PersistenceGranularity = granularity.(string)
+		}
+
+		timeout := sm["persistence_timeout"]
+		if timeout != nil {
+			sessionOpts.PersistenceTimeout = timeout.(int)
+		}
+
+		cookieName := sm["cookie_name"]
+		if cookieName != nil {
+			sessionOpts.CookieName = cookieName.(string)
+		}
+	}
+	return sessionOpts
+}
+
+func extractHealthMonitorMap(d *schema.ResourceData) *lbpools.CreateHealthMonitorOpts {
+	var healthOpts *lbpools.CreateHealthMonitorOpts
+	monitors := d.Get("health_monitor").([]interface{})
+	if len(monitors) > 0 {
+		hm := monitors[0].(map[string]interface{})
+		healthOpts = &lbpools.CreateHealthMonitorOpts{
+			Type:       typesLb.HealthMonitorType(hm["type"].(string)),
+			Delay:      hm["delay"].(int),
+			MaxRetries: hm["max_retries"].(int),
+			Timeout:    hm["timeout"].(int),
+		}
+
+		maxRetriesDown := hm["max_retries_down"].(int)
+		if maxRetriesDown != 0 {
+			healthOpts.MaxRetriesDown = maxRetriesDown
+		}
+
+		httpMethod := hm["http_method"].(string)
+		if httpMethod != "" {
+			healthOpts.HTTPMethod = typesLb.HTTPMethodPointer(typesLb.HTTPMethod(httpMethod))
+		}
+
+		urlPath := hm["url_path"].(string)
+		if urlPath != "" {
+			healthOpts.URLPath = urlPath
+		}
+
+		if hm["id"].(string) != "" {
+			healthOpts.ID = hm["id"].(string)
+		}
+	}
+	return healthOpts
 }

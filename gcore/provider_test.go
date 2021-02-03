@@ -15,13 +15,16 @@ import (
 )
 
 var (
-	GCORE_USERNAME    = os.Getenv("GCORE_USERNAME")
-	GCORE_PASSWORD    = os.Getenv("GCORE_PASSWORD")
-	GCORE_IMAGE       = os.Getenv("GCORE_IMAGE")
-	GCORE_SECGROUP    = os.Getenv("GCORE_SECGROUP")
-	GCORE_EXT_NET     = os.Getenv("GCORE_EXT_NET")
-	GCORE_PRIV_NET    = os.Getenv("GCORE_PRIV_NET")
-	GCORE_PRIV_SUBNET = os.Getenv("GCORE_PRIV_SUBNET")
+	GCORE_USERNAME      = os.Getenv("GCORE_USERNAME")
+	GCORE_PASSWORD      = os.Getenv("GCORE_PASSWORD")
+	GCORE_IMAGE         = os.Getenv("GCORE_IMAGE")
+	GCORE_SECGROUP      = os.Getenv("GCORE_SECGROUP")
+	GCORE_EXT_NET       = os.Getenv("GCORE_EXT_NET")
+	GCORE_PRIV_NET      = os.Getenv("GCORE_PRIV_NET")
+	GCORE_PRIV_SUBNET   = os.Getenv("GCORE_PRIV_SUBNET")
+	GCORE_LB_ID         = os.Getenv("GCORE_LB_ID")
+	GCORE_LBLISTENER_ID = os.Getenv("GCORE_LBLISTENER_ID")
+	GCORE_LBPOOL_ID     = os.Getenv("GCORE_LBPOOL_ID")
 )
 
 var testAccProvider *schema.Provider
@@ -54,6 +57,46 @@ func testAccPreCheck(t *testing.T) {
 	}
 	checkNameAndID("PROJECT", t)
 	checkNameAndID("REGION", t)
+}
+
+func testAccPreCheckLBListener(t *testing.T) {
+	Vars := map[string]interface{}{
+		"GCORE_USERNAME": GCORE_USERNAME,
+		"GCORE_PASSWORD": GCORE_PASSWORD,
+		"GCORE_LB_ID":    GCORE_LB_ID,
+	}
+	for k, v := range Vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckLBPool(t *testing.T) {
+	Vars := map[string]interface{}{
+		"GCORE_USERNAME":      GCORE_USERNAME,
+		"GCORE_PASSWORD":      GCORE_PASSWORD,
+		"GCORE_LB_ID":         GCORE_LB_ID,
+		"GCORE_LBLISTENER_ID": GCORE_LBLISTENER_ID,
+	}
+	for k, v := range Vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckLBMember(t *testing.T) {
+	Vars := map[string]interface{}{
+		"GCORE_USERNAME":  GCORE_USERNAME,
+		"GCORE_PASSWORD":  GCORE_PASSWORD,
+		"GCORE_LBPOOL_ID": GCORE_LBPOOL_ID,
+	}
+	for k, v := range Vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
 }
 
 func testAccPreCheckRouter(t *testing.T) {
