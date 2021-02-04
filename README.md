@@ -1,7 +1,6 @@
 Terraform G-Core Labs Provider
 ------------------------------
 - Website: https://gcorelabs.com 
-- Technical partner: https://itkey.com
 
 <img src="https://gcorelabs.com/img/logo.svg" data-src="https://gcorelabs.com/img/logo.svg" alt="G-Core Labs" width="500px" width="500px"> 
 =========================================================================================
