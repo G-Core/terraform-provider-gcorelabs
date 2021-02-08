@@ -93,7 +93,7 @@ func resourceLoadBalancer() *schema.Resource {
 			//	Optional: true,
 			//  ForceNew: true,
 			//},
-			"listeners": &schema.Schema{
+			"listener": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
@@ -157,7 +157,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
-	Listeners := d.Get("listeners").([]interface{})
+	Listeners := d.Get("listener").([]interface{})
 	listenersOpts := make([]loadbalancers.CreateListenerOpts, len(Listeners))
 	for i, ls := range Listeners {
 		l := ls.(map[string]interface{})
@@ -230,7 +230,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 	fields := []string{"flavor", "vip_network_id", "vip_subnet_id"}
 	revertState(d, &fields)
 
-	currentListeners := d.Get("listeners").([]interface{})
+	currentListeners := d.Get("listener").([]interface{})
 	newListeners := make([]map[string]interface{}, len(lb.Listeners))
 	for i, l := range lb.Listeners {
 		listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
@@ -261,7 +261,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 			}
 		}
 	}
-	if err := d.Set("listeners", newListeners); err != nil {
+	if err := d.Set("listener", newListeners); err != nil {
 		diag.FromErr(err)
 	}
 
@@ -287,6 +287,8 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		d.Set("last_updated", time.Now().Format(time.RFC850))
 	}
 
 	log.Println("[DEBUG] Finish LoadBalancer updating")

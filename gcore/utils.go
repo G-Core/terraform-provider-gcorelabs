@@ -1,7 +1,10 @@
 package gcore
 
 import (
+	"crypto/md5"
+	"encoding/binary"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"reflect"
@@ -145,6 +148,25 @@ func extractVolumesMap(volumes []interface{}) ([]instances.CreateVolumeOpts, err
 	return Volumes, nil
 }
 
+//todo refactoring
+func extractVolumesIntoMap(volumes []interface{}) (map[string]map[string]interface{}, error) {
+	Volumes := make(map[string]map[string]interface{}, len(volumes))
+	for _, volume := range volumes {
+		vol := volume.(map[string]interface{})
+		Volumes[vol["volume_id"].(string)] = vol
+	}
+	return Volumes, nil
+}
+
+func extractInstanceVolumesMap(volumes []interface{}) (map[string]bool, error) {
+	result := make(map[string]bool)
+	for _, volume := range volumes {
+		v := volume.(map[string]interface{})
+		result[v["volume_id"].(string)] = true
+	}
+	return result, nil
+}
+
 func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.InterfaceOpts, error) {
 	Interfaces := make([]instances.InterfaceOpts, len(interfaces))
 	for i, iface := range interfaces {
@@ -167,6 +189,36 @@ func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.Interfa
 			I.FloatingIP = &fip
 		}
 		Interfaces[i] = I
+	}
+	return Interfaces, nil
+}
+
+//todo refactoring
+func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]instances.InterfaceOpts, error) {
+	Interfaces := make(map[string]instances.InterfaceOpts)
+	for _, iface := range interfaces {
+		if iface == nil {
+			continue
+		}
+		inter := iface.(map[string]interface{})
+
+		var I instances.InterfaceOpts
+		err := MapStructureDecoder(&I, &inter, config)
+		if err != nil {
+			return nil, err
+		}
+
+		if inter["fip_source"] != "" {
+			var fip instances.CreateNewInterfaceFloatingIPOpts
+			if inter["existing_fip_id"] != "" {
+				fip.Source = types.ExistingFloatingIP
+				fip.ExistingFloatingID = inter["existing_fip_id"].(string)
+			} else {
+				fip.Source = types.NewFloatingIP
+			}
+			I.FloatingIP = &fip
+		}
+		Interfaces[I.SubnetID] = I
 	}
 	return Interfaces, nil
 }
@@ -397,4 +449,24 @@ func extractHealthMonitorMap(d *schema.ResourceData) *lbpools.CreateHealthMonito
 		}
 	}
 	return healthOpts
+}
+
+func interfaceUniqueID(i interface{}) int {
+	e := i.(map[string]interface{})
+	h := md5.New()
+	iType := e["type"].(string)
+	io.WriteString(h, iType)
+	switch types.InterfaceType(iType) {
+	case types.ReservedFixedIpType:
+		io.WriteString(h, e["port_id"].(string))
+	}
+	io.WriteString(h, e["subnet_id"].(string))
+	return int(binary.BigEndian.Uint64(h.Sum(nil)))
+}
+
+func volumeUniqueID(i interface{}) int {
+	e := i.(map[string]interface{})
+	h := md5.New()
+	io.WriteString(h, e["volume_id"].(string))
+	return int(binary.BigEndian.Uint64(h.Sum(nil)))
 }

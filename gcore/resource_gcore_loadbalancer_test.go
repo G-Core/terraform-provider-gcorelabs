@@ -27,7 +27,7 @@ func TestAccLoadBalancer(t *testing.T) {
               %s
 			  name = "%s"
 			  flavor = "lb1-1-2"
-              listeners {
+              listener {
                 name = "test"
                 protocol = "HTTP"
                 protocol_port = 80
