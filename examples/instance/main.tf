@@ -4,12 +4,35 @@ provider gcore {
   gcore_platform = "http://api.stg-45.staging.gcdn.co"
   gcore_api = "http://10.100.179.92:33081"
 }
+resource "gcore_network" "network" {
+  name = "network_example"
+  mtu = 1450
+  type = "vxlan"
+  region_id = 1
+  project_id = 1
+}
+
+resource "gcore_subnet" "subnet" {
+  name = "subnet_example"
+  cidr = "192.168.10.0/24"
+  network_id = gcore_network.network.id
+  dns_nameservers = ["8.8.4.4", "1.1.1.1"]
+
+  host_routes {
+    destination = "10.0.3.0/24"
+    nexthop = "10.0.0.13"
+  }
+
+  gateway_ip = "192.168.10.1"
+  region_id = 1
+  project_id = 1
+}
 
 resource "gcore_volume" "first_volume" {
   name = "boot volume"
   type_name = "ssd_hiiops"
   size = 5
-  image_id = "f3847215-e4d7-4e64-8e69-14637e68e27f"
+  image_id = "f4ce3d30-e29c-4cfd-811f-46f383b6081f"
   region_id = 1
   project_id = 1
 }
@@ -22,65 +45,50 @@ resource "gcore_volume" "second_volume" {
   project_id = 1
 }
 
-locals {
-  volumes_ids = [gcore_volume.first_volume.id, gcore_volume.second_volume.id]
-}
-
 resource "gcore_instance" "instance" {
   flavor_id = "g1-standard-2-4"
-  name = var.names
+  name = "test"
 
-  dynamic volumes {
-  iterator = vol
-  for_each = local.volumes_ids
-  content {
-    boot_index = index(local.volumes_ids, vol.value)
+  volume {
     source = "existing-volume"
-    volume_id = vol.value
-    }
+    volume_id = gcore_volume.first_volume.id
+    boot_index = 0
   }
 
-  dynamic interfaces {
-  iterator = iface
-  for_each = var.interfaces
-  content {
-    type = iface.value.type
-    network_id = iface.value.network_id
-    subnet_id = iface.value.subnet_id
-    fip_source = iface.value.fip_source
-    existing_fip_id =iface.value.existing_fip_id
-    port_id = iface.value.port_id
-    ip_address = iface.value.ip_address
-    }
+  volume {
+    source = "existing-volume"
+    volume_id = gcore_volume.second_volume.id
+    boot_index = 1
   }
 
-  dynamic security_groups {
-  iterator = sg
-  for_each = var.security_groups
-  content {
-    id = sg.value.id
-    name = sg.value.name
-    }
+  interface {
+    type = "subnet"
+    network_id = gcore_network.network.id
+    subnet_id = gcore_subnet.subnet.id
+    //port_id = null
+    //ip_address = null
+    //fip_source = null
+    //existing_fip_id = null
   }
 
-  dynamic metadata {
-  iterator = md
-  for_each = var.metadata
-  content {
-    key = md.value.key
-    value = md.value.value
-    }
+
+  security_group {
+    id = "d75db0b2-58f1-4a11-88c6-a932bb897310"
+    name = "default"
   }
 
-  dynamic configuration {
-  iterator = cfg
-  for_each = var.configuration
-  content {
-    key = cfg.value.key
-    value = cfg.value.value
-    }
+  metadata {
+    key = "some_key"
+    value = "some_data"
+  }
+
+  configuration {
+    key = "some_key"
+    value = "some_data"
   }
 
   region_id = 1
   project_id = 1
 }
+
+

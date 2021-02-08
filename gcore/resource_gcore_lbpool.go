@@ -369,6 +369,7 @@ func resourceLBPoolUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
+	d.Set("last_updated", time.Now().Format(time.RFC850))
 	log.Println("[DEBUG] Finish LBPool updating")
 	return resourceLBPoolRead(ctx, d, m)
 }

@@ -215,6 +215,8 @@ func resourceLBListenerUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		d.Set("last_updated", time.Now().Format(time.RFC850))
 	}
 
 	log.Println("[DEBUG] Finish LBListener updating")

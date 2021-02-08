@@ -265,6 +265,7 @@ func resourceLBMemberUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
+	d.Set("last_updated", time.Now().Format(time.RFC850))
 	log.Println("[DEBUG] Finish LBMember updating")
 	return resourceLBMemberRead(ctx, d, m)
 }
