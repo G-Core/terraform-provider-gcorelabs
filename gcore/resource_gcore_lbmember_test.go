@@ -23,7 +23,7 @@ func TestAccLBMember(t *testing.T) {
 
 	fullName := "gcore_lbmember.acctest"
 
-	ripTemplate := func(params *Params) string {
+	tpl := func(params *Params) string {
 		return fmt.Sprintf(`
             resource "gcore_lbmember" "acctest" {
 			  %s
@@ -42,7 +42,7 @@ func TestAccLBMember(t *testing.T) {
 		CheckDestroy:      testAccLBMemberDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: ripTemplate(&create),
+				Config: tpl(&create),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "address", create.Address),
@@ -51,7 +51,7 @@ func TestAccLBMember(t *testing.T) {
 				),
 			},
 			{
-				Config: ripTemplate(&update),
+				Config: tpl(&update),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "address", update.Address),
@@ -70,21 +70,23 @@ func testAccLBMemberDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type == "gcore_lbmember" {
-			pl, err := lbpools.Get(client, rs.Primary.ID).Extract()
-			if err != nil {
-				switch err.(type) {
-				case gcorecloud.ErrDefault404:
-					return nil
-				default:
-					return err
-				}
-			}
+		if rs.Type != "gcore_lbmember" {
+			continue
+		}
 
-			for _, m := range pl.Members {
-				if rs.Primary.ID == m.ID {
-					return fmt.Errorf("LBPool still exists")
-				}
+		pl, err := lbpools.Get(client, GCORE_LBPOOL_ID).Extract()
+		if err != nil {
+			switch err.(type) {
+			case gcorecloud.ErrDefault404:
+				return nil
+			default:
+				return err
+			}
+		}
+
+		for _, m := range pl.Members {
+			if rs.Primary.ID == m.ID {
+				return fmt.Errorf("LBMember still exists")
 			}
 		}
 	}

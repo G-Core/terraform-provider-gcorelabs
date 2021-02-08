@@ -9,7 +9,10 @@ import (
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
+	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
+	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -77,18 +80,18 @@ func resourceInstance() *schema.Resource {
 				Required: true,
 			},
 			"name": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeString,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"name_templates": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"volumes": &schema.Schema{
-				Type:     schema.TypeList,
+			"volume": &schema.Schema{
+				Type:     schema.TypeSet,
 				Required: true,
+				Set:      volumeUniqueID,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -98,6 +101,14 @@ func resourceInstance() *schema.Resource {
 						"source": {
 							Type:     schema.TypeString,
 							Required: true,
+							ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
+								v := val.(string)
+								switch types.VolumeSource(v) {
+								case types.ExistingVolume: //, types.ProtocolTypeHTTPS, types.ProtocolTypeTCP, types.ProtocolTypeUDP:
+									return diag.Diagnostics{}
+								}
+								return diag.Errorf("wrong source type %s, now available values is '%s'", v, types.ExistingVolume)
+							},
 						},
 						"boot_index": {
 							Type:     schema.TypeInt,
@@ -136,8 +147,9 @@ func resourceInstance() *schema.Resource {
 					},
 				},
 			},
-			"interfaces": &schema.Schema{
-				Type:     schema.TypeList,
+			"interface": &schema.Schema{
+				Type:     schema.TypeSet,
+				Set:      interfaceUniqueID,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -164,10 +176,12 @@ func resourceInstance() *schema.Resource {
 						},
 						"port_id": {
 							Type:     schema.TypeString,
+							Computed: true,
 							Optional: true,
 						},
 						"ip_address": {
 							Type:     schema.TypeString,
+							Computed: true,
 							Optional: true,
 						},
 					},
@@ -177,7 +191,7 @@ func resourceInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"security_groups": &schema.Schema{
+			"security_group": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -313,13 +327,9 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	createOpts.UserData = d.Get("userdata").(string)
 	createOpts.Keypair = d.Get("keypair_name").(string)
 
-	names := d.Get("name").([]interface{})
-	if len(names) > 0 {
-		Names := make([]string, len(names))
-		for i, name := range names {
-			Names[i] = name.(string)
-		}
-		createOpts.Names = Names
+	name := d.Get("name").(string)
+	if len(name) > 0 {
+		createOpts.Names = []string{name}
 	}
 
 	name_templates := d.Get("name_templates").([]interface{})
@@ -333,25 +343,25 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	createOpts.AllowAppPorts = d.Get("allow_app_ports").(bool)
 
-	volumes := d.Get("volumes")
-	if len(volumes.([]interface{})) > 0 {
-		volumes, err := extractVolumesMap(volumes.([]interface{}))
+	currentVols := d.Get("volume").(*schema.Set).List()
+	if len(currentVols) > 0 {
+		vs, err := extractVolumesMap(currentVols)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOpts.Volumes = volumes
+		createOpts.Volumes = vs
 	}
 
-	ifs := d.Get("interfaces")
-	if len(ifs.([]interface{})) > 0 {
-		ifaces, err := extractInstanceInterfacesMap(ifs.([]interface{}))
+	ifs := d.Get("interface").(*schema.Set).List()
+	if len(ifs) > 0 {
+		ifaces, err := extractInstanceInterfacesMap(ifs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		createOpts.Interfaces = ifaces
 	}
 
-	sgroups := d.Get("security_groups")
+	sgroups := d.Get("security_group")
 	if len(sgroups.([]interface{})) > 0 {
 		groups, err := extractSecurityGroupsMap(sgroups.([]interface{}))
 		if err != nil {
@@ -428,7 +438,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("cannot get instance with ID: %s. Error: %s", instanceID, err)
 	}
 
-	d.Set("name", []string{instance.Name})
+	d.Set("name", instance.Name)
 	d.Set("flavor_id", instance.Flavor.FlavorID)
 	d.Set("status", instance.Status)
 	d.Set("vm_state", instance.VMState)
@@ -440,28 +450,70 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	flavor["vcpus"] = strconv.Itoa(instance.Flavor.VCPUS)
 	d.Set("flavor", flavor)
 
-	volumes := d.Get("volumes").([]interface{})
-	ext_volumes := make([]map[string]interface{}, len(volumes))
-	for i, vol := range instance.Volumes {
-		v := volumes[i].(map[string]interface{})
+	currentVolumes, err := extractVolumesIntoMap(d.Get("volume").(*schema.Set).List())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	extVolumes := make([]interface{}, 0)
+	for _, vol := range instance.Volumes {
+		v, ok := currentVolumes[vol.ID]
+		//todo fix it
+		if !ok {
+			v = make(map[string]interface{})
+			v["volume_id"] = vol.ID
+			v["source"] = types.ExistingVolume.String()
+			//return diag.Errorf("cant find volume %s in state", vol.ID)
+		}
+
 		v["id"] = vol.ID
 		v["delete_on_termination"] = vol.DeleteOnTermination
-		ext_volumes[i] = v
+		extVolumes = append(extVolumes, v)
 	}
-	d.Set("volumes", ext_volumes)
-	//this field is updatable, but we do not receive information through the request;
-	//different parameters are used to create, attach, detach,
-	//if the interface was detached, we delete information from the state
-	interfaces := d.Get("interfaces").([]interface{})
-	clean_interfaces := []map[string]interface{}{}
-	for _, iface := range interfaces {
-		i := iface.(map[string]interface{})
-		if i["ip_address"].(string) != "" && i["port_id"].(string) != "" {
+
+	if err := d.Set("volume", schema.NewSet(volumeUniqueID, extVolumes)); err != nil {
+		return diag.FromErr(err)
+	}
+
+	ifs, err := instances.ListInterfacesAll(client, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	interfaces, err := extractInstanceInterfaceIntoMap(d.Get("interface").(*schema.Set).List())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var cleanInterfaces []interface{}
+	for _, iface := range ifs {
+		if len(iface.IPAssignments) == 0 {
 			continue
 		}
-		clean_interfaces = append(clean_interfaces, i)
+		subnetID := iface.IPAssignments[0].SubnetID
+
+		_, ok := interfaces[subnetID]
+		if !ok {
+			continue
+		}
+
+		i := make(map[string]interface{})
+
+		i["type"] = interfaces[subnetID].Type.String()
+		i["network_id"] = iface.NetworkID
+		i["subnet_id"] = subnetID
+		i["port_id"] = iface.PortID
+		if interfaces[subnetID].FloatingIP != nil {
+			i["fip_source"] = interfaces[subnetID].FloatingIP.Source.String()
+			i["existing_fip_id"] = interfaces[subnetID].FloatingIP.ExistingFloatingID
+		}
+		i["ip_address"] = iface.IPAssignments[0].IPAddress.String()
+
+		cleanInterfaces = append(cleanInterfaces, i)
 	}
-	d.Set("interfaces", clean_interfaces)
+	if err := d.Set("interface", schema.NewSet(interfaceUniqueID, cleanInterfaces)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	metadata := d.Get("metadata").([]interface{})
 	sliced := make([]map[string]string, len(metadata))
@@ -561,8 +613,8 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	if d.HasChange("security_groups") {
-		osg, nsg := d.GetChange("security_groups")
+	if d.HasChange("security_group") {
+		osg, nsg := d.GetChange("security_group")
 		if len(osg.([]interface{})) > 0 {
 			for _, secgr := range osg.([]interface{}) {
 				var delOpts instances.SecurityGroupOpts
@@ -587,27 +639,108 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	if d.HasChange("interfaces") {
-		ifs := d.Get("interfaces")
-		if len(ifs.([]interface{})) > 0 {
-			ifaces, err := extractInstanceInterfacesMap(ifs.([]interface{}))
+	if d.HasChange("interface") {
+		ifsOldRaw, ifsNewRaw := d.GetChange("interface")
+
+		//ifsOld, err := extractInstanceInterfaceIntoMap(ifsOldRaw.(*schema.Set).List())
+		//if err != nil {
+		//	return diag.FromErr(err)
+		//}
+		//
+		//ifsNew, err := extractInstanceInterfaceIntoMap(ifsNewRaw.(*schema.Set).List())
+		//if err != nil {
+		//	return diag.FromErr(err)
+		//}
+
+		ifsOld := ifsOldRaw.(*schema.Set)
+		ifsNew := ifsNewRaw.(*schema.Set)
+
+		for _, i := range ifsOld.List() {
+			if ifsNew.Contains(i) {
+				continue
+			}
+
+			iface := i.(map[string]interface{})
+			var opts instances.InterfaceOpts
+			opts.PortID = iface["port_id"].(string)
+			opts.IpAddress = iface["ip_address"].(string)
+
+			if err := instances.DetachInterface(client, instanceID, opts).Err; err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		for _, i := range ifsNew.List() {
+			if ifsOld.Contains(i) {
+				continue
+			}
+
+			iface := i.(map[string]interface{})
+
+			iType := types.InterfaceType(iface["type"].(string))
+			opts := instances.InterfaceOpts{Type: iType}
+			switch iType {
+			case types.SubnetInterfaceType:
+				opts.SubnetID = iface["subnet_id"].(string)
+			case types.AnySubnetInterfaceType:
+				opts.NetworkID = iface["network_id"].(string)
+			case types.ExternalInterfaceType:
+			case types.ReservedFixedIpType:
+				opts.PortID = iface["port_id"].(string)
+			}
+
+			results, err := instances.AttachInterface(client, instanceID, opts).Extract()
+			if err != nil {
+				return diag.Errorf("cannot attach interface: %s. Error: %s", iType, err)
+			}
+			taskID := results.Tasks[0]
+			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+				taskInfo, err := tasks.Get(client, string(task)).Extract()
+				if err != nil {
+					return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w, task: %+v", task, err, taskInfo)
+				}
+				return nil, nil
+			},
+			)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			for _, iface := range ifaces {
-				if iface.IpAddress != "" && iface.PortID != "" {
-					var ifaceOpts instances.InterfaceOpts
-					ifaceOpts.PortID = iface.PortID
-					ifaceOpts.IpAddress = iface.IpAddress
-					err := instances.DetachInterface(client, instanceID, ifaceOpts).Err
-					if err != nil {
-						return diag.Errorf("cannot detach interface: %s. Error: %s", iface.Type, err)
-					}
-					continue
-				}
-				err := instances.AttachInterface(client, instanceID, iface).Err
-				if err != nil {
-					return diag.Errorf("cannot attach interface: %s. Error: %s", iface.Type, err)
+		}
+	}
+
+	if d.HasChange("volume") {
+		vClient, err := CreateClient(provider, d, volumesPoint, versionPointV1)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		oldVolumesRaw, newVolumesRaw := d.GetChange("volume")
+		oldVolumes, err := extractInstanceVolumesMap(oldVolumesRaw.(*schema.Set).List())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		newVolumes, err := extractInstanceVolumesMap(newVolumesRaw.(*schema.Set).List())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		vOpts := volumes.InstanceOperationOpts{InstanceID: d.Id()}
+		for vid := range oldVolumes {
+			if isAttached := newVolumes[vid]; isAttached {
+				//mark as already attached
+				newVolumes[vid] = false
+				continue
+			}
+			if _, err := volumes.Detach(vClient, vid, vOpts).Extract(); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		//range over not attached volumes
+		for vid, ok := range newVolumes {
+			if ok {
+				if _, err := volumes.Attach(vClient, vid, vOpts).Extract(); err != nil {
+					return diag.FromErr(err)
 				}
 			}
 		}
