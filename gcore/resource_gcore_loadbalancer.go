@@ -27,6 +27,7 @@ func resourceLoadBalancer() *schema.Resource {
 		ReadContext:   resourceLoadBalancerRead,
 		UpdateContext: resourceLoadBalancerUpdate,
 		DeleteContext: resourceLoadBalancerDelete,
+		Description:   "Represent load balancer",
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -111,8 +112,9 @@ func resourceLoadBalancer() *schema.Resource {
 							Optional: true,
 						},
 						"protocol": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: fmt.Sprintf("Available values is '%s' (currently work, other do not work on ed-8), '%s', '%s', '%s'", types.ProtocolTypeHTTP, types.ProtocolTypeHTTPS, types.ProtocolTypeTCP, types.ProtocolTypeUDP),
 							ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 								v := val.(string)
 								switch types.ProtocolType(v) {

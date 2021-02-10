@@ -27,6 +27,7 @@ func resourceLBMember() *schema.Resource {
 		ReadContext:   resourceLBMemberRead,
 		UpdateContext: resourceLBMemberUpdate,
 		DeleteContext: resourceLBMemberDelete,
+		Description:   "Represent load balancer member",
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -90,8 +91,9 @@ func resourceLBMember() *schema.Resource {
 				Required: true,
 			},
 			"weight": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Value between 0 and 256",
 				ValidateDiagFunc: func(val interface{}, path cty.Path) diag.Diagnostics {
 					v := val.(int)
 					if v >= minWeight && v <= maxWeight {

@@ -27,6 +27,7 @@ func resourceInstance() *schema.Resource {
 		ReadContext:   resourceInstanceRead,
 		UpdateContext: resourceInstanceUpdate,
 		DeleteContext: resourceInstanceDelete,
+		Description:   "Represent instance",
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, regionID, InstanceID, err := ImportStringParser(d.Id())
@@ -99,20 +100,22 @@ func resourceInstance() *schema.Resource {
 							Optional: true,
 						},
 						"source": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Currently available only 'existing-volume' value",
 							ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 								v := val.(string)
 								switch types.VolumeSource(v) {
-								case types.ExistingVolume: //, types.ProtocolTypeHTTPS, types.ProtocolTypeTCP, types.ProtocolTypeUDP:
+								case types.ExistingVolume:
 									return diag.Diagnostics{}
 								}
 								return diag.Errorf("wrong source type %s, now available values is '%s'", v, types.ExistingVolume)
 							},
 						},
 						"boot_index": {
-							Type:     schema.TypeInt,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Description: "If boot_index==0 volumes can not detached",
+							Optional:    true,
 						},
 						"type_name": {
 							Type:     schema.TypeString,
@@ -154,16 +157,19 @@ func resourceInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: fmt.Sprintf("Avalilable value is '%s', '%s', '%s', '%s'", types.SubnetInterfaceType, types.AnySubnetInterfaceType, types.ExternalInterfaceType, types.ReservedFixedIpType),
 						},
 						"network_id": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Description: "required if type is 'subnet' or 'any_subnet'",
+							Optional:    true,
 						},
 						"subnet_id": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Description: "required if type is 'subnet'",
+							Optional:    true,
 						},
 						//nested map is not supported, in this case, you do not need to use the list for the map
 						"fip_source": {
@@ -175,9 +181,10 @@ func resourceInstance() *schema.Resource {
 							Optional: true,
 						},
 						"port_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-							Optional: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "required if type is  'reserved_fixed_ip'",
+							Optional:    true,
 						},
 						"ip_address": {
 							Type:     schema.TypeString,
@@ -192,13 +199,15 @@ func resourceInstance() *schema.Resource {
 				Optional: true,
 			},
 			"security_group": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Firewalls list",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "Firewall unique id",
+							Required:    true,
 						},
 						"name": {
 							Type:     schema.TypeString,

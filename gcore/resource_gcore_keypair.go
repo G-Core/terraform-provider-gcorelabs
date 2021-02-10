@@ -16,6 +16,7 @@ func resourceKeypair() *schema.Resource {
 		CreateContext: resourceKeypairCreate,
 		ReadContext:   resourceKeypairRead,
 		DeleteContext: resourceKeypairDelete,
+		Description:   "Represent a ssh key, do not depends on region",
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,

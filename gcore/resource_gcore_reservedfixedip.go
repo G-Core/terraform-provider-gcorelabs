@@ -26,6 +26,7 @@ func resourceReservedFixedIP() *schema.Resource {
 		ReadContext:   resourceReservedFixedIPRead,
 		UpdateContext: resourceReservedFixedIPUpdate,
 		DeleteContext: resourceReservedFixedIPDelete,
+		Description:   "Represent reserved ips",
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -64,16 +65,17 @@ func resourceReservedFixedIP() *schema.Resource {
 				},
 			},
 			"type": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: fmt.Sprintf("Available values is '%s', '%s', '%s', '%s'", reservedfixedips.External, reservedfixedips.Subnet, reservedfixedips.AnySubnet, reservedfixedips.IPAddress),
 				ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 					v := val.(string)
 					switch reservedfixedips.ReservedFixedIPType(v) {
 					case reservedfixedips.External, reservedfixedips.Subnet, reservedfixedips.AnySubnet, reservedfixedips.IPAddress:
 						return diag.Diagnostics{}
 					}
-					return diag.Errorf("wrong type %s, available values is 'external', 'subnet', 'any_subnet', 'ip_address'", v)
+					return diag.Errorf("wrong type %s, available values is '%s', '%s', '%s', '%s'", v, reservedfixedips.External, reservedfixedips.Subnet, reservedfixedips.AnySubnet, reservedfixedips.IPAddress)
 				},
 			},
 			"status": &schema.Schema{
