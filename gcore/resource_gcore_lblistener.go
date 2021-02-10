@@ -26,6 +26,7 @@ func resourceLbListener() *schema.Resource {
 		ReadContext:   resourceLBListenerRead,
 		UpdateContext: resourceLBListenerUpdate,
 		DeleteContext: resourceLBListenerDelete,
+		Description:   "Represent load balancer listener. Can not be created without load balancer. A listener is a process that checks for connection requests, using the protocol and port that you configure",
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -77,9 +78,10 @@ func resourceLbListener() *schema.Resource {
 				Required: true,
 			},
 			"protocol": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Available values is 'HTTP', 'HTTPS', 'TCP', 'UDP'",
 				ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 					v := val.(string)
 					switch types.ProtocolType(v) {
@@ -95,9 +97,10 @@ func resourceLbListener() *schema.Resource {
 				ForceNew: true,
 			},
 			"insert_x_forwarded": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Insert *-forwarded headers",
+				ForceNew:    true,
 			},
 			"pool_count": &schema.Schema{
 				Type:     schema.TypeInt,

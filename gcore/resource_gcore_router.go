@@ -24,6 +24,7 @@ func resourceRouter() *schema.Resource {
 		ReadContext:   resourceRouterRead,
 		UpdateContext: resourceRouterUpdate,
 		DeleteContext: resourceRouterDelete,
+		Description:   "Represent router. Router enables you to dynamically exchange routes between networks",
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, regionID, routerID, err := ImportStringParser(d.Id())
@@ -83,8 +84,9 @@ func resourceRouter() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "Must be 'manual'",
+							Required:    true,
 						},
 						"enable_snat": {
 							Type:     schema.TypeBool,
@@ -120,8 +122,9 @@ func resourceRouter() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "must be 'subnet'",
+							Required:    true,
 						},
 						"subnet_id": {
 							Type:     schema.TypeString,
@@ -140,8 +143,9 @@ func resourceRouter() *schema.Resource {
 							Required: true,
 						},
 						"nexthop": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "IPv4 address to forward traffic to if it's destination IP matches 'destination' CIDR",
 						},
 					},
 				},
