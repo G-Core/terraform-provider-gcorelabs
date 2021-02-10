@@ -10,7 +10,7 @@ resource "gcore_loadbalancer" "lb" {
   region_id = 1
   name = "test"
   flavor = "lb1-1-2"
-  listeners {
+  listener {
     name = "test"
     protocol = "HTTP"
     protocol_port = 80

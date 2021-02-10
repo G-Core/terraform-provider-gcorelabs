@@ -23,6 +23,7 @@ func resourceNetwork() *schema.Resource {
 		ReadContext:   resourceNetworkRead,
 		UpdateContext: resourceNetworkUpdate,
 		DeleteContext: resourceNetworkDelete,
+		Description:   "Represent network. A network is a software-defined network in a cloud computing infrastructure",
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, regionID, NetworkID, err := ImportStringParser(d.Id())
@@ -81,9 +82,10 @@ func resourceNetwork() *schema.Resource {
 				Computed: true,
 			},
 			"type": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "'vlan' or 'vxlan' network type is allowed. Default value is 'vxlan'",
 			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,

@@ -24,6 +24,7 @@ func resourceVolume() *schema.Resource {
 		ReadContext:   resourceVolumeRead,
 		UpdateContext: resourceVolumeUpdate,
 		DeleteContext: resourceVolumeDelete,
+		Description:   "Represent volume. A volume is a file storage which is similar to SSD and HDD hard disks but located in the cloud",
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, regionID, volumeID, err := ImportStringParser(d.Id())
@@ -83,14 +84,18 @@ func resourceVolume() *schema.Resource {
 			"type_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				//todo add validation
+				Description: "Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard",
 			},
 			"image_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Mandatory if volume is created from image",
 			},
 			"snapshot_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Mandatory if volume is created from a snapshot",
 			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,

@@ -26,6 +26,7 @@ func resourceFloatingIP() *schema.Resource {
 		ReadContext:   resourceFloatingIPRead,
 		UpdateContext: resourceFloatingIPUpdate,
 		DeleteContext: resourceFloatingIPDelete,
+		Description:   "A floating IP is a static IP address that points to one of your Instances. It allows you to redirect network traffic to any of your Instances in the same datacenter.",
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,

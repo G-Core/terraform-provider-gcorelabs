@@ -26,6 +26,7 @@ func resourceSubnet() *schema.Resource {
 		ReadContext:   resourceSubnetRead,
 		UpdateContext: resourceSubnetUpdate,
 		DeleteContext: resourceSubnetDelete,
+		Description:   "Represent subnets. Subnetwork is a range of IP addresses in a cloud network. Addresses from this range will be assigned to machines in the cloud",
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				projectID, regionID, subnetID, err := ImportStringParser(d.Id())
@@ -112,8 +113,9 @@ func resourceSubnet() *schema.Resource {
 							Required: true,
 						},
 						"nexthop": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "IPv4 address to forward traffic to if it's destination IP matches 'destination' CIDR",
 						},
 					},
 				},

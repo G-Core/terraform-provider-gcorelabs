@@ -27,6 +27,7 @@ func resourceLBPool() *schema.Resource {
 		ReadContext:   resourceLBPoolRead,
 		UpdateContext: resourceLBPoolUpdate,
 		DeleteContext: resourceLBPoolDelete,
+		Description:   "Represent load balancer listener pool. A pool is a list of virtual machines to which the listener will redirect incoming traffic",
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -73,8 +74,9 @@ func resourceLBPool() *schema.Resource {
 				Required: true,
 			},
 			"lb_algorithm": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: fmt.Sprintf("Available values is '%s', '%s', '%s', '%s'", types.LoadBalancerAlgorithmRoundRobin, types.LoadBalancerAlgorithmLeastConnections, types.LoadBalancerAlgorithmSourceIP, types.LoadBalancerAlgorithmSourceIPPort),
 				ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 					v := val.(string)
 					switch types.LoadBalancerAlgorithm(v) {
@@ -85,8 +87,9 @@ func resourceLBPool() *schema.Resource {
 				},
 			},
 			"protocol": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: fmt.Sprintf("Available values is '%s' (currently work, other do not work on ed-8), '%s', '%s', '%s'", types.ProtocolTypeHTTP, types.ProtocolTypeHTTPS, types.ProtocolTypeTCP, types.ProtocolTypeUDP),
 				ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 					v := val.(string)
 					switch types.ProtocolType(v) {
@@ -117,8 +120,9 @@ func resourceLBPool() *schema.Resource {
 							Computed: true,
 						},
 						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: fmt.Sprintf("Available values is '%s', '%s', '%s', '%s', '%s', '%s", types.HealthMonitorTypeHTTP, types.HealthMonitorTypeHTTPS, types.HealthMonitorTypePING, types.HealthMonitorTypeTCP, types.HealthMonitorTypeTLSHello, types.HealthMonitorTypeUDPConnect),
 							ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 								v := val.(string)
 								switch types.HealthMonitorType(v) {
