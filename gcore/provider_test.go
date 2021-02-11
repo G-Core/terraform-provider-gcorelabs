@@ -2,12 +2,13 @@ package gcore
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
@@ -25,6 +26,7 @@ var (
 	GCORE_LB_ID         = os.Getenv("GCORE_LB_ID")
 	GCORE_LBLISTENER_ID = os.Getenv("GCORE_LBLISTENER_ID")
 	GCORE_LBPOOL_ID     = os.Getenv("GCORE_LBPOOL_ID")
+	GCORE_VOLUME_ID     = os.Getenv("GCORE_VOLUME_ID")
 )
 
 var testAccProvider *schema.Provider
@@ -91,6 +93,19 @@ func testAccPreCheckLBMember(t *testing.T) {
 		"GCORE_USERNAME":  GCORE_USERNAME,
 		"GCORE_PASSWORD":  GCORE_PASSWORD,
 		"GCORE_LBPOOL_ID": GCORE_LBPOOL_ID,
+	}
+	for k, v := range Vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckSnapshot(t *testing.T) {
+	Vars := map[string]interface{}{
+		"GCORE_USERNAME":  GCORE_USERNAME,
+		"GCORE_PASSWORD":  GCORE_PASSWORD,
+		"GCORE_VOLUME_ID": GCORE_VOLUME_ID,
 	}
 	for k, v := range Vars {
 		if v == "" {
