@@ -105,6 +105,7 @@ func resourceLBMember() *schema.Resource {
 			"subnet_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"instance_id": &schema.Schema{
 				Type:     schema.TypeString,

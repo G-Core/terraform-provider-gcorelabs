@@ -392,7 +392,11 @@ func resourceLBPoolDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	id := d.Id()
 	results, err := lbpools.Delete(client, id).Extract()
 	if err != nil {
-		return diag.FromErr(err)
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+		default:
+			return diag.FromErr(err)
+		}
 	}
 
 	taskID := results.Tasks[0]
