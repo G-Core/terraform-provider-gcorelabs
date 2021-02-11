@@ -14,10 +14,10 @@ A floating IP is a static IP address that points to one of your Instances. It al
 
 ```terraform
 provider gcore {
-  user_name = "test@test.test"
-  password = "testtest"
-  gcore_platform = "http://api.stg-45.staging.gcdn.co"
-  gcore_api = "http://10.100.179.92:33081"
+  user_name = "test"
+  password = "test"
+  gcore_platform = "https://api.gcdn.co"
+  gcore_api = "https://api.cloud.gcorelabs.com"
 }
 
 resource "gcore_floatingip" "floating_ip" {
