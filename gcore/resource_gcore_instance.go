@@ -499,26 +499,29 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		if len(iface.IPAssignments) == 0 {
 			continue
 		}
-		subnetID := iface.IPAssignments[0].SubnetID
 
-		_, ok := interfaces[subnetID]
-		if !ok {
-			continue
+		for _, assignment := range iface.IPAssignments {
+			subnetID := assignment.SubnetID
+
+			_, ok := interfaces[subnetID]
+			if !ok {
+				continue
+			}
+
+			i := make(map[string]interface{})
+
+			i["type"] = interfaces[subnetID].Type.String()
+			i["network_id"] = iface.NetworkID
+			i["subnet_id"] = subnetID
+			i["port_id"] = iface.PortID
+			if interfaces[subnetID].FloatingIP != nil {
+				i["fip_source"] = interfaces[subnetID].FloatingIP.Source.String()
+				i["existing_fip_id"] = interfaces[subnetID].FloatingIP.ExistingFloatingID
+			}
+			i["ip_address"] = iface.IPAssignments[0].IPAddress.String()
+
+			cleanInterfaces = append(cleanInterfaces, i)
 		}
-
-		i := make(map[string]interface{})
-
-		i["type"] = interfaces[subnetID].Type.String()
-		i["network_id"] = iface.NetworkID
-		i["subnet_id"] = subnetID
-		i["port_id"] = iface.PortID
-		if interfaces[subnetID].FloatingIP != nil {
-			i["fip_source"] = interfaces[subnetID].FloatingIP.Source.String()
-			i["existing_fip_id"] = interfaces[subnetID].FloatingIP.ExistingFloatingID
-		}
-		i["ip_address"] = iface.IPAssignments[0].IPAddress.String()
-
-		cleanInterfaces = append(cleanInterfaces, i)
 	}
 	if err := d.Set("interface", schema.NewSet(interfaceUniqueID, cleanInterfaces)); err != nil {
 		return diag.FromErr(err)
@@ -666,6 +669,7 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 		for _, i := range ifsOld.List() {
 			if ifsNew.Contains(i) {
+				log.Println("[DEBUG] Skipped, dont need detach")
 				continue
 			}
 
@@ -681,6 +685,7 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 		for _, i := range ifsNew.List() {
 			if ifsOld.Contains(i) {
+				log.Println("[DEBUG] Skipped, dont need attach")
 				continue
 			}
 
