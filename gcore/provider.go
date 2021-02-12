@@ -48,6 +48,7 @@ func Provider() *schema.Provider {
 			"gcore_lblistener":      resourceLbListener(),
 			"gcore_lbpool":          resourceLBPool(),
 			"gcore_lbmember":        resourceLBMember(),
+			"gcore_securitygroup":   resourceSecurityGroup(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

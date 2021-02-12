@@ -20,7 +20,11 @@ import (
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
 	"github.com/G-Core/gcorelabscloud-go/gcore/router/v1/routers"
+	"github.com/G-Core/gcorelabscloud-go/gcore/securitygroup/v1/securitygroups"
+	typesSG "github.com/G-Core/gcorelabscloud-go/gcore/securitygroup/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/subnet/v1/subnets"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/mapstructure"
 )
@@ -469,4 +473,45 @@ func volumeUniqueID(i interface{}) int {
 	h := md5.New()
 	io.WriteString(h, e["volume_id"].(string))
 	return int(binary.BigEndian.Uint64(h.Sum(nil)))
+}
+
+func secGroupUniqueID(i interface{}) int {
+	e := i.(map[string]interface{})
+	h := md5.New()
+	io.WriteString(h, e["direction"].(string))
+	io.WriteString(h, e["ethertype"].(string))
+	io.WriteString(h, e["protocol"].(string))
+	io.WriteString(h, strconv.Itoa(e["port_range_min"].(int)))
+	io.WriteString(h, strconv.Itoa(e["port_range_max"].(int)))
+	io.WriteString(h, e["description"].(string))
+
+	return int(binary.BigEndian.Uint64(h.Sum(nil)))
+}
+
+func validatePortRange(v interface{}, path cty.Path) diag.Diagnostics {
+	val := v.(int)
+	if val > minPort && val < maxPort {
+		return nil
+	}
+	return diag.Errorf("available range %d-%d", minPort, maxPort)
+}
+
+func extractSecurityGroupRuleMap(r interface{}, gid string) securitygroups.CreateRuleOptsBuilder {
+	rule := r.(map[string]interface{})
+	opts := securitygroups.CreateSecurityGroupRuleOpts{
+		Direction:       typesSG.RuleDirection(rule["direction"].(string)),
+		EtherType:       typesSG.EtherType(rule["ethertype"].(string)),
+		Protocol:        typesSG.Protocol(rule["protocol"].(string)),
+		SecurityGroupID: &gid,
+	}
+	minP, maxP := rule["port_range_min"].(int), rule["port_range_max"].(int)
+	if minP != 0 && maxP != 0 {
+		opts.PortRangeMin = &minP
+		opts.PortRangeMax = &maxP
+	}
+	descr := rule["description"].(string)
+	if descr != "" {
+		opts.Description = &descr
+	}
+	return opts
 }
