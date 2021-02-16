@@ -387,6 +387,8 @@ func revertState(d *schema.ResourceData, fields *[]string) {
 					d.Set(field, oldValue.(int))
 				case string:
 					d.Set(field, oldValue.(string))
+				case map[string]interface{}:
+					d.Set(field, oldValue.(map[string]interface{}))
 				}
 			}
 			log.Printf("[DEBUG] Revert (%s) '%s' field", d.Id(), field)
