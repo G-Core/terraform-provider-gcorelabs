@@ -49,6 +49,7 @@ func Provider() *schema.Provider {
 			"gcore_lbpool":          resourceLBPool(),
 			"gcore_lbmember":        resourceLBMember(),
 			"gcore_securitygroup":   resourceSecurityGroup(),
+			"gcore_baremetal":       resourceBmInstance(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
