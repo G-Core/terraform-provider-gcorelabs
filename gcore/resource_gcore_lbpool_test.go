@@ -62,7 +62,7 @@ func TestAccLBPool(t *testing.T) {
 
 func testAccLBPoolDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, LBPoolsPoint)
+	client, err := CreateTestClient(config.Provider, LBPoolsPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

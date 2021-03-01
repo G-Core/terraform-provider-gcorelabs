@@ -53,7 +53,7 @@ func TestAccKeyPair(t *testing.T) {
 
 func testAccKeypairDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, keypairsPoint)
+	client, err := CreateTestClient(config.Provider, keypairsPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

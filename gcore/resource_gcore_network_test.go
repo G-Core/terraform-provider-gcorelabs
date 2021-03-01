@@ -83,7 +83,7 @@ func TestAccNetwork(t *testing.T) {
 
 func testAccNetworkDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, networksPoint)
+	client, err := CreateTestClient(config.Provider, networksPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

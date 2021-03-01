@@ -234,12 +234,12 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 
 	currentListeners := d.Get("listener").([]interface{})
 	newListeners := make([]map[string]interface{}, len(lb.Listeners))
-	for i, l := range lb.Listeners {
-		listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	for i, l := range lb.Listeners {
 		listener, err := listeners.Get(listenersClient, l.ID).Extract()
 		if err != nil {
 			return diag.FromErr(err)

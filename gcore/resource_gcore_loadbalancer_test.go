@@ -61,7 +61,7 @@ func TestAccLoadBalancer(t *testing.T) {
 
 func testAccLoadBalancerDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, LoadBalancersPoint)
+	client, err := CreateTestClient(config.Provider, LoadBalancersPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

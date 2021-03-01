@@ -29,8 +29,13 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const versionPointV1 = "v1"
-const versionPointV2 = "v2"
+const (
+	versionPointV1 = "v1"
+	versionPointV2 = "v2"
+
+	projectPoint = "projects"
+	regionPoint  = "regions"
+)
 
 type Config struct {
 	Provider *gcorecloud.ProviderClient
@@ -274,7 +279,7 @@ func GetProject(provider *gcorecloud.ProviderClient, projectID int, projectName 
 		return projectID, nil
 	}
 	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
-		Name:    "projects",
+		Name:    projectPoint,
 		Region:  0,
 		Project: 0,
 		Version: "v1",
@@ -311,7 +316,7 @@ func GetRegion(provider *gcorecloud.ProviderClient, regionID int, regionName str
 		return regionID, nil
 	}
 	client, err := gc.ClientServiceFromProvider(provider, gcorecloud.EndpointOpts{
-		Name:    "regions",
+		Name:    regionPoint,
 		Region:  0,
 		Project: 0,
 		Version: "v1",

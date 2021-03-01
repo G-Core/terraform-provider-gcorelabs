@@ -42,7 +42,7 @@ func TestAccSecurityGroup(t *testing.T) {
 
 func testAccSecurityGroupDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, securityGroupPoint)
+	client, err := CreateTestClient(config.Provider, securityGroupPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

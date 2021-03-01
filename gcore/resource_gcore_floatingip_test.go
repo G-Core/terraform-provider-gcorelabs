@@ -38,7 +38,7 @@ func TestAccFloatingIP(t *testing.T) {
 
 func testAccFloatingIPDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, floatingIPsPoint)
+	client, err := CreateTestClient(config.Provider, floatingIPsPoint, versionPointV1)
 	if err != nil {
 		return err
 	}
