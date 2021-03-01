@@ -58,7 +58,7 @@ func TestAccLBListener(t *testing.T) {
 
 func testAccLBListenerDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, LBListenersPoint)
+	client, err := CreateTestClient(config.Provider, LBListenersPoint, versionPointV1)
 	if err != nil {
 		return err
 	}
