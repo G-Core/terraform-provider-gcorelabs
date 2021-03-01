@@ -2,12 +2,13 @@ package gcore
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
@@ -157,7 +158,7 @@ func objectInfo(resourceType string) string {
 	return fmt.Sprintf(`%s_name = "%s"`, strings.ToLower(resourceType), os.Getenv(keyNane))
 }
 
-func CreateTestClient(provider *gcorecloud.ProviderClient, endpoint string) (*gcorecloud.ServiceClient, error) {
+func CreateTestClient(provider *gcorecloud.ProviderClient, endpoint, version string) (*gcorecloud.ServiceClient, error) {
 	projectID := 0
 	err := fmt.Errorf("")
 	if strProjectID, exists := os.LookupEnv("TEST_PROJECT_ID"); exists {
@@ -188,13 +189,29 @@ func CreateTestClient(provider *gcorecloud.ProviderClient, endpoint string) (*gc
 		Name:    endpoint,
 		Region:  regionID,
 		Project: projectID,
-		Version: "v1",
+		Version: version,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 	return client, nil
+}
+
+func createTestConfig() (*Config, error) {
+	provider, err := gc.AuthenticatedClient(gcorecloud.AuthOptions{
+		APIURL:      os.Getenv("GCORE_API"),
+		AuthURL:     os.Getenv("GCORE_PLATFORM"),
+		Username:    os.Getenv("GCORE_USERNAME"),
+		Password:    os.Getenv("GCORE_PASSWORD"),
+		AllowReauth: true,
+	})
+
+	config := Config{
+		Provider: provider,
+	}
+
+	return &config, err
 }
 
 func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {

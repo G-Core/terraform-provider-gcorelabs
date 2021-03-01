@@ -200,7 +200,7 @@ func TestAccSubnet(t *testing.T) {
 
 func testAccSubnetDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, subnetPoint)
+	client, err := CreateTestClient(config.Provider, subnetPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

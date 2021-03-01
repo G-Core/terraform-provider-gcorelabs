@@ -41,7 +41,7 @@ func TestAccBaremetal(t *testing.T) {
 
 func testAccBaremetalDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, InstancePoint)
+	client, err := CreateTestClient(config.Provider, InstancePoint, versionPointV1)
 	if err != nil {
 		return err
 	}

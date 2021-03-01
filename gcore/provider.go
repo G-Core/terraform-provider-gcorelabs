@@ -51,6 +51,22 @@ func Provider() *schema.Provider {
 			"gcore_securitygroup":   resourceSecurityGroup(),
 			"gcore_baremetal":       resourceBmInstance(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"gcore_project":         dataSourceProject(),
+			"gcore_region":          dataSourceRegion(),
+			"gcore_securitygroup":   dataSourceSecurityGroup(),
+			"gcore_image":           dataSourceImage(),
+			"gcore_volume":          dataSourceVolume(),
+			"gcore_network":         dataSourceNetwork(),
+			"gcore_subnet":          dataSourceSubnet(),
+			"gcore_router":          dataSourceRouter(),
+			"gcore_loadbalancer":    dataSourceLoadBalancer(),
+			"gcore_lblistener":      dataSourceLBListener(),
+			"gcore_lbpool":          dataSourceLBPool(),
+			"gcore_instance":        dataSourceInstance(),
+			"gcore_floatingip":      dataSourceFloatingIP(),
+			"gcore_reservedfixedip": dataSourceReservedFixedIP(),
+		},
 		ConfigureContextFunc: providerConfigure,
 	}
 }

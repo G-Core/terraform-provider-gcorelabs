@@ -214,7 +214,7 @@ func TestAccRouter(t *testing.T) {
 
 func testAccRouterDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, RouterPoint)
+	client, err := CreateTestClient(config.Provider, RouterPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

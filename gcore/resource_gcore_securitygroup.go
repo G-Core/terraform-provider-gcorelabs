@@ -72,10 +72,8 @@ func resourceSecurityGroup() *schema.Resource {
 				Optional: true,
 			},
 			"security_group_rules": &schema.Schema{
-				Type:     schema.TypeSet,
-				Required: true,
-				//Optional: true,
-				//Computed: true,
+				Type:        schema.TypeSet,
+				Required:    true,
 				Description: "Firewall rules control what inbound(ingress) and outbound(egress) traffic is allowed to enter or leave a Instance. At least one 'egress' rule should be set",
 				Set:         secGroupUniqueID,
 				Elem: &schema.Resource{

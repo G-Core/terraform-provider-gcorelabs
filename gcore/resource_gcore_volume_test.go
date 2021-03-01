@@ -90,7 +90,7 @@ func TestAccVolume(t *testing.T) {
 
 func testAccVolumeDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, volumesPoint)
+	client, err := CreateTestClient(config.Provider, volumesPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

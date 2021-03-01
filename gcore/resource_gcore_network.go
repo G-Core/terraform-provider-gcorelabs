@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const NetworkDeleting int = 1200
-const NetworkCreatingTimeout int = 1200
+const networkDeleting int = 1200
+const networkCreatingTimeout int = 1200
 const networksPoint = "networks"
 
 func resourceNetwork() *schema.Resource {
@@ -120,7 +120,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
-	networkID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, NetworkCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+	networkID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, networkCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
 		taskInfo, err := tasks.Get(client, string(task)).Extract()
 		if err != nil {
 			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
@@ -216,7 +216,7 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
-	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, NetworkDeleting, func(task tasks.TaskID) (interface{}, error) {
+	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, networkDeleting, func(task tasks.TaskID) (interface{}, error) {
 		_, err := networks.Get(client, networkID).Extract()
 		if err == nil {
 			return nil, fmt.Errorf("cannot delete network with ID: %s", networkID)
