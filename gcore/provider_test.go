@@ -26,6 +26,7 @@ var (
 	GCORE_LB_ID         = os.Getenv("GCORE_LB_ID")
 	GCORE_LBLISTENER_ID = os.Getenv("GCORE_LBLISTENER_ID")
 	GCORE_LBPOOL_ID     = os.Getenv("GCORE_LBPOOL_ID")
+	GCORE_VOLUME_ID     = os.Getenv("GCORE_VOLUME_ID")
 )
 
 var testAccProvider *schema.Provider
@@ -47,11 +48,11 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	Vars := map[string]interface{}{
+	vars := map[string]interface{}{
 		"GCORE_USERNAME": GCORE_USERNAME,
 		"GCORE_PASSWORD": GCORE_PASSWORD,
 	}
-	for k, v := range Vars {
+	for k, v := range vars {
 		if v == "" {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
@@ -61,12 +62,12 @@ func testAccPreCheck(t *testing.T) {
 }
 
 func testAccPreCheckLBListener(t *testing.T) {
-	Vars := map[string]interface{}{
+	vars := map[string]interface{}{
 		"GCORE_USERNAME": GCORE_USERNAME,
 		"GCORE_PASSWORD": GCORE_PASSWORD,
 		"GCORE_LB_ID":    GCORE_LB_ID,
 	}
-	for k, v := range Vars {
+	for k, v := range vars {
 		if v == "" {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
@@ -74,13 +75,13 @@ func testAccPreCheckLBListener(t *testing.T) {
 }
 
 func testAccPreCheckLBPool(t *testing.T) {
-	Vars := map[string]interface{}{
+	vars := map[string]interface{}{
 		"GCORE_USERNAME":      GCORE_USERNAME,
 		"GCORE_PASSWORD":      GCORE_PASSWORD,
 		"GCORE_LB_ID":         GCORE_LB_ID,
 		"GCORE_LBLISTENER_ID": GCORE_LBLISTENER_ID,
 	}
-	for k, v := range Vars {
+	for k, v := range vars {
 		if v == "" {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
@@ -88,12 +89,25 @@ func testAccPreCheckLBPool(t *testing.T) {
 }
 
 func testAccPreCheckLBMember(t *testing.T) {
-	Vars := map[string]interface{}{
+	vars := map[string]interface{}{
 		"GCORE_USERNAME":  GCORE_USERNAME,
 		"GCORE_PASSWORD":  GCORE_PASSWORD,
 		"GCORE_LBPOOL_ID": GCORE_LBPOOL_ID,
 	}
-	for k, v := range Vars {
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckSnapshot(t *testing.T) {
+	vars := map[string]interface{}{
+		"GCORE_USERNAME":  GCORE_USERNAME,
+		"GCORE_PASSWORD":  GCORE_PASSWORD,
+		"GCORE_VOLUME_ID": GCORE_VOLUME_ID,
+	}
+	for k, v := range vars {
 		if v == "" {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
@@ -101,11 +115,11 @@ func testAccPreCheckLBMember(t *testing.T) {
 }
 
 func testAccPreCheckRouter(t *testing.T) {
-	Vars := map[string]interface{}{
+	vars := map[string]interface{}{
 		"GCORE_EXT_NET":     GCORE_EXT_NET,
 		"GCORE_PRIV_SUBNET": GCORE_PRIV_SUBNET,
 	}
-	for k, v := range Vars {
+	for k, v := range vars {
 		if v == "" {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
@@ -113,13 +127,13 @@ func testAccPreCheckRouter(t *testing.T) {
 }
 
 func testAccPreCheckInstance(t *testing.T) {
-	Vars := map[string]interface{}{
+	vars := map[string]interface{}{
 		"GCORE_IMAGE":       GCORE_IMAGE,
 		"GCORE_SECGROUP":    GCORE_SECGROUP,
 		"GCORE_PRIV_NET":    GCORE_PRIV_NET,
 		"GCORE_PRIV_SUBNET": GCORE_PRIV_SUBNET,
 	}
-	for k, v := range Vars {
+	for k, v := range vars {
 		if v == "" {
 			t.Fatalf("'%s' must be set for acceptance test", k)
 		}
