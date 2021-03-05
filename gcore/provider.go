@@ -50,6 +50,7 @@ func Provider() *schema.Provider {
 			"gcore_lbmember":        resourceLBMember(),
 			"gcore_securitygroup":   resourceSecurityGroup(),
 			"gcore_baremetal":       resourceBmInstance(),
+			"gcore_snapshot":        resourceSnapshot(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"gcore_project":         dataSourceProject(),
