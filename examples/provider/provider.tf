@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 0.13.0"
   required_providers {
     gcore = {
-      source  = "local.gcorelabs.com/repo/gcore"
+      source  = "G-Core/gcorelabs"
       version = "~>0.1.2"
     }
   }
