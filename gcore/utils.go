@@ -268,7 +268,7 @@ func findProjectByName(arr []projects.Project, name string) (int, error) {
 			return el.ID, nil
 		}
 	}
-	return 0, fmt.Errorf("Region with name %s not found", name)
+	return 0, fmt.Errorf("project with name %s not found", name)
 }
 
 //GetProject returns valid projectID for a resource
@@ -306,7 +306,7 @@ func findRegionByName(arr []regions.Region, name string) (int, error) {
 			return el.ID, nil
 		}
 	}
-	return 0, fmt.Errorf("Region with name %s not found", name)
+	return 0, fmt.Errorf("region with name %s not found", name)
 }
 
 //GetRegion returns valid regionID for a resource
@@ -321,12 +321,12 @@ func GetRegion(provider *gcorecloud.ProviderClient, regionID int, regionName str
 		Project: 0,
 		Version: "v1",
 	})
-	regions, err := regions.ListAll(client)
+	rs, err := regions.ListAll(client)
 	if err != nil {
 		return 0, err
 	}
-	log.Printf("[DEBUG] Regions: %v", regions)
-	regionID, err = findRegionByName(regions, regionName)
+	log.Printf("[DEBUG] Regions: %v", rs)
+	regionID, err = findRegionByName(rs, regionName)
 	if err != nil {
 		return 0, err
 	}

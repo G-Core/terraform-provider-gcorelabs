@@ -153,10 +153,12 @@ func dataSourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m 
 		r["id"] = sgr.ID
 		r["direction"] = sgr.Direction.String()
 
+		r["ethertype"] = ""
 		if sgr.EtherType != nil {
 			r["ethertype"] = sgr.EtherType.String()
 		}
 
+		r["protocol"] = types.ProtocolAny.String()
 		if sgr.Protocol != nil {
 			r["protocol"] = sgr.Protocol.String()
 		}
