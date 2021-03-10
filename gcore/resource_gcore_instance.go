@@ -170,6 +170,7 @@ func resourceInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "required if type is 'subnet'",
 							Optional:    true,
+							Computed:    true,
 						},
 						//nested map is not supported, in this case, you do not need to use the list for the map
 						"fip_source": {
@@ -503,20 +504,28 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, assignment := range iface.IPAssignments {
 			subnetID := assignment.SubnetID
 
-			_, ok := interfaces[subnetID]
+			//bad idea, but what to do
+			var iOpts instances.InterfaceOpts
+			var ok bool
+			for _, k := range []string{subnetID, iface.PortID, iface.NetworkID, types.ExternalInterfaceType.String()} {
+				if iOpts, ok = interfaces[k]; ok {
+					break
+				}
+			}
+
 			if !ok {
 				continue
 			}
 
 			i := make(map[string]interface{})
 
-			i["type"] = interfaces[subnetID].Type.String()
+			i["type"] = iOpts.Type.String()
 			i["network_id"] = iface.NetworkID
 			i["subnet_id"] = subnetID
 			i["port_id"] = iface.PortID
-			if interfaces[subnetID].FloatingIP != nil {
-				i["fip_source"] = interfaces[subnetID].FloatingIP.Source.String()
-				i["existing_fip_id"] = interfaces[subnetID].FloatingIP.ExistingFloatingID
+			if iOpts.FloatingIP != nil {
+				i["fip_source"] = iOpts.FloatingIP.Source.String()
+				i["existing_fip_id"] = iOpts.FloatingIP.ExistingFloatingID
 			}
 			i["ip_address"] = iface.IPAssignments[0].IPAddress.String()
 
@@ -698,7 +707,6 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 				opts.SubnetID = iface["subnet_id"].(string)
 			case types.AnySubnetInterfaceType:
 				opts.NetworkID = iface["network_id"].(string)
-			case types.ExternalInterfaceType:
 			case types.ReservedFixedIpType:
 				opts.PortID = iface["port_id"].(string)
 			}
