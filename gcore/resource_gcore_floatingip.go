@@ -31,7 +31,6 @@ func resourceFloatingIP() *schema.Resource {
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
-				ForceNew: true,
 				ExactlyOneOf: []string{
 					"project_id",
 					"project_name",
@@ -40,7 +39,6 @@ func resourceFloatingIP() *schema.Resource {
 			"region_id": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
-				ForceNew: true,
 				ExactlyOneOf: []string{
 					"region_id",
 					"region_name",
@@ -49,7 +47,6 @@ func resourceFloatingIP() *schema.Resource {
 			"project_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 				ExactlyOneOf: []string{
 					"project_id",
 					"project_name",
@@ -58,7 +55,6 @@ func resourceFloatingIP() *schema.Resource {
 			"region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 				ExactlyOneOf: []string{
 					"region_id",
 					"region_name",
