@@ -228,6 +228,11 @@ func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]insta
 			I.FloatingIP = &fip
 		}
 		Interfaces[I.SubnetID] = I
+		Interfaces[I.NetworkID] = I
+		Interfaces[I.PortID] = I
+		if I.Type == types.ExternalInterfaceType {
+			Interfaces[I.Type.String()] = I
+		}
 	}
 	return Interfaces, nil
 }
@@ -470,8 +475,11 @@ func interfaceUniqueID(i interface{}) int {
 	switch types.InterfaceType(iType) {
 	case types.ReservedFixedIpType:
 		io.WriteString(h, e["port_id"].(string))
+	case types.AnySubnetInterfaceType:
+		io.WriteString(h, e["network_id"].(string))
+	case types.SubnetInterfaceType:
+		io.WriteString(h, e["subnet_id"].(string))
 	}
-	io.WriteString(h, e["subnet_id"].(string))
 	return int(binary.BigEndian.Uint64(h.Sum(nil)))
 }
 
