@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/availablenetworks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,6 +82,10 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	clientShared, err := CreateClient(provider, d, sharedNetworksPoint, versionPointV1)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	name := d.Get("name").(string)
 	nets, err := networks.ListAll(client)
@@ -88,28 +93,39 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	var found bool
-	var network networks.Network
-	for _, n := range nets {
-		if n.Name == name {
-			network = n
-			found = true
-			break
+	//todo refactor, also refactor inner func
+	var rawNetwork map[string]interface{}
+	network, found := findNetworkByName(name, nets)
+	if !found {
+		//trying to find among shared networks
+		nets, err := availablenetworks.ListAll(clientShared)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		network, found := findSharedNetworkByName(name, nets)
+		if !found {
+			return diag.Errorf("network with name %s not found", name)
+		}
+
+		rawNetwork, err = StructToMap(network)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		rawNetwork, err = StructToMap(network)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	if !found {
-		return diag.Errorf("network with name %s not found", name)
-	}
-
-	d.SetId(network.ID)
-	d.Set("name", network.Name)
-	d.Set("mtu", network.MTU)
-	d.Set("type", network.Type)
-	d.Set("region_id", network.RegionID)
-	d.Set("project_id", network.ProjectID)
-	d.Set("external", network.External)
-	d.Set("shared", network.Shared)
+	d.SetId(rawNetwork["id"].(string))
+	d.Set("name", rawNetwork["name"])
+	d.Set("mtu", rawNetwork["mtu"])
+	d.Set("type", rawNetwork["type"])
+	d.Set("region_id", rawNetwork["region_id"])
+	d.Set("project_id", rawNetwork["project_id"])
+	d.Set("external", rawNetwork["external"])
+	d.Set("shared", rawNetwork["shared"])
 
 	log.Println("[DEBUG] Finish Network reading")
 	return diags

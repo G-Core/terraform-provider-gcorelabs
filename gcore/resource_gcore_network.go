@@ -16,6 +16,7 @@ import (
 const networkDeleting int = 1200
 const networkCreatingTimeout int = 1200
 const networksPoint = "networks"
+const sharedNetworksPoint = "availablenetworks"
 
 func resourceNetwork() *schema.Resource {
 	return &schema.Resource{
