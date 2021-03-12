@@ -3,6 +3,7 @@ package gcore
 import (
 	"crypto/md5"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -17,6 +18,8 @@ import (
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/lbpools"
 	typesLb "github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/types"
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/availablenetworks"
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/project/v1/projects"
 	"github.com/G-Core/gcorelabscloud-go/gcore/region/v1/regions"
 	"github.com/G-Core/gcorelabscloud-go/gcore/router/v1/routers"
@@ -529,4 +532,41 @@ func extractSecurityGroupRuleMap(r interface{}, gid string) securitygroups.Creat
 		opts.Description = &descr
 	}
 	return opts
+}
+
+//technical debt
+func findNetworkByName(name string, nets []networks.Network) (networks.Network, bool) {
+	var found bool
+	var network networks.Network
+	for _, n := range nets {
+		if n.Name == name {
+			network = n
+			found = true
+			break
+		}
+	}
+	return network, found
+}
+
+//technical debt
+func findSharedNetworkByName(name string, nets []availablenetworks.Network) (availablenetworks.Network, bool) {
+	var found bool
+	var network availablenetworks.Network
+	for _, n := range nets {
+		if n.Name == name {
+			network = n
+			found = true
+			break
+		}
+	}
+	return network, found
+}
+
+func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(data, &newMap)
+	return
 }
