@@ -508,7 +508,7 @@ func secGroupUniqueID(i interface{}) int {
 
 func validatePortRange(v interface{}, path cty.Path) diag.Diagnostics {
 	val := v.(int)
-	if val > minPort && val < maxPort {
+	if val >= minPort && val <= maxPort {
 		return nil
 	}
 	return diag.Errorf("available range %d-%d", minPort, maxPort)
