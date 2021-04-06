@@ -18,7 +18,7 @@ terraform {
   required_providers {
     gcore = {
       source  = "G-Core/gcorelabs"
-      version = "0.1.3"
+      version = "0.1.8"
     }
   }
 }
