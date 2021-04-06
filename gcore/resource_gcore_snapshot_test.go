@@ -78,7 +78,7 @@ func TestAccSnapshot(t *testing.T) {
 
 func testAccSnapshotDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	client, err := CreateTestClient(config.Provider, snapshotsPoint)
+	client, err := CreateTestClient(config.Provider, snapshotsPoint, versionPointV1)
 	if err != nil {
 		return err
 	}

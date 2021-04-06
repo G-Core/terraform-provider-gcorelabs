@@ -527,9 +527,15 @@ func extractSecurityGroupRuleMap(r interface{}, gid string) securitygroups.Creat
 		opts.PortRangeMin = &minP
 		opts.PortRangeMax = &maxP
 	}
+
 	descr := rule["description"].(string)
 	if descr != "" {
 		opts.Description = &descr
+	}
+
+	remoteIPPrefix := rule["remote_ip_prefix"].(string)
+	if remoteIPPrefix != "" {
+		opts.RemoteIPPrefix = &remoteIPPrefix
 	}
 	return opts
 }
