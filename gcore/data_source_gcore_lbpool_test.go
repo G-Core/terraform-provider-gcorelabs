@@ -72,6 +72,7 @@ func TestAccLBPoolDataSource(t *testing.T) {
 			MaxRetriesDown: 10,
 			HTTPMethod:     types.HTTPMethodPointer(types.HTTPMethodGET),
 			URLPath:        "/",
+			ExpectedCodes:  "123,321",
 		},
 	}
 	res, err := lbpools.Create(clientPools, optsPool).Extract()

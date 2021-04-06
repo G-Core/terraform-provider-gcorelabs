@@ -109,6 +109,10 @@ func dataSourceLBPool() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"expected_codes": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -203,6 +207,7 @@ func dataSourceLBPoolRead(ctx context.Context, d *schema.ResourceData, m interfa
 			"max_retries":      lb.HealthMonitor.MaxRetries,
 			"max_retries_down": lb.HealthMonitor.MaxRetriesDown,
 			"url_path":         lb.HealthMonitor.URLPath,
+			"expected_codes":   lb.HealthMonitor.ExpectedCodes,
 		}
 		if lb.HealthMonitor.HTTPMethod != nil {
 			healthMonitor["http_method"] = lb.HealthMonitor.HTTPMethod.String()
