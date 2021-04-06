@@ -463,8 +463,14 @@ func extractHealthMonitorMap(d *schema.ResourceData) *lbpools.CreateHealthMonito
 			healthOpts.URLPath = urlPath
 		}
 
-		if hm["id"].(string) != "" {
-			healthOpts.ID = hm["id"].(string)
+		expectedCodes := hm["expected_codes"].(string)
+		if expectedCodes != "" {
+			healthOpts.ExpectedCodes = expectedCodes
+		}
+
+		id := hm["id"].(string)
+		if id != "" {
+			healthOpts.ID = id
 		}
 	}
 	return healthOpts
