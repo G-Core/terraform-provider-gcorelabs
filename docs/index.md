@@ -18,7 +18,7 @@ terraform {
   required_providers {
     gcore = {
       source  = "G-Core/gcorelabs"
-      version = "0.1.3"
+      version = "0.1.9"
     }
   }
 }
@@ -245,6 +245,7 @@ resource "gcore_lbmember" "lbm2" {
 ### Optional
 
 - **gcore_api** (String) Region API
+- **gcore_client_id** (String) Client id
 - **gcore_platform** (String) Platform ulr is used for generate jwt
 - **password** (String)
 - **user_name** (String)

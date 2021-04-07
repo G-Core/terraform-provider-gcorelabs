@@ -34,6 +34,12 @@ func Provider() *schema.Provider {
 				Description: "Region API",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_API", ""),
 			},
+			"gcore_client_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Client id",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_CLIENT_ID", ""),
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"gcore_volume":          resourceVolume(),
@@ -77,6 +83,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	password := d.Get("password").(string)
 	api := d.Get("gcore_api").(string)
 	platform := d.Get("gcore_platform").(string)
+	clientID := d.Get("gcore_client_id").(string)
 
 	var diags diag.Diagnostics
 
@@ -86,10 +93,12 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Username:    username,
 		Password:    password,
 		AllowReauth: true,
+		ClientID:    clientID,
 	})
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
+
 	config := Config{
 		Provider: provider,
 	}
