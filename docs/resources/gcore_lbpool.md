@@ -88,6 +88,7 @@ Required:
 
 Optional:
 
+- **expected_codes** (String)
 - **http_method** (String)
 - **id** (String) The ID of this resource.
 - **max_retries_down** (Number)
