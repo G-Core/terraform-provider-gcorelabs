@@ -364,15 +364,15 @@ func resourceLBPoolUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	taskID := results.Tasks[0]
 	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, LBPoolsCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
-		taskInfo, err := tasks.Get(client, string(task)).Extract()
+		_, err := tasks.Get(client, string(task)).Extract()
 		if err != nil {
 			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
 		}
-		lbPoolID, err := lbpools.ExtractPoolIDFromTask(taskInfo)
-		if err != nil {
-			return nil, fmt.Errorf("cannot retrieve LBPool ID from task info: %w", err)
-		}
-		return lbPoolID, nil
+		//lbPoolID, err := lbpools.ExtractPoolIDFromTask(taskInfo)
+		//if err != nil {
+		//	return nil, fmt.Errorf("cannot retrieve LBPool ID from task info: %w", err)
+		//}
+		return nil, nil
 	})
 
 	if err != nil {

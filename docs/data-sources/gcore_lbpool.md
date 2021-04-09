@@ -69,6 +69,7 @@ output "view" {
 Read-Only:
 
 - **delay** (Number)
+- **expected_codes** (String)
 - **http_method** (String)
 - **id** (String)
 - **max_retries** (Number)
