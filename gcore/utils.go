@@ -508,6 +508,7 @@ func secGroupUniqueID(i interface{}) int {
 	io.WriteString(h, strconv.Itoa(e["port_range_min"].(int)))
 	io.WriteString(h, strconv.Itoa(e["port_range_max"].(int)))
 	io.WriteString(h, e["description"].(string))
+	io.WriteString(h, e["remote_ip_prefix"].(string))
 
 	return int(binary.BigEndian.Uint64(h.Sum(nil)))
 }
