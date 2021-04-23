@@ -95,6 +95,10 @@ func dataSourceSecurityGroup() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"remote_ip_prefix": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"updated_at": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,

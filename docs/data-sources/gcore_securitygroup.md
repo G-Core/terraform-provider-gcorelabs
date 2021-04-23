@@ -72,6 +72,7 @@ Read-Only:
 - **port_range_max** (Number)
 - **port_range_min** (Number)
 - **protocol** (String)
+- **remote_ip_prefix** (String)
 - **updated_at** (String)
 
 
