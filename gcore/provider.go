@@ -57,6 +57,7 @@ func Provider() *schema.Provider {
 			"gcore_securitygroup":   resourceSecurityGroup(),
 			"gcore_baremetal":       resourceBmInstance(),
 			"gcore_snapshot":        resourceSnapshot(),
+			"gcore_servergroup":     resourceServerGroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"gcore_project":         dataSourceProject(),
@@ -73,6 +74,7 @@ func Provider() *schema.Provider {
 			"gcore_instance":        dataSourceInstance(),
 			"gcore_floatingip":      dataSourceFloatingIP(),
 			"gcore_reservedfixedip": dataSourceReservedFixedIP(),
+			"gcore_servergroup":     dataSourceServerGroup(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

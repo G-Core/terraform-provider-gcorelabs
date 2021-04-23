@@ -135,6 +135,7 @@ resource "gcore_instance" "instance" {
 - **region_id** (Number)
 - **region_name** (String)
 - **security_group** (Block List) Firewalls list (see [below for nested schema](#nestedblock--security_group))
+- **server_group** (String)
 - **status** (String)
 - **userdata** (String)
 - **username** (String)
