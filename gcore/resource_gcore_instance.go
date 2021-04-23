@@ -199,6 +199,10 @@ func resourceInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"server_group": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"security_group": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -336,6 +340,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	createOpts.Username = d.Get("username").(string)
 	createOpts.UserData = d.Get("userdata").(string)
 	createOpts.Keypair = d.Get("keypair_name").(string)
+	createOpts.ServerGroupID = d.Get("server_group").(string)
 
 	name := d.Get("name").(string)
 	if len(name) > 0 {
