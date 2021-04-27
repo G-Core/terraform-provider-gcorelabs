@@ -2,6 +2,7 @@ package gcore
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -10,24 +11,77 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	gcdn "github.com/G-Core/gcorelabscdn-go"
+	gcdnProvider "github.com/G-Core/gcorelabscdn-go/gcore/provider"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var (
-	GCORE_USERNAME      = os.Getenv("GCORE_USERNAME")
-	GCORE_PASSWORD      = os.Getenv("GCORE_PASSWORD")
-	GCORE_IMAGE         = os.Getenv("GCORE_IMAGE")
-	GCORE_SECGROUP      = os.Getenv("GCORE_SECGROUP")
-	GCORE_EXT_NET       = os.Getenv("GCORE_EXT_NET")
-	GCORE_PRIV_NET      = os.Getenv("GCORE_PRIV_NET")
-	GCORE_PRIV_SUBNET   = os.Getenv("GCORE_PRIV_SUBNET")
-	GCORE_LB_ID         = os.Getenv("GCORE_LB_ID")
-	GCORE_LBLISTENER_ID = os.Getenv("GCORE_LBLISTENER_ID")
-	GCORE_LBPOOL_ID     = os.Getenv("GCORE_LBPOOL_ID")
-	GCORE_VOLUME_ID     = os.Getenv("GCORE_VOLUME_ID")
+type VarName string
+
+const (
+	GCORE_USERNAME_VAR           VarName = "GCORE_USERNAME"
+	GCORE_PASSWORD_VAR           VarName = "GCORE_PASSWORD"
+	GCORE_CDN_URL_VAR            VarName = "GCORE_CDN_URL"
+	GCORE_IMAGE_VAR              VarName = "GCORE_IMAGE"
+	GCORE_SECGROUP_VAR           VarName = "GCORE_SECGROUP"
+	GCORE_EXT_NET_VAR            VarName = "GCORE_EXT_NET"
+	GCORE_PRIV_NET_VAR           VarName = "GCORE_PRIV_NET"
+	GCORE_PRIV_SUBNET_VAR        VarName = "GCORE_PRIV_SUBNET"
+	GCORE_LB_ID_VAR              VarName = "GCORE_LB_ID"
+	GCORE_LBLISTENER_ID_VAR      VarName = "GCORE_LBLISTENER_ID"
+	GCORE_LBPOOL_ID_VAR          VarName = "GCORE_LBPOOL_ID"
+	GCORE_VOLUME_ID_VAR          VarName = "GCORE_VOLUME_ID"
+	GCORE_CDN_ORIGINGROUP_ID_VAR VarName = "GCORE_CDN_ORIGINGROUP_ID"
+	GCORE_CDN_RESOURCE_ID_VAR    VarName = "GCORE_CDN_RESOURCE_ID"
 )
+
+func getEnv(name VarName) string {
+	return os.Getenv(string(name))
+}
+
+var (
+	GCORE_USERNAME           = getEnv(GCORE_USERNAME_VAR)
+	GCORE_PASSWORD           = getEnv(GCORE_PASSWORD_VAR)
+	GCORE_CDN_URL            = getEnv(GCORE_CDN_URL_VAR)
+	GCORE_IMAGE              = getEnv(GCORE_IMAGE_VAR)
+	GCORE_SECGROUP           = getEnv(GCORE_SECGROUP_VAR)
+	GCORE_EXT_NET            = getEnv(GCORE_EXT_NET_VAR)
+	GCORE_PRIV_NET           = getEnv(GCORE_PRIV_NET_VAR)
+	GCORE_PRIV_SUBNET        = getEnv(GCORE_PRIV_SUBNET_VAR)
+	GCORE_LB_ID              = getEnv(GCORE_LB_ID_VAR)
+	GCORE_LBLISTENER_ID      = getEnv(GCORE_LBLISTENER_ID_VAR)
+	GCORE_LBPOOL_ID          = getEnv(GCORE_LBPOOL_ID_VAR)
+	GCORE_VOLUME_ID          = getEnv(GCORE_VOLUME_ID_VAR)
+	GCORE_CDN_ORIGINGROUP_ID = getEnv(GCORE_CDN_ORIGINGROUP_ID_VAR)
+	GCORE_CDN_RESOURCE_ID    = getEnv(GCORE_CDN_RESOURCE_ID_VAR)
+)
+
+var varsMap = map[VarName]string{
+	GCORE_USERNAME_VAR:           GCORE_USERNAME,
+	GCORE_PASSWORD_VAR:           GCORE_PASSWORD,
+	GCORE_CDN_URL_VAR:            GCORE_CDN_URL,
+	GCORE_IMAGE_VAR:              GCORE_IMAGE,
+	GCORE_SECGROUP_VAR:           GCORE_SECGROUP,
+	GCORE_EXT_NET_VAR:            GCORE_EXT_NET,
+	GCORE_PRIV_NET_VAR:           GCORE_PRIV_NET,
+	GCORE_PRIV_SUBNET_VAR:        GCORE_PRIV_SUBNET,
+	GCORE_LB_ID_VAR:              GCORE_LB_ID,
+	GCORE_LBLISTENER_ID_VAR:      GCORE_LBLISTENER_ID,
+	GCORE_LBPOOL_ID_VAR:          GCORE_LBPOOL_ID,
+	GCORE_VOLUME_ID_VAR:          GCORE_VOLUME_ID,
+	GCORE_CDN_ORIGINGROUP_ID_VAR: GCORE_CDN_ORIGINGROUP_ID,
+	GCORE_CDN_RESOURCE_ID_VAR:    GCORE_CDN_RESOURCE_ID,
+}
+
+func testAccPreCheckVars(t *testing.T, vars ...VarName) {
+	for _, name := range vars {
+		if val := varsMap[name]; val == "" {
+			t.Fatalf("'%s' must be set for acceptance test", name)
+		}
+	}
+}
 
 var testAccProvider *schema.Provider
 var testAccProviders map[string]func() (*schema.Provider, error)
@@ -221,8 +275,15 @@ func createTestConfig() (*Config, error) {
 		AllowReauth: true,
 	})
 
+	cdnProvider := gcdnProvider.NewClient(GCORE_CDN_URL, gcdnProvider.WithSignerFunc(func(req *http.Request) error {
+		req.Header.Set("Authorization", "Bearer "+provider.AccessToken())
+		return nil
+	}))
+	cdnService := gcdn.NewService(cdnProvider)
+
 	config := Config{
-		Provider: provider,
+		Provider:  provider,
+		CDNClient: cdnService,
 	}
 
 	return &config, err

@@ -1,16 +1,21 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
-TAG=$$(git describe --tags)
 BINARY_NAME=terraform-provider-gcore
-PLUGIN_PATH=~/.terraform.d/plugins/local.gcorelabs.com/repo/gcore/$(TAG)/linux_amd64
 PKG_NAME=gcorelabs
+
+TAG_PREFIX="v"
+TAG=$(shell git describe --tags)
+VERSION=$(shell  git describe --tags $(LAST_TAG_COMMIT) | sed "s/^$(TAG_PREFIX)//")
+OS=$$(go env GOOS)
+ARCH=$$(go env GOARCH)
+PLUGIN_PATH=~/.terraform.d/plugins/local.gcorelabs.com/repo/gcore/$(VERSION)/$(OS)_$(ARCH)
 
 default: build
 
 build: fmtcheck
 	mkdir -p $(PLUGIN_PATH)
-	go build -o $(PLUGIN_PATH)/$(BINARY_NAME)_v$(TAG)
+	go build -o $(PLUGIN_PATH)/$(BINARY_NAME)_v$(VERSION)
 
 test: fmtcheck
 	go test -i $(TEST) || exit 1

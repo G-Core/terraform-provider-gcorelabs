@@ -2,7 +2,10 @@ package gcore
 
 import (
 	"context"
+	"net/http"
 
+	gcdn "github.com/G-Core/gcorelabscdn-go"
+	gcdnProvider "github.com/G-Core/gcorelabscdn-go/gcore/provider"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,6 +37,12 @@ func Provider() *schema.Provider {
 				Description: "Region API",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_API", ""),
 			},
+			"gcore_cdn_api": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "CDN API",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", ""),
+			},
 			"gcore_client_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -58,6 +67,9 @@ func Provider() *schema.Provider {
 			"gcore_baremetal":       resourceBmInstance(),
 			"gcore_snapshot":        resourceSnapshot(),
 			"gcore_servergroup":     resourceServerGroup(),
+			"gcore_cdn_resource":    resourceCDNResource(),
+			"gcore_cdn_origingroup": resourceCDNOriginGroup(),
+			"gcore_cdn_rule":        resourceCDNRule(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"gcore_project":         dataSourceProject(),
@@ -84,6 +96,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	username := d.Get("user_name").(string)
 	password := d.Get("password").(string)
 	api := d.Get("gcore_api").(string)
+	cdnAPI := d.Get("gcore_cdn_api").(string)
 	platform := d.Get("gcore_platform").(string)
 	clientID := d.Get("gcore_client_id").(string)
 
@@ -101,8 +114,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return nil, diag.FromErr(err)
 	}
 
+	cdnProvider := gcdnProvider.NewClient(cdnAPI, gcdnProvider.WithSignerFunc(func(req *http.Request) error {
+		req.Header.Set("Authorization", "Bearer "+provider.AccessToken())
+		return nil
+	}))
+	cdnService := gcdn.NewService(cdnProvider)
+
 	config := Config{
-		Provider: provider,
+		Provider:  provider,
+		CDNClient: cdnService,
 	}
 
 	return &config, diags
