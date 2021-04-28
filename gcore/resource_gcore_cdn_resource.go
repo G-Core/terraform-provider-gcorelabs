@@ -77,7 +77,6 @@ func resourceCDNResource() *schema.Resource {
 
 func resourceCDNResourceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start CDN Resource creating")
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -95,22 +94,16 @@ func resourceCDNResourceCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] CDN Resource id (%d)", result.ID)
-
 	d.SetId(fmt.Sprintf("%d", result.ID))
-	d.Set("origin_group", result.OriginGroup)
-	d.Set("origin_protocol", result.OriginProtocol)
-	d.Set("status", result.Status)
-	d.Set("active", result.Active)
+	resourceCDNResourceRead(ctx, d, m)
 
-	log.Println("[DEBUG] Finish CDN Resource creating")
-	return diags
+	log.Printf("[DEBUG] Finish CDN Resource creating (id=%d)\n", result.ID)
+	return nil
 }
 
 func resourceCDNResourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceID := d.Id()
 	log.Printf("[DEBUG] Start CDN Resource reading (id=%s)\n", resourceID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -132,13 +125,12 @@ func resourceCDNResourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("active", result.Active)
 
 	log.Println("[DEBUG] Finish CDN Resource reading")
-	return diags
+	return nil
 }
 
 func resourceCDNResourceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceID := d.Id()
 	log.Printf("[DEBUG] Start CDN Resource updating (id=%s)\n", resourceID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -156,26 +148,17 @@ func resourceCDNResourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 		req.SecondaryHostnames = append(req.SecondaryHostnames, hostname.(string))
 	}
 
-	result, err := client.Resources().Update(ctx, id, &req)
-	if err != nil {
+	if _, err := client.Resources().Update(ctx, id, &req); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("cname", result.Cname)
-	d.Set("origin_group", result.OriginGroup)
-	d.Set("origin_protocol", result.OriginProtocol)
-	d.Set("secondary_hostnames", result.SecondaryHostnames)
-	d.Set("status", result.Status)
-	d.Set("active", result.Active)
-
 	log.Println("[DEBUG] Finish CDN Resource updating")
-	return diags
+	return resourceCDNResourceRead(ctx, d, m)
 }
 
 func resourceCDNRresourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceID := d.Id()
 	log.Printf("[DEBUG] Start CDN Resource deleting (id=%s)\n", resourceID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -194,5 +177,5 @@ func resourceCDNRresourceDelete(ctx context.Context, d *schema.ResourceData, m i
 
 	d.SetId("")
 	log.Println("[DEBUG] Finish CDN Resource deleting")
-	return diags
+	return nil
 }

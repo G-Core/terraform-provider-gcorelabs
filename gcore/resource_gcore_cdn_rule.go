@@ -44,7 +44,6 @@ func resourceCDNRule() *schema.Resource {
 
 func resourceCDNRuleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start CDN Rule creating")
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -60,18 +59,16 @@ func resourceCDNRuleCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] CDN Rule id (%d)", result.ID)
-
 	d.SetId(fmt.Sprintf("%d", result.ID))
+	resourceCDNRuleRead(ctx, d, m)
 
-	log.Println("[DEBUG] Finish CDN Rule creating")
-	return diags
+	log.Printf("[DEBUG] Finish CDN Rule creating (id=%d)\n", result.ID)
+	return nil
 }
 
 func resourceCDNRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ruleID := d.Id()
 	log.Printf("[DEBUG] Start CDN Rule reading (id=%s)\n", ruleID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -92,13 +89,12 @@ func resourceCDNRuleRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("rule_type", result.Type)
 
 	log.Println("[DEBUG] Finish CDN Rule reading")
-	return diags
+	return nil
 }
 
 func resourceCDNRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ruleID := d.Id()
 	log.Printf("[DEBUG] Start CDN Rule updating (id=%s)\n", ruleID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -114,19 +110,17 @@ func resourceCDNRuleUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	resourceID := d.Get("resource_id").(int)
 
-	_, err = client.Rules().Update(ctx, int64(resourceID), id, &req)
-	if err != nil {
+	if _, err := client.Rules().Update(ctx, int64(resourceID), id, &req); err != nil {
 		return diag.FromErr(err)
 	}
 
 	log.Println("[DEBUG] Finish CDN Rule updating")
-	return diags
+	return resourceCDNRuleRead(ctx, d, m)
 }
 
 func resourceCDNRuleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ruleID := d.Id()
 	log.Printf("[DEBUG] Start CDN Rule deleting (id=%s)\n", ruleID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -143,5 +137,5 @@ func resourceCDNRuleDelete(ctx context.Context, d *schema.ResourceData, m interf
 
 	d.SetId("")
 	log.Println("[DEBUG] Finish CDN Rule deleting")
-	return diags
+	return nil
 }

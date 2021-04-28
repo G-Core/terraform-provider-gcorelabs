@@ -21,7 +21,7 @@ func TestAccOriginGroup(t *testing.T) {
 	template := func(params *Params) string {
 		return fmt.Sprintf(`
             resource "gcore_cdn_origingroup" "acctest" {
-			  name = terraform_acctest_group
+			  name = "terraform_acctest_group"
 			  use_next = true
 
 			  origin {
@@ -49,8 +49,8 @@ func TestAccOriginGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", "terraform_acctest_group"),
-					resource.TestCheckResourceAttr(fullName, "source", create.Source),
-					resource.TestCheckResourceAttr(fullName, "enabled", create.Enabled),
+					resource.TestCheckResourceAttr(fullName, "origin_source", create.Source),
+					resource.TestCheckResourceAttr(fullName, "origin_enabled", create.Enabled),
 				),
 			},
 			{
@@ -58,8 +58,8 @@ func TestAccOriginGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", "terraform_acctest_group"),
-					resource.TestCheckResourceAttr(fullName, "source", update.Source),
-					resource.TestCheckResourceAttr(fullName, "enabled", update.Enabled),
+					resource.TestCheckResourceAttr(fullName, "origin_source", update.Source),
+					resource.TestCheckResourceAttr(fullName, "origin_enabled", update.Enabled),
 				),
 			},
 		},

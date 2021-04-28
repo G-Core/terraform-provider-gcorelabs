@@ -68,7 +68,6 @@ func resourceCDNOriginGroup() *schema.Resource {
 
 func resourceCDNOriginGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start CDN OriginGroup creating")
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -82,21 +81,16 @@ func resourceCDNOriginGroupCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] CDN OriginGroup id (%d)", result.ID)
-
 	d.SetId(fmt.Sprintf("%d", result.ID))
-	d.Set("name", result.Name)
-	d.Set("use_next", result.UseNext)
-	d.Set("origin", originsToSet(result.Origins))
+	resourceCDNOriginGroupRead(ctx, d, m)
 
-	log.Println("[DEBUG] Finish CDN OriginGroup creating")
-	return diags
+	log.Printf("[DEBUG] Finish CDN OriginGroup creating (id=%d)\n", result.ID)
+	return nil
 }
 
 func resourceCDNOriginGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	groupID := d.Id()
 	log.Printf("[DEBUG] Start CDN OriginGroup reading (id=%s)\n", groupID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -112,16 +106,17 @@ func resourceCDNOriginGroupRead(ctx context.Context, d *schema.ResourceData, m i
 
 	d.Set("name", result.Name)
 	d.Set("use_next", result.UseNext)
-	d.Set("origin", originsToSet(result.Origins))
+	if err := d.Set("origin", originsToSet(result.Origins)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	log.Println("[DEBUG] Finish CDN OriginGroup reading")
-	return diags
+	return nil
 }
 
 func resourceCDNOriginGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	groupID := d.Id()
 	log.Printf("[DEBUG] Start CDN OriginGroup updating (id=%s)\n", groupID)
-	var diags diag.Diagnostics
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -135,22 +130,19 @@ func resourceCDNOriginGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 	req.UseNext = d.Get("use_next").(bool)
 	req.Origins = setToOriginRequests(d.Get("origin").(*schema.Set))
 
-	result, err := client.OriginGroups().Update(ctx, id, &req)
-	if err != nil {
+	if _, err := client.OriginGroups().Update(ctx, id, &req); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("use_next", result.UseNext)
-	d.Set("origin", originsToSet(result.Origins))
-
 	log.Println("[DEBUG] Finish CDN OriginGroup updating")
-	return diags
+
+	return resourceCDNOriginGroupRead(ctx, d, m)
 }
 
 func resourceCDNOriginGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceID := d.Id()
 	log.Printf("[DEBUG] Start CDN OriginGroup deleting (id=%s)\n", resourceID)
-	var diags diag.Diagnostics
+
 	config := m.(*Config)
 	client := config.CDNClient
 
@@ -165,7 +157,7 @@ func resourceCDNOriginGroupDelete(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId("")
 	log.Println("[DEBUG] Finish CDN Resource deleting")
-	return diags
+	return nil
 }
 
 func setToOriginRequests(s *schema.Set) (origins []origingroups.OriginRequest) {
