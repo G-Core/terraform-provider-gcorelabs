@@ -3,6 +3,7 @@ package gcore
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
@@ -14,18 +15,21 @@ func TestAccCDNResource(t *testing.T) {
 		Proto string
 	}
 
+	cname := fmt.Sprintf("cdn.terraform-%d.acctest", time.Now().Nanosecond())
+	secondaryHostname := "secondary-" + cname
+
 	create := Params{"HTTP"}
 	update := Params{"MATCH"}
 
 	template := func(params *Params) string {
 		return fmt.Sprintf(`
 resource "gcore_cdn_resource" "acctest" {
-  cname = "cdn.bookatest.by"
+  cname = "%s"
   origin_group = %s
   origin_protocol = "%s"
-  secondary_hostnames = ["cdn.bookatest.by"]
+  secondary_hostnames = ["%s"]
 }
-		`, GCORE_CDN_ORIGINGROUP_ID, params.Proto)
+		`, cname, GCORE_CDN_ORIGINGROUP_ID, params.Proto, secondaryHostname)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -38,7 +42,7 @@ resource "gcore_cdn_resource" "acctest" {
 				Config: template(&create),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "cname", "cdn.bookatest.by"),
+					resource.TestCheckResourceAttr(fullName, "cname", cname),
 					resource.TestCheckResourceAttr(fullName, "origin_protocol", create.Proto),
 				),
 			},
@@ -46,7 +50,7 @@ resource "gcore_cdn_resource" "acctest" {
 				Config: template(&update),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "name", "cdn.bookatest.by"),
+					resource.TestCheckResourceAttr(fullName, "cname", cname),
 					resource.TestCheckResourceAttr(fullName, "origin_protocol", update.Proto),
 				),
 			},

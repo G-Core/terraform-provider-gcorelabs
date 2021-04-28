@@ -41,10 +41,12 @@ github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6L
 github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbtp2fGCgRFtBroKn4Dk=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/G-Core/gcorelabscloud-go v0.4.6 h1:+pNeTKWuhR52Qavnzt+r6rCDJWumymkJTjKQV4+Tl5Y=
-github.com/G-Core/gcorelabscloud-go v0.4.6/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210426223946-81081aa023e9 h1:tUPZ/aQlRt0+ueYmOwdyLFVtNTZDjUEZJ0BXDTEDOYM=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210426223946-81081aa023e9/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.0.0-20210428205808-ead06d7f4328 h1:+S/e75MTl2Mj0TrpxtGfnblR7Rf9ye1tXTkbsZGQrq4=
+github.com/G-Core/gcorelabscdn-go v0.0.0-20210428205808-ead06d7f4328/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscloud-go v0.4.6 h1:+pNeTKWuhR52Qavnzt+r6rCDJWumymkJTjKQV4+Tl5Y=
+github.com/G-Core/gcorelabscloud-go v0.4.6/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=

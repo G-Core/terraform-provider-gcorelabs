@@ -1,10 +1,12 @@
 package gcore
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccOriginGroup(t *testing.T) {
@@ -32,7 +34,6 @@ func TestAccOriginGroup(t *testing.T) {
 			  origin {
 			    source = "yandex.ru"
 			    enabled = true
-			    backup = true
 			  }
 			}
 		`, params.Source, params.Enabled)
@@ -49,8 +50,14 @@ func TestAccOriginGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", "terraform_acctest_group"),
-					resource.TestCheckResourceAttr(fullName, "origin_source", create.Source),
-					resource.TestCheckResourceAttr(fullName, "origin_enabled", create.Enabled),
+					or(
+						resource.TestCheckResourceAttr(fullName, "origin.0.source", create.Source),
+						resource.TestCheckResourceAttr(fullName, "origin.1.source", create.Source),
+					),
+					or(
+						resource.TestCheckResourceAttr(fullName, "origin.0.enabled", create.Enabled),
+						resource.TestCheckResourceAttr(fullName, "origin.1.enabled", create.Enabled),
+					),
 				),
 			},
 			{
@@ -58,10 +65,33 @@ func TestAccOriginGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", "terraform_acctest_group"),
-					resource.TestCheckResourceAttr(fullName, "origin_source", update.Source),
-					resource.TestCheckResourceAttr(fullName, "origin_enabled", update.Enabled),
+					or(
+						resource.TestCheckResourceAttr(fullName, "origin.0.source", update.Source),
+						resource.TestCheckResourceAttr(fullName, "origin.1.source", update.Source),
+					),
+					or(
+						resource.TestCheckResourceAttr(fullName, "origin.0.enabled", update.Enabled),
+						resource.TestCheckResourceAttr(fullName, "origin.1.enabled", update.Enabled),
+					),
 				),
 			},
 		},
 	})
+}
+
+func or(checks ...resource.TestCheckFunc) resource.TestCheckFunc {
+	return func(t *terraform.State) error {
+		var composed string
+
+		for _, check := range checks {
+			err := check(t)
+			if err == nil {
+				return nil
+			}
+
+			composed += err.Error() + "; "
+		}
+
+		return errors.New(composed)
+	}
 }

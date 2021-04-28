@@ -141,7 +141,6 @@ func resourceCDNResourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 
 	var req resources.UpdateRequest
 	req.Active = d.Get("active").(bool)
-	req.Origin = d.Get("origin").(string)
 	req.OriginGroup = d.Get("origin_group").(int)
 	req.OriginProtocol = resources.Protocol(d.Get("origin_protocol").(string))
 	for _, hostname := range d.Get("secondary_hostnames").(*schema.Set).List() {
@@ -169,9 +168,9 @@ func resourceCDNRresourceDelete(ctx context.Context, d *schema.ResourceData, m i
 
 	var req resources.UpdateRequest
 	req.Active = false
+	req.OriginGroup = d.Get("origin_group").(int)
 
-	_, err = client.Resources().Update(ctx, id, &req)
-	if err != nil {
+	if _, err := client.Resources().Update(ctx, id, &req); err != nil {
 		return diag.FromErr(err)
 	}
 
