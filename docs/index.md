@@ -245,6 +245,7 @@ resource "gcore_lbmember" "lbm2" {
 ### Optional
 
 - **gcore_api** (String) Region API
+- **gcore_cdn_api** (String) CDN API
 - **gcore_client_id** (String) Client id
 - **gcore_platform** (String) Platform ulr is used for generate jwt
 - **password** (String)
