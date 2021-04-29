@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
@@ -41,7 +42,8 @@ const (
 )
 
 type Config struct {
-	Provider *gcorecloud.ProviderClient
+	Provider  *gcorecloud.ProviderClient
+	CDNClient gcdn.ClientService
 }
 
 type Project struct {
