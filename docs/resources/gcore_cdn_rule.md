@@ -69,5 +69,36 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_2" {
 ### Optional
 
 - **id** (String) The ID of this resource.
+- **options** (Block List, Max: 1) Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value. (see [below for nested schema](#nestedblock--options))
+
+<a id="nestedblock--options"></a>
+### Nested Schema for `options`
+
+Optional:
+
+- **edge_cache_settings** (Block List, Max: 1) The cache expiration time for CDN servers. (see [below for nested schema](#nestedblock--options--edge_cache_settings))
+- **host_header** (Block List, Max: 1) Specify the Host header that CDN servers use when request content from an origin server. Your server must be able to process requests with the chosen header. If the option is in NULL state Host Header value is taken from the CNAME field. (see [below for nested schema](#nestedblock--options--host_header))
+
+<a id="nestedblock--options--edge_cache_settings"></a>
+### Nested Schema for `options.edge_cache_settings`
+
+Required:
+
+- **enabled** (Boolean)
+
+Optional:
+
+- **custom_values** (Map of String) Caching time for a response with specific codes. These settings have a higher priority than the value field. Response code ('304', '404' for example). Use 'any' to specify caching time for all response codes. Caching time in seconds ('0s', '600s' for example). Use '0s' to disable caching for a specific response code.
+- **default** (String) Content will be cached according to origin cache settings. The value applies for a response with codes 200, 201, 204, 206, 301, 302, 303, 304, 307, 308 if an origin server does not have caching HTTP headers. Responses with other codes will not be cached.
+- **value** (String) Caching time for a response with codes 200, 206, 301, 302. Responses with codes 4xx, 5xx will not be cached. Use '0s' disable to caching. Use custom_values field to specify a custom caching time for a response with specific codes.
+
+
+<a id="nestedblock--options--host_header"></a>
+### Nested Schema for `options.host_header`
+
+Required:
+
+- **enabled** (Boolean)
+- **value** (String)
 
 

@@ -1,0 +1,125 @@
+package gcore
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+)
+
+func TestAccCDNCert(t *testing.T) {
+	fullName := "gcore_cdn_sslcert.acctest"
+	template := fmt.Sprintf(`
+resource "gcore_cdn_sslcert" "acctest" {
+  name = "Terraform acctest cert"
+  cert = <<EOT%sEOT
+  private_key = <<EOT%sEOT
+}`, cert, privateKey)
+
+	fmt.Println(template)
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheckVars(t, GCORE_USERNAME_VAR, GCORE_PASSWORD_VAR, GCORE_CDN_URL_VAR)
+		},
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: template,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "name", "Terraform acctest cert"),
+					resource.TestCheckResourceAttr(fullName, "has_related_resources", "false"),
+				),
+			},
+		},
+	})
+}
+
+var (
+	cert = `
+-----BEGIN CERTIFICATE-----
+MIIFTDCCAzQCCQCQkJiJe7joYzANBgkqhkiG9w0BAQsFADBoMQswCQYDVQQGEwJS
+QjEOMAwGA1UECAwFTWluc2sxDjAMBgNVBAcMBU1pbnNrMRQwEgYDVQQKDAtHLUNv
+cmUgTGFiczELMAkGA1UECwwCSVQxFjAUBgNVBAMMDWdjb3JlbGFicy5jb20wHhcN
+MjEwNTAzMjIyNjU4WhcNMjIwNTAzMjIyNjU4WjBoMQswCQYDVQQGEwJSQjEOMAwG
+A1UECAwFTWluc2sxDjAMBgNVBAcMBU1pbnNrMRQwEgYDVQQKDAtHLUNvcmUgTGFi
+czELMAkGA1UECwwCSVQxFjAUBgNVBAMMDWdjb3JlbGFicy5jb20wggIiMA0GCSqG
+SIb3DQEBAQUAA4ICDwAwggIKAoICAQCrk5W4sq71mmyLkRqjbwV4MhW8mJEgFH2f
+Mf2NZPrbOLAckVfLj2kER4t/dqtAO0ewSoW9lQKKLLJ+xMTP4DZGuXGwjkChZJVY
+L4cMcnau5iV6JAIbBlbBYZDrhv2d+po7kCB7FMAopnhXuUsuS2MkVE1BCoQwRaGV
+N69tbXJZaZNgdU/R9W4ZSGunYOB/e2JruBPdLqNgOcsNRJkXHQUnqy8TIUs4b+g6
+Y9aqGd7kBRlRnJ54hRea5a36wcEaaUo5bYV2aYXdZXdajMow+LNH5CMyUokyZmel
+8mCN8D7iMzYvQxHJmRJmANvQF//gD/UlEJq/o7vweeD/ct7ARU92AeJa8GGiPICl
+VIzFW1/ccP1kHsmQqyPVF8zrtyWkt5JVGpDUlr3IdA0tn61Xv5Ay2eJEkxM2wMRF
+ymOF2t0Fo4AY180pYsnfvqcvwx6MUhMNlEGW4F4iGDs2nD7JvGbMMkfEjzYIt2on
+ZfugkKQbA7/5bzTXUo/ul7/b9qlDUGSQO5StV5R8nwarCBUoirbGPF/bquhrRes0
+XtXjrf4B34+lDioudWyN5IvioxPtf7DrU97N7AyIXQ/EaXWqMkbeh4nwe0HPwb4G
+ZL/M0NOW832Nq8zp5pgKlbv7CRJcDLrju6CNS4Rdi2OxPxaIwbRhc5VFvlFFQFGf
+TbtyhyZXEQIDAQABMA0GCSqGSIb3DQEBCwUAA4ICAQA2ZeQndSZSgVQdIC/h5hBO
+lNUHAHiYeFRCMhb31VxMGfB7aTgr679diRBNZTU4Q71DHn2z3Vw4tazLevUQN+mZ
+XSRsMIDDjyyCG+9EnXgYQZZeeg0Tf6MMLAuCuHRhh91c8HpDzUpKOAcdIXw0NnYl
+3nR6vWPijjyw35AhB0qqf1W+piJUIbj7NOsqNss4RMndTZ0SHUaVQRe5WiWst1Vd
+dhxXMqlKW9crKX0asAoCPE65QCRuGyGq9Vx85mz5VeTBQ8d2TVvUTWHMj3GpAMtv
+Ftrzm5fah7CQ94N0Mh+xglcRe8n3+bZx88klUqINIRSo77QW/Mc8SMxbZNOh6DtD
+qyJ6fRJFGFaIAzF7C2JJW2iBiO7DZEvFwdIJeiXsl154Y3rocg1rRuB6Gz/VKmp9
+TyB2wL05basHhZ62ymC2iVH2JH0pHakUIga7VleWv/Y7W0Swepe8Rizm6/fchZab
+DAT6fdY5+wzRPtDZPhPzabcesKtq9/xca5RiUZyOhQh8zKyX5InxcuL99qEvf3Vs
+d2XJmuSZGzsVSkbWS1+6g/j9kTU8RyEeFvFN9yEz9182ZtVlKrxBuAkTItFPsDSD
+yQ1+IiJmACbD9NBknrc5xrS7suRfFczBfzlYZjGD97jgevDgglPLxUzsUUGowhmy
+p9wz7rufPw6cvSf55JTGkg==
+-----END CERTIFICATE-----
+`
+	privateKey = `
+-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----
+`
+)

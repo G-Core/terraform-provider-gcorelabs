@@ -45,6 +45,10 @@ github.com/G-Core/gcorelabscdn-go v0.0.0-20210426223946-81081aa023e9 h1:tUPZ/aQl
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210426223946-81081aa023e9/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210428205808-ead06d7f4328 h1:+S/e75MTl2Mj0TrpxtGfnblR7Rf9ye1tXTkbsZGQrq4=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210428205808-ead06d7f4328/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.0.0-20210430142757-fa383988a77d h1:3GIkcH0paQOVDuJdhwOogwMNb2kgYEZ8ValSfUIPiJM=
+github.com/G-Core/gcorelabscdn-go v0.0.0-20210430142757-fa383988a77d/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff h1:kIH66Shwb0Y9kvBgykpzmQn2soiHDTCJ/Rr5cQQ1cOk=
+github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
 github.com/G-Core/gcorelabscloud-go v0.4.6 h1:+pNeTKWuhR52Qavnzt+r6rCDJWumymkJTjKQV4+Tl5Y=
 github.com/G-Core/gcorelabscloud-go v0.4.6/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=

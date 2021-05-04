@@ -33,6 +33,66 @@ func resourceCDNRule() *schema.Resource {
 				Required:    true,
 				Description: "Type of rule. The rule is applied if the requested URI matches the rule pattern. It has two possible values: Type 0 — RegEx. Must start with '^/' or '/'. Type 1 — RegEx. Legacy type. Note that for this rule type we automatically add / to each rule pattern before your regular expression. Please use Type 0.",
 			},
+			"options": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"edge_cache_settings": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "The cache expiration time for CDN servers.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Caching time for a response with codes 200, 206, 301, 302. Responses with codes 4xx, 5xx will not be cached. Use '0s' disable to caching. Use custom_values field to specify a custom caching time for a response with specific codes.",
+									},
+									"default": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Content will be cached according to origin cache settings. The value applies for a response with codes 200, 201, 204, 206, 301, 302, 303, 304, 307, 308 if an origin server does not have caching HTTP headers. Responses with other codes will not be cached.",
+									},
+									"custom_values": {
+										Type:        schema.TypeMap,
+										Optional:    true,
+										Elem:        schema.TypeString,
+										Description: "Caching time for a response with specific codes. These settings have a higher priority than the value field. Response code ('304', '404' for example). Use 'any' to specify caching time for all response codes. Caching time in seconds ('0s', '600s' for example). Use '0s' to disable caching for a specific response code.",
+									},
+								},
+							},
+						},
+						"host_header": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specify the Host header that CDN servers use when request content from an origin server. Your server must be able to process requests with the chosen header. If the option is in NULL state Host Header value is taken from the CNAME field.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceCDNRuleCreate,
 		ReadContext:   resourceCDNRuleRead,
@@ -87,6 +147,9 @@ func resourceCDNRuleRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("name", result.Name)
 	d.Set("rule", result.Pattern)
 	d.Set("rule_type", result.Type)
+	if err := d.Set("options", optionsToList(result.Options)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	log.Println("[DEBUG] Finish CDN Rule reading")
 	return nil
@@ -107,6 +170,7 @@ func resourceCDNRuleUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	req.Name = d.Get("name").(string)
 	req.Rule = d.Get("rule").(string)
 	req.RuleType = d.Get("rule_type").(int)
+	req.Options = listToOptions(d.Get("options").([]interface{}))
 
 	resourceID := d.Get("resource_id").(int)
 
