@@ -13,10 +13,25 @@ func TestAccCDNRule(t *testing.T) {
 	type Params struct {
 		Name    string
 		Pattern string
+		RawPart string
 	}
 
-	create := Params{"All images", "/folder/images/*.png"}
-	update := Params{"All scripts", "/folder/scripts/*.js"}
+	create := Params{
+		Name:    "All images",
+		Pattern: "/folder/images/*.png",
+	}
+	update := Params{
+		Name:    "All scripts",
+		Pattern: "/folder/scripts/*.js",
+		RawPart: `
+  options {
+    host_header {
+      enabled = true
+      value = "rule-host.com"
+    }
+  }
+		`,
+	}
 
 	template := func(params *Params) string {
 		return fmt.Sprintf(`
@@ -25,8 +40,9 @@ resource "gcore_cdn_rule" "acctest" {
   name = "%s"
   rule = "%s"
   rule_type = 0
+  %s
 }
-		`, GCORE_CDN_RESOURCE_ID, params.Name, params.Pattern)
+		`, GCORE_CDN_RESOURCE_ID, params.Name, params.Pattern, params.RawPart)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -49,6 +65,7 @@ resource "gcore_cdn_rule" "acctest" {
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", update.Name),
 					resource.TestCheckResourceAttr(fullName, "rule", update.Pattern),
+					resource.TestCheckResourceAttr(fullName, "options.0.host_header.0.value", "rule-host.com"),
 				),
 			},
 		},
