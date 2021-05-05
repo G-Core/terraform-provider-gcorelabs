@@ -284,6 +284,7 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 			r["description"] = *sgr.Description
 		}
 
+		r["remote_ip_prefix"] = ""
 		if sgr.RemoteIPPrefix != nil {
 			r["remote_ip_prefix"] = *sgr.RemoteIPPrefix
 		}

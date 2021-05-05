@@ -181,6 +181,11 @@ func dataSourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m 
 			r["description"] = *sgr.Description
 		}
 
+		r["remote_ip_prefix"] = ""
+		if sgr.RemoteIPPrefix != nil {
+			r["remote_ip_prefix"] = *sgr.RemoteIPPrefix
+		}
+
 		r["updated_at"] = sgr.UpdatedAt.String()
 		r["created_at"] = sgr.CreatedAt.String()
 
