@@ -70,6 +70,7 @@ func Provider() *schema.Provider {
 			"gcore_cdn_resource":    resourceCDNResource(),
 			"gcore_cdn_origingroup": resourceCDNOriginGroup(),
 			"gcore_cdn_rule":        resourceCDNRule(),
+			"gcore_cdn_sslcert":     resourceCDNCert(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"gcore_project":         dataSourceProject(),
