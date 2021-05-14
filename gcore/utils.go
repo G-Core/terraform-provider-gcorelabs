@@ -8,10 +8,12 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
 
+	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
@@ -42,8 +44,9 @@ const (
 )
 
 type Config struct {
-	Provider  *gcorecloud.ProviderClient
-	CDNClient gcdn.ClientService
+	Provider      *gcorecloud.ProviderClient
+	CDNClient     gcdn.ClientService
+	StorageClient *storageSDK.SDK
 }
 
 type Project struct {
@@ -584,4 +587,17 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 	}
 	err = json.Unmarshal(data, &newMap)
 	return
+}
+
+// ExtractHosAndPath from url
+func ExtractHosAndPath(uri string) (host, path string, err error) {
+	if uri == "" {
+		return "", "", fmt.Errorf("empty uri")
+	}
+	strings.Split(uri, "://")
+	pUrl, err := url.Parse(uri)
+	if err != nil {
+		return "", "", fmt.Errorf("url parse: %w", err)
+	}
+	return pUrl.Scheme + "://" + pUrl.Host, pUrl.Path, nil
 }
