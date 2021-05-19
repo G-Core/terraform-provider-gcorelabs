@@ -3,11 +3,11 @@ package gcore
 import (
 	"context"
 	"fmt"
-	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/storage"
 	"log"
 	"strconv"
 	"strings"
 
+	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/storage"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -29,7 +29,8 @@ func resourceStorageResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			StorageSchemaId: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "A id of new storage resource.",
 			},
 			StorageSchemaName: {
@@ -139,11 +140,11 @@ func resourceStorageResourceRead(ctx context.Context, d *schema.ResourceData, m 
 
 	opts := []func(opt *storage.StorageListHTTPV2Params){
 		func(opt *storage.StorageListHTTPV2Params) { opt.Context = ctx },
-		func(opt *storage.StorageListHTTPV2Params) { *opt.ID = resourceId },
+		func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId },
 	}
 	result, err := client.StoragesList(opts...)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("storages list: %w", err))
 	}
 	if len(result) != 1 {
 		return diag.Errorf("get storage: wrong length of search result (%d), want 1", len(result))
