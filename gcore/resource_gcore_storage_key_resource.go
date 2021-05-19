@@ -3,11 +3,11 @@ package gcore
 import (
 	"context"
 	"fmt"
-	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/key"
 	"log"
 	"strconv"
 	"strings"
 
+	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/key"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -24,11 +24,13 @@ func resourceStorageKeyResource() *schema.Resource {
 			StorageKeySchemaName: {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "A name of new storage key resource.",
 			},
 			StorageKeySchemaKey: {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "A body of of new storage key resource.",
 			},
 		},
@@ -79,11 +81,11 @@ func resourceStorageKeyResourceRead(ctx context.Context, d *schema.ResourceData,
 
 	opts := []func(opt *key.KeyListHTTPV2Params){
 		func(opt *key.KeyListHTTPV2Params) { opt.Context = ctx },
-		func(opt *key.KeyListHTTPV2Params) { *opt.ID = resourceId },
+		func(opt *key.KeyListHTTPV2Params) { opt.ID = &resourceId },
 	}
 	name := strings.TrimSpace(d.Get(StorageKeySchemaName).(string))
 	if name != "" {
-		opts = append(opts, func(opt *key.KeyListHTTPV2Params) { *opt.Name = name })
+		opts = append(opts, func(opt *key.KeyListHTTPV2Params) { opt.Name = &name })
 	}
 	result, err := client.KeysList(opts...)
 	if err != nil {
