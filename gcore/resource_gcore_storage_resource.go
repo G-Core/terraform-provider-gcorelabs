@@ -155,6 +155,8 @@ func resourceStorageResourceRead(ctx context.Context, d *schema.ResourceData, m 
 	if st.Credentials != nil {
 		sftpPass = st.Credentials.SftpPassword
 	}
+	_ = d.Set(StorageSchemaServerAlias, st.ServerAlias)
+	_ = d.Set(StorageSchemaExpires, st.Expires)
 	_ = d.Set(StorageSchemaId, st.ID)
 	_ = d.Set(StorageSchemaName, st.Name)
 	_ = d.Set(StorageSchemaType, st.Type)

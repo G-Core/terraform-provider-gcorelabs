@@ -24,6 +24,7 @@ const (
 	GCORE_USERNAME_VAR           VarName = "GCORE_USERNAME"
 	GCORE_PASSWORD_VAR           VarName = "GCORE_PASSWORD"
 	GCORE_CDN_URL_VAR            VarName = "GCORE_CDN_URL"
+	GCORE_STORAGE_URL_VAR        VarName = "GCORE_STORAGE_API"
 	GCORE_IMAGE_VAR              VarName = "GCORE_IMAGE"
 	GCORE_SECGROUP_VAR           VarName = "GCORE_SECGROUP"
 	GCORE_EXT_NET_VAR            VarName = "GCORE_EXT_NET"
@@ -56,6 +57,7 @@ var (
 	GCORE_VOLUME_ID          = getEnv(GCORE_VOLUME_ID_VAR)
 	GCORE_CDN_ORIGINGROUP_ID = getEnv(GCORE_CDN_ORIGINGROUP_ID_VAR)
 	GCORE_CDN_RESOURCE_ID    = getEnv(GCORE_CDN_RESOURCE_ID_VAR)
+	GCORE_STORAGE_API        = getEnv(GCORE_STORAGE_URL_VAR)
 )
 
 var varsMap = map[VarName]string{
@@ -73,6 +75,7 @@ var varsMap = map[VarName]string{
 	GCORE_VOLUME_ID_VAR:          GCORE_VOLUME_ID,
 	GCORE_CDN_ORIGINGROUP_ID_VAR: GCORE_CDN_ORIGINGROUP_ID,
 	GCORE_CDN_RESOURCE_ID_VAR:    GCORE_CDN_RESOURCE_ID,
+	GCORE_STORAGE_URL_VAR:        GCORE_STORAGE_API,
 }
 
 func testAccPreCheckVars(t *testing.T, vars ...VarName) {
