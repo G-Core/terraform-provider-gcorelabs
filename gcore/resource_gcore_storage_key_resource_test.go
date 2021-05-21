@@ -8,25 +8,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccStorageKey(t *testing.T) {
+func TestAccStorageKeyResource(t *testing.T) {
 
 	random := time.Now().Nanosecond()
 	name := fmt.Sprintf("terraform_test_key_%d", random)
-	resourceName := fmt.Sprintf("gcore_storage_key.terraform_test_%d_s3", random)
-	key := `ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSU
-GPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3
-Pbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XA
-t3FaoJoAsncM1Q9x5+3V0Ww68/eIFmb1zuUFljQJKprrX88XypNDvjYNby6vw/Pb0rwert/En
-mZ+AW4OZPnTPI89ZPmVMLuayrD2cE86Z/il8b+gw3r3+1nKatmIkjn2so1d01QraTlMqVSsbx
-NrRFi9wrf+M7Q== schacon@mylaptop.local`
+	resourceName := fmt.Sprintf("gcore_storage_key.%s", name)
+	key := `ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSUGPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3Pbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XAt3FaoJoAsncM1Q9x5+3V0Ww68/eIFmb1zuUFljQJKprrX88XypNDvjYNby6vw/Pb0rwert/EnmZ+AW4OZPnTPI89ZPmVMLuayrD2cE86Z/il8b+gw3r3+1nKatmIkjn2so1d01QraTlMqVSsbxNrRFi9wrf+M7Q== schacon@mylaptop.local`
 
 	templateCreate := func() string {
 		return fmt.Sprintf(`
-resource "gcore_storage_key" "terraform_test_key_%d" {
+resource "gcore_storage_key" "%s" {
   name = "%s"
   key = "%s"
 }
-		`, random, name, key)
+		`, name, name, key)
 	}
 
 	resource.Test(t, resource.TestCase{

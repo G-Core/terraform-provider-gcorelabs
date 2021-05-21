@@ -15,10 +15,10 @@ import (
 const (
 	StorageKeySchemaKey  = "key"
 	StorageKeySchemaName = "name"
-	StorageKeySchemaId   = "id"
+	StorageKeySchemaId   = "key_id"
 )
 
-func resourceStorageKeyResource() *schema.Resource {
+func resourceStorageKey() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			StorageKeySchemaName: {
@@ -33,15 +33,22 @@ func resourceStorageKeyResource() *schema.Resource {
 				ForceNew:    true,
 				Description: "A body of of new storage key resource.",
 			},
+			StorageKeySchemaId: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "An id of of new storage key resource.",
+			},
 		},
-		CreateContext: resourceStorageKeyResourceCreate,
-		ReadContext:   resourceStorageKeyResourceRead,
-		DeleteContext: resourceStorageKeyResourceDelete,
+		CreateContext: resourceStorageKeyCreate,
+		ReadContext:   resourceStorageKeyRead,
+		DeleteContext: resourceStorageKeyDelete,
 		Description:   "Represent storage key resource.",
 	}
 }
 
-func resourceStorageKeyResourceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (dErr diag.Diagnostics) {
+func resourceStorageKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (dErr diag.Diagnostics) {
 	id := new(int)
 	log.Println("[DEBUG] Start Storage Key Resource creating")
 	defer log.Printf("[DEBUG] Finish Storage Key Resource creating (id=%d)\n", *id)
@@ -64,11 +71,11 @@ func resourceStorageKeyResourceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("create storage key: %v", err))
 	}
 	d.SetId(fmt.Sprintf("%d", result.ID))
-	return resourceStorageKeyResourceRead(ctx, d, m)
+	return resourceStorageKeyRead(ctx, d, m)
 
 }
 
-func resourceStorageKeyResourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStorageKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceId := storageKeyResourceID(d)
 	log.Printf("[DEBUG] Start Storage Key Resource reading (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Key Resource reading")
@@ -102,7 +109,7 @@ func resourceStorageKeyResourceRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceStorageKeyResourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStorageKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceId := storageKeyResourceID(d)
 	log.Printf("[DEBUG] Start Storage Key Resource deleting (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Key Resource deleting")
@@ -134,7 +141,7 @@ func resourceStorageKeyResourceDelete(ctx context.Context, d *schema.ResourceDat
 func storageKeyResourceID(d *schema.ResourceData) string {
 	resourceID := d.Id()
 	if resourceID == "" {
-		resourceID = strings.TrimSpace(d.Get(StorageKeySchemaId).(string))
+		resourceID = fmt.Sprint(d.Get(StorageKeySchemaId).(int))
 	}
 	return resourceID
 }
