@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/storage"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -17,36 +18,76 @@ const (
 	StorageSchemaLocation             = "location"
 	StorageSchemaName                 = "name"
 	StorageSchemaType                 = "type"
-	StorageSchemaId                   = "id"
+	StorageSchemaId                   = "storage_id"
+	StorageSchemaClientId             = "client_id"
 	StorageSchemaSftpPassword         = "sftp_password"
 	StorageSchemaKeyId                = "link_key_id"
 	StorageSchemaExpires              = "expires"
 	StorageSchemaServerAlias          = "server_alias"
 )
 
-func resourceStorageResource() *schema.Resource {
+func resourceStorage() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			StorageSchemaId: {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "A id of new storage resource.",
+				Description: "An id of new storage resource.",
+			},
+			StorageSchemaClientId: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "An client id of new storage resource.",
 			},
 			StorageSchemaName: {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "A name of new storage resource.",
 			},
-			StorageSchemaType: {
+			StorageSchemaServerAlias: {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "A type of new storage resource.",
+				Optional:    true,
+				Description: "An alias of storage resource.",
+			},
+			StorageSchemaExpires: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A expires date of storage resource.",
+			},
+			StorageSchemaType: {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				ValidateDiagFunc: func(v interface{}, path cty.Path) diag.Diagnostics {
+					val := v.(string)
+					allowed := []string{"sftp", "s3"}
+					for _, el := range allowed {
+						if el == val {
+							return nil
+						}
+					}
+					return diag.Errorf(`must be one of %+v`, allowed)
+				},
+				Description: "A type of new storage resource. One of (sftp, s3)",
 			},
 			StorageSchemaLocation: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "A location of new storage resource.",
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				ValidateDiagFunc: func(v interface{}, path cty.Path) diag.Diagnostics {
+					val := v.(string)
+					allowed := []string{"s-ed1", "s-darz1", "s-ws1", "ams", "sin", "fra", "mia"}
+					for _, el := range allowed {
+						if el == val {
+							return nil
+						}
+					}
+					return diag.Errorf(`must be one of %+v`, allowed)
+				},
+				Description: "A location of new storage resource. One of (s-ed1, s-darz1, s-ws1, ams, sin, fra, mia)",
 			},
 			StorageSchemaSftpPassword: {
 				Type:        schema.TypeString,
@@ -64,15 +105,15 @@ func resourceStorageResource() *schema.Resource {
 				Description: "An key id to link with new storage resource.",
 			},
 		},
-		CreateContext: resourceStorageResourceCreate,
-		ReadContext:   resourceStorageResourceRead,
-		UpdateContext: resourceStorageResourceUpdate,
-		DeleteContext: resourceStorageResourceDelete,
+		CreateContext: resourceStorageCreate,
+		ReadContext:   resourceStorageRead,
+		UpdateContext: resourceStorageUpdate,
+		DeleteContext: resourceStorageDelete,
 		Description:   "Represent storage resource.",
 	}
 }
 
-func resourceStorageResourceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (dErr diag.Diagnostics) {
+func resourceStorageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (dErr diag.Diagnostics) {
 	id := new(int)
 	log.Println("[DEBUG] Start Storage Resource creating")
 	defer log.Printf("[DEBUG] Finish Storage Resource creating (id=%d)\n", *id)
@@ -107,7 +148,7 @@ func resourceStorageResourceCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 	d.SetId(fmt.Sprintf("%d", result.ID))
 	defer func() {
-		dErr = resourceStorageResourceRead(ctx, d, m)
+		dErr = resourceStorageRead(ctx, d, m)
 	}()
 	*id = int(result.ID)
 
@@ -127,7 +168,7 @@ func resourceStorageResourceCreate(ctx context.Context, d *schema.ResourceData, 
 	return dErr
 }
 
-func resourceStorageResourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStorageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceId := storageResourceID(d)
 	log.Printf("[DEBUG] Start Storage Resource reading (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Resource reading")
@@ -155,10 +196,17 @@ func resourceStorageResourceRead(ctx context.Context, d *schema.ResourceData, m 
 	if st.Credentials != nil {
 		sftpPass = st.Credentials.SftpPassword
 	}
+	nameParts := strings.Split(st.Name, "-")
+	if len(nameParts) > 1 {
+		clientID, _ := strconv.ParseInt(nameParts[0], 10, 64)
+		_ = d.Set(StorageSchemaClientId, int(clientID))
+		_ = d.Set(StorageSchemaName, strings.Join(nameParts[1:], "-"))
+	} else {
+		_ = d.Set(StorageSchemaName, st.Name)
+	}
 	_ = d.Set(StorageSchemaServerAlias, st.ServerAlias)
 	_ = d.Set(StorageSchemaExpires, st.Expires)
 	_ = d.Set(StorageSchemaId, st.ID)
-	_ = d.Set(StorageSchemaName, st.Name)
 	_ = d.Set(StorageSchemaType, st.Type)
 	_ = d.Set(StorageSchemaLocation, st.Location)
 	_ = d.Set(StorageSchemaSftpPassword, sftpPass)
@@ -166,7 +214,7 @@ func resourceStorageResourceRead(ctx context.Context, d *schema.ResourceData, m 
 	return nil
 }
 
-func resourceStorageResourceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStorageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceId := storageResourceID(d)
 	log.Printf("[DEBUG] Start Storage Resource updating (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Resource updating")
@@ -198,10 +246,10 @@ func resourceStorageResourceUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf("update storage: %w", err))
 	}
 
-	return resourceCDNResourceRead(ctx, d, m)
+	return resourceStorageRead(ctx, d, m)
 }
 
-func resourceStorageResourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStorageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceId := storageResourceID(d)
 	log.Printf("[DEBUG] Start Storage Resource deleting (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Resource deleting")
@@ -233,7 +281,7 @@ func resourceStorageResourceDelete(ctx context.Context, d *schema.ResourceData, 
 func storageResourceID(d *schema.ResourceData) string {
 	resourceID := d.Id()
 	if resourceID == "" {
-		resourceID = strings.TrimSpace(d.Get(StorageSchemaId).(string))
+		resourceID = fmt.Sprint(d.Get(StorageSchemaId).(int))
 	}
 	return resourceID
 }
