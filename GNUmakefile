@@ -34,6 +34,10 @@ vet:
 		exit 1; \
 	fi
 
+doc-generate:
+	go install -mod=mod github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+	tfplugindocs
+
 fmt:
 	gofmt -w $(GOFMT_FILES)
 
