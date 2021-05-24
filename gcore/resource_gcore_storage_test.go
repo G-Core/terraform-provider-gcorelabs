@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccStorageResource(t *testing.T) {
+func TestAccStorage(t *testing.T) {
 
 	random := time.Now().Nanosecond()
 	alias := fmt.Sprintf("terraform_test_alias_%d_s3", random)
