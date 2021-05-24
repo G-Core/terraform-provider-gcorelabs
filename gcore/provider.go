@@ -2,8 +2,10 @@ package gcore
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
+	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcdnProvider "github.com/G-Core/gcorelabscdn-go/gcore/provider"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
@@ -43,6 +45,12 @@ func Provider() *schema.Provider {
 				Description: "CDN API",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", ""),
 			},
+			"gcore_storage_api": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Storage API",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_STORAGE_API", ""),
+			},
 			"gcore_client_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -67,6 +75,8 @@ func Provider() *schema.Provider {
 			"gcore_baremetal":       resourceBmInstance(),
 			"gcore_snapshot":        resourceSnapshot(),
 			"gcore_servergroup":     resourceServerGroup(),
+			"gcore_storage":         resourceStorage(),
+			"gcore_storage_key":     resourceStorageKey(),
 			"gcore_cdn_resource":    resourceCDNResource(),
 			"gcore_cdn_origingroup": resourceCDNOriginGroup(),
 			"gcore_cdn_rule":        resourceCDNRule(),
@@ -98,6 +108,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	password := d.Get("password").(string)
 	api := d.Get("gcore_api").(string)
 	cdnAPI := d.Get("gcore_cdn_api").(string)
+	storageAPI := d.Get("gcore_storage_api").(string)
 	platform := d.Get("gcore_platform").(string)
 	clientID := d.Get("gcore_client_id").(string)
 
@@ -121,9 +132,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}))
 	cdnService := gcdn.NewService(cdnProvider)
 
+	stHost, stPath, err := ExtractHosAndPath(storageAPI)
+	if err != nil {
+		return nil, diag.FromErr(fmt.Errorf("storage api url: %w", err))
+	}
+
 	config := Config{
-		Provider:  provider,
-		CDNClient: cdnService,
+		Provider:      provider,
+		CDNClient:     cdnService,
+		StorageClient: storageSDK.NewSDK(stHost, stPath, storageSDK.WithBearerAuth(provider.AccessToken)),
 	}
 
 	return &config, diags

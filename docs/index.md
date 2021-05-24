@@ -248,5 +248,6 @@ resource "gcore_lbmember" "lbm2" {
 - **gcore_cdn_api** (String) CDN API
 - **gcore_client_id** (String) Client id
 - **gcore_platform** (String) Platform ulr is used for generate jwt
+- **gcore_storage_api** (String) Storage API
 - **password** (String)
 - **user_name** (String)
