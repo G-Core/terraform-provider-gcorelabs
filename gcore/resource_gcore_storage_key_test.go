@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccStorageKeyResource(t *testing.T) {
+func TestAccStorageKey(t *testing.T) {
 
 	random := time.Now().Nanosecond()
 	name := fmt.Sprintf("terraform_test_key_%d", random)
