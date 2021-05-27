@@ -251,5 +251,5 @@ resource "gcore_lbmember" "lbm2" {
 - **gcore_storage_api** (String) Storage API
 - **ignore_creds_auth_error** (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
 - **password** (String)
-- **permanent_api_token** (String) A permanent API-token. Implemented for Storage Terraform Resource only. https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens
+- **permanent_api_token** (String, Sensitive) A permanent API-token. Implemented for Storage Terraform Resource only. https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens
 - **user_name** (String)
