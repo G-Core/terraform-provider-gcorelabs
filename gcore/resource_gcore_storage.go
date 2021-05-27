@@ -15,13 +15,15 @@ import (
 
 const (
 	StorageSchemaGenerateSftpPassword = "generate_sftp_password"
+	StorageSchemaGenerateS3AccessKey  = "generate_s3_access_key"
+	StorageSchemaGenerateS3SecretKey  = "generate_s3_secret_key"
 	StorageSchemaLocation             = "location"
 	StorageSchemaName                 = "name"
 	StorageSchemaType                 = "type"
 	StorageSchemaId                   = "storage_id"
 	StorageSchemaClientId             = "client_id"
 	StorageSchemaSftpPassword         = "sftp_password"
-	StorageSchemaKeyId                = "link_key_id"
+	StorageSchemaKeyId                = "ssh_key_id"
 	StorageSchemaExpires              = "expires"
 	StorageSchemaServerAlias          = "server_alias"
 )
@@ -94,6 +96,18 @@ func resourceStorage() *schema.Resource {
 				Optional:    true,
 				Description: "A sftp password for new storage resource.",
 			},
+			StorageSchemaGenerateS3AccessKey: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "A s3 access key for new storage resource.",
+			},
+			StorageSchemaGenerateS3SecretKey: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "A s3 secret key for new storage resource.",
+			},
 			StorageSchemaGenerateSftpPassword: {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -102,14 +116,14 @@ func resourceStorage() *schema.Resource {
 			StorageSchemaKeyId: {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "An key id to link with new storage resource.",
+				Description: "An ssh key id to link with new sftp storage resource only. https://storage.gcorelabs.com/ssh-key/list",
 			},
 		},
 		CreateContext: resourceStorageCreate,
 		ReadContext:   resourceStorageRead,
 		UpdateContext: resourceStorageUpdate,
 		DeleteContext: resourceStorageDelete,
-		Description:   "Represent storage resource.",
+		Description:   "Represent storage resource. https://storage.gcorelabs.com/storage/list",
 	}
 }
 
@@ -151,6 +165,15 @@ func resourceStorageCreate(ctx context.Context, d *schema.ResourceData, m interf
 		dErr = resourceStorageRead(ctx, d, m)
 	}()
 	*id = int(result.ID)
+	if result.Credentials.SftpPassword != "" {
+		_ = d.Set(StorageSchemaSftpPassword, result.Credentials.SftpPassword)
+	}
+	if result.Credentials.S3.AccessKey != "" {
+		_ = d.Set(StorageSchemaGenerateS3AccessKey, result.Credentials.S3.AccessKey)
+	}
+	if result.Credentials.S3.SecretKey != "" {
+		_ = d.Set(StorageSchemaGenerateS3SecretKey, result.Credentials.S3.SecretKey)
+	}
 
 	keyId := d.Get(StorageSchemaKeyId).(int)
 	if keyId == 0 {
@@ -192,10 +215,6 @@ func resourceStorageRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 	st := result[0]
 
-	sftpPass := ""
-	if st.Credentials != nil {
-		sftpPass = st.Credentials.SftpPassword
-	}
 	nameParts := strings.Split(st.Name, "-")
 	if len(nameParts) > 1 {
 		clientID, _ := strconv.ParseInt(nameParts[0], 10, 64)
@@ -209,7 +228,6 @@ func resourceStorageRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set(StorageSchemaId, st.ID)
 	_ = d.Set(StorageSchemaType, st.Type)
 	_ = d.Set(StorageSchemaLocation, st.Location)
-	_ = d.Set(StorageSchemaSftpPassword, sftpPass)
 
 	return nil
 }

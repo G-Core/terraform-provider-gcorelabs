@@ -3,12 +3,12 @@
 page_title: "gcore_storage_key Resource - terraform-provider-gcorelabs"
 subcategory: ""
 description: |-
-  Represent storage key resource.
+  Represent storage key resource. https://storage.gcorelabs.com/ssh-key/list
 ---
 
 # gcore_storage_key (Resource)
 
-Represent storage key resource.
+Represent storage key resource. https://storage.gcorelabs.com/ssh-key/list
 
 ## Example Usage
 

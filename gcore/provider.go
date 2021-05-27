@@ -3,6 +3,7 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
@@ -12,6 +13,11 @@ import (
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+const (
+	ProviderOptPermanentToken   = "permanent_api_token"
+	ProviderOptSkipCredsAuthErr = "ignore_creds_auth_error"
 )
 
 func Provider() *schema.Provider {
@@ -26,6 +32,19 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PASSWORD", ""),
+			},
+			ProviderOptPermanentToken: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "A permanent API-token. Implemented for Storage Terraform Resource only. https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", ""),
+			},
+			ProviderOptSkipCredsAuthErr: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Should be set to true when you are gonna to use storage resource with permanent API-token only.",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", ""),
 			},
 			"gcore_platform": &schema.Schema{
 				Type:        schema.TypeString,
@@ -106,6 +125,7 @@ func Provider() *schema.Provider {
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	username := d.Get("user_name").(string)
 	password := d.Get("password").(string)
+	permanentToken := d.Get(ProviderOptPermanentToken).(string)
 	api := d.Get("gcore_api").(string)
 	cdnAPI := d.Get("gcore_cdn_api").(string)
 	storageAPI := d.Get("gcore_storage_api").(string)
@@ -122,8 +142,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		AllowReauth: true,
 		ClientID:    clientID,
 	})
+
+	skipAuthErr, ok := d.GetOk(ProviderOptSkipCredsAuthErr)
+	if err != nil && !(ok == true || skipAuthErr.(bool) == true) {
+		return nil, diag.FromErr(fmt.Errorf("init auth client: %w", err))
+
+	}
 	if err != nil {
-		return nil, diag.FromErr(err)
+		provider = &gcorecloud.ProviderClient{}
+		log.Printf("[WARN] init auth client: %s\n", err)
 	}
 
 	cdnProvider := gcdnProvider.NewClient(cdnAPI, gcdnProvider.WithSignerFunc(func(req *http.Request) error {
@@ -138,9 +165,11 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}
 
 	config := Config{
-		Provider:      provider,
-		CDNClient:     cdnService,
-		StorageClient: storageSDK.NewSDK(stHost, stPath, storageSDK.WithBearerAuth(provider.AccessToken)),
+		Provider:  provider,
+		CDNClient: cdnService,
+		StorageClient: storageSDK.NewSDK(stHost, stPath,
+			storageSDK.WithBearerAuth(provider.AccessToken),
+			storageSDK.WithPermanentTokenAuth(func() string { return permanentToken })),
 	}
 
 	return &config, diags

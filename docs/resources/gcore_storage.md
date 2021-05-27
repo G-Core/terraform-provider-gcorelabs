@@ -3,12 +3,12 @@
 page_title: "gcore_storage Resource - terraform-provider-gcorelabs"
 subcategory: ""
 description: |-
-  Represent storage resource.
+  Represent storage resource. https://storage.gcorelabs.com/storage/list
 ---
 
 # gcore_storage (Resource)
 
-Represent storage resource.
+Represent storage resource. https://storage.gcorelabs.com/storage/list
 
 ## Example Usage
 
@@ -16,15 +16,17 @@ Represent storage resource.
 provider gcore {
   user_name = "test"
   password = "test"
+  permanent_api_token="123$321" // https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens
+  ignore_creds_auth_error=true // if you want to manage storage resource only and provide permanent_api_token without user_name & password
   gcore_platform = "https://api.gcdn.co"
   gcore_storage_api = "https://storage.gcorelabs.com/api"
 }
 
-resource "gcore_storage" "tf_example_s3" {
+resource "gcore_storage" "tf_example_sftp" {
   name = "tf_example"
-  location = "s-ed1"
-  type = "s3"
-  link_key_id = 199
+  location = "mia"
+  type = "sftp"
+  ssh_key_id = 199 // can be used for sftp type only
 }
 ```
 
@@ -41,11 +43,13 @@ resource "gcore_storage" "tf_example_s3" {
 
 - **client_id** (Number) An client id of new storage resource.
 - **expires** (String) A expires date of storage resource.
+- **generate_s3_access_key** (String) A s3 access key for new storage resource.
+- **generate_s3_secret_key** (String) A s3 secret key for new storage resource.
 - **generate_sftp_password** (Boolean) An auto generated sftp password for new storage resource.
 - **id** (String) The ID of this resource.
-- **link_key_id** (Number) An key id to link with new storage resource.
 - **server_alias** (String) An alias of storage resource.
 - **sftp_password** (String) A sftp password for new storage resource.
+- **ssh_key_id** (Number) An ssh key id to link with new sftp storage resource only. https://storage.gcorelabs.com/ssh-key/list
 - **storage_id** (Number) An id of new storage resource.
 
 

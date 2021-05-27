@@ -44,7 +44,7 @@ func resourceStorageKey() *schema.Resource {
 		CreateContext: resourceStorageKeyCreate,
 		ReadContext:   resourceStorageKeyRead,
 		DeleteContext: resourceStorageKeyDelete,
-		Description:   "Represent storage key resource.",
+		Description:   "Represent storage key resource. https://storage.gcorelabs.com/ssh-key/list",
 	}
 }
 
