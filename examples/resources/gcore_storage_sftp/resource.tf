@@ -7,9 +7,8 @@ provider gcore {
   gcore_storage_api = "https://storage.gcorelabs.com/api"
 }
 
-resource "gcore_storage" "tf_example_sftp" {
-  name = "tf_example"
+resource "gcore_storage_sftp" "example_sftp" {
+  name = "example"
   location = "mia"
-  type = "sftp"
-  ssh_key_id = 199 // can be used for sftp type only
+  ssh_key_id = [199]
 }
