@@ -18,7 +18,7 @@ const (
 	StorageKeySchemaId   = "key_id"
 )
 
-func resourceStorageKey() *schema.Resource {
+func resourceStorageSFTPKey() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			StorageKeySchemaName: {
@@ -41,14 +41,14 @@ func resourceStorageKey() *schema.Resource {
 				Description: "An id of of new storage key resource.",
 			},
 		},
-		CreateContext: resourceStorageKeyCreate,
-		ReadContext:   resourceStorageKeyRead,
-		DeleteContext: resourceStorageKeyDelete,
+		CreateContext: resourceStorageSFTPKeyCreate,
+		ReadContext:   resourceStorageSFTPKeyRead,
+		DeleteContext: resourceStorageSFTPKeyDelete,
 		Description:   "Represent storage key resource. https://storage.gcorelabs.com/ssh-key/list",
 	}
 }
 
-func resourceStorageKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (dErr diag.Diagnostics) {
+func resourceStorageSFTPKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (dErr diag.Diagnostics) {
 	id := new(int)
 	log.Println("[DEBUG] Start Storage Key Resource creating")
 	defer log.Printf("[DEBUG] Finish Storage Key Resource creating (id=%d)\n", *id)
@@ -71,11 +71,11 @@ func resourceStorageKeyCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(fmt.Errorf("create storage key: %v", err))
 	}
 	d.SetId(fmt.Sprintf("%d", result.ID))
-	return resourceStorageKeyRead(ctx, d, m)
+	return resourceStorageSFTPKeyRead(ctx, d, m)
 
 }
 
-func resourceStorageKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStorageSFTPKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceId := storageKeyResourceID(d)
 	log.Printf("[DEBUG] Start Storage Key Resource reading (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Key Resource reading")
@@ -109,7 +109,7 @@ func resourceStorageKeyRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func resourceStorageKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStorageSFTPKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceId := storageKeyResourceID(d)
 	log.Printf("[DEBUG] Start Storage Key Resource deleting (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Key Resource deleting")

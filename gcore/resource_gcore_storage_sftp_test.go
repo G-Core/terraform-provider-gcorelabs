@@ -11,29 +11,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccStorage(t *testing.T) {
+func TestAccStorageSFTP(t *testing.T) {
 
 	random := time.Now().Nanosecond()
-	alias := fmt.Sprintf("terraform_test_alias_%d_s3", random)
-	resourceName := fmt.Sprintf("gcore_storage.terraform_test_%d_s3", random)
+	alias := fmt.Sprintf("terraformtestalias%dsftp", random)
+	resourceName := fmt.Sprintf("gcore_storage_sftp.terraformtest%d_sftp", random)
 
 	templateCreate := func() string {
 		return fmt.Sprintf(`
-resource "gcore_storage" "terraform_test_%d_s3" {
-  name = "terraform_test_%d"
-  location = "s-ed1"
-  type = "s3"
+resource "gcore_storage_sftp" "terraformtest%d_sftp" {
+  name = "terraformtest%d"
+  location = "mia"
 }
 		`, random, random)
 	}
 
 	templateUpdate := func() string {
 		return fmt.Sprintf(`
-resource "gcore_storage" "terraform_test_%d_s3" {
-  name = "terraform_test_%d"
-  location = "s-ed1"
-  type = "s3"
-  server_alias = "%s"
+resource "gcore_storage_sftp" "terraformtest%d_sftp" {
+  name = "terraformtest%d"
+  location = "mia"
+  http_servername_alias = "%s"
 }
 		`, random, random, alias)
 	}
@@ -48,7 +46,7 @@ resource "gcore_storage" "terraform_test_%d_s3" {
 			defer cancel()
 
 			for _, rs := range s.RootModule().Resources {
-				if rs.Type != "gcore_storage" {
+				if rs.Type != "gcore_storage_sftp" {
 					continue
 				}
 				opts := []func(opt *storage.StorageListHTTPV2Params){
@@ -74,15 +72,14 @@ resource "gcore_storage" "terraform_test_%d_s3" {
 				Config: templateCreate(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, StorageSchemaLocation, "s-ed1"),
-					resource.TestCheckResourceAttr(resourceName, StorageSchemaType, "s3"),
+					resource.TestCheckResourceAttr(resourceName, StorageSchemaLocation, "mia"),
 				),
 			},
 			{
 				Config: templateUpdate(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, StorageSchemaServerAlias, alias),
+					resource.TestCheckResourceAttr(resourceName, StorageSFTPSchemaServerAlias, alias),
 				),
 			},
 		},
