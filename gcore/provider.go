@@ -18,6 +18,8 @@ import (
 const (
 	ProviderOptPermanentToken   = "permanent_api_token"
 	ProviderOptSkipCredsAuthErr = "ignore_creds_auth_error"
+
+	lifecyclePolicyResource = "gcore_lifecyclepolicy"
 )
 
 func Provider() *schema.Provider {
@@ -101,6 +103,7 @@ func Provider() *schema.Provider {
 			"gcore_cdn_origingroup":  resourceCDNOriginGroup(),
 			"gcore_cdn_rule":         resourceCDNRule(),
 			"gcore_cdn_sslcert":      resourceCDNCert(),
+			lifecyclePolicyResource:  resourceLifecyclePolicy(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"gcore_project":          dataSourceProject(),
@@ -163,7 +166,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}))
 	cdnService := gcdn.NewService(cdnProvider)
 
-	stHost, stPath, err := ExtractHosAndPath(storageAPI)
+	stHost, stPath, err := ExtractHostAndPath(storageAPI)
 	if err != nil {
 		return nil, diag.FromErr(fmt.Errorf("storage api url: %w", err))
 	}

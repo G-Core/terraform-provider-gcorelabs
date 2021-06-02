@@ -224,8 +224,8 @@ func objectInfo(resourceType string) string {
 	// resourceType is a word in capital letters
 	keyID := fmt.Sprintf("TEST_%s_ID", resourceType)
 	keyName := fmt.Sprintf("TEST_%s_NAME", resourceType)
-	if regionID, exists := os.LookupEnv(keyID); exists {
-		return fmt.Sprintf(`%s_id = %s`, strings.ToLower(resourceType), regionID)
+	if objectID, exists := os.LookupEnv(keyID); exists {
+		return fmt.Sprintf(`%s_id = %s`, strings.ToLower(resourceType), objectID)
 	}
 	return fmt.Sprintf(`%s_name = "%s"`, strings.ToLower(resourceType), os.Getenv(keyName))
 }
