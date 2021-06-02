@@ -43,16 +43,16 @@ func TestExtractHosAndPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotHost, gotPath, err := ExtractHosAndPath(tt.args.uri)
+			gotHost, gotPath, err := ExtractHostAndPath(tt.args.uri)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ExtractHosAndPath() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ExtractHostAndPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotHost != tt.wantHost {
-				t.Errorf("ExtractHosAndPath() gotHost = %v, want %v", gotHost, tt.wantHost)
+				t.Errorf("ExtractHostAndPath() gotHost = %v, want %v", gotHost, tt.wantHost)
 			}
 			if gotPath != tt.wantPath {
-				t.Errorf("ExtractHosAndPath() gotPath = %v, want %v", gotPath, tt.wantPath)
+				t.Errorf("ExtractHostAndPath() gotPath = %v, want %v", gotPath, tt.wantPath)
 			}
 		})
 	}

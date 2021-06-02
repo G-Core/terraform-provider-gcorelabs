@@ -589,8 +589,8 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 	return
 }
 
-// ExtractHosAndPath from url
-func ExtractHosAndPath(uri string) (host, path string, err error) {
+// ExtractHostAndPath from url
+func ExtractHostAndPath(uri string) (host, path string, err error) {
 	if uri == "" {
 		return "", "", fmt.Errorf("empty uri")
 	}
