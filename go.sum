@@ -45,8 +45,8 @@ github.com/G-Core/gcorelabs-storage-sdk-go v0.0.8 h1:+HF1Jv8vR8LSJ0VYiJBeYXj1Qu4
 github.com/G-Core/gcorelabs-storage-sdk-go v0.0.8/go.mod h1:BZef79y4G28n8ic3x6iQWbW+mtpHPSUyJRfIRSkeAJw=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff h1:kIH66Shwb0Y9kvBgykpzmQn2soiHDTCJ/Rr5cQQ1cOk=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
-github.com/G-Core/gcorelabscloud-go v0.4.6 h1:+pNeTKWuhR52Qavnzt+r6rCDJWumymkJTjKQV4+Tl5Y=
-github.com/G-Core/gcorelabscloud-go v0.4.6/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
+github.com/G-Core/gcorelabscloud-go v0.4.14 h1:i3YNlo50tCVripozlyp0PG6DBZC5F3hp6vOz8xN9fJg=
+github.com/G-Core/gcorelabscloud-go v0.4.14/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
