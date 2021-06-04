@@ -15,14 +15,16 @@ import (
 )
 
 const (
-	StorageS3SchemaGenerateAccessKey = "generated_access_key"
-	StorageS3SchemaGenerateSecretKey = "generated_secret_key"
+	StorageS3SchemaGenerateAccessKey  = "generated_access_key"
+	StorageS3SchemaGenerateSecretKey  = "generated_secret_key"
+	StorageSchemaGenerateHTTPEndpoint = "generated_http_endpoint"
+	StorageSchemaGenerateS3Endpoint   = "generated_s3_endpoint"
+	StorageSchemaGenerateEndpoint     = "generated_endpoint"
 
-	StorageSchemaGenerateEndpoint = "generated_endpoint"
-	StorageSchemaLocation         = "location"
-	StorageSchemaName             = "name"
-	StorageSchemaId               = "storage_id"
-	StorageSchemaClientId         = "client_id"
+	StorageSchemaLocation = "location"
+	StorageSchemaName     = "name"
+	StorageSchemaId       = "storage_id"
+	StorageSchemaClientId = "client_id"
 )
 
 func resourceStorageS3() *schema.Resource {
@@ -81,6 +83,18 @@ func resourceStorageS3() *schema.Resource {
 				Computed:    true,
 				Description: "A s3 secret key for new storage resource.",
 			},
+			StorageSchemaGenerateHTTPEndpoint: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "A http s3 entry point for new storage resource.",
+			},
+			StorageSchemaGenerateS3Endpoint: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "A s3 endpoint for new storage resource.",
+			},
 			StorageSchemaGenerateEndpoint: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -128,6 +142,8 @@ func resourceStorageS3Create(ctx context.Context, d *schema.ResourceData, m inte
 		_ = d.Set(StorageS3SchemaGenerateSecretKey, result.Credentials.S3.SecretKey)
 	}
 	_ = d.Set(StorageSchemaGenerateEndpoint, fmt.Sprintf("%s.cloud.gcore.lu/%s", result.Location, result.Name))
+	_ = d.Set(StorageSchemaGenerateHTTPEndpoint, fmt.Sprintf("https://%s.cloud.gcore.lu/{bucket_name}", result.Location))
+	_ = d.Set(StorageSchemaGenerateS3Endpoint, fmt.Sprintf("https://%s.cloud.gcore.lu", result.Location))
 
 	return resourceStorageS3Read(ctx, d, m)
 }

@@ -3,7 +3,9 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-cty/cty"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -22,9 +24,16 @@ func resourceStorageSFTPKey() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			StorageKeySchemaName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					name := i.(string)
+					if !regexp.MustCompile(`^[\w\-]+$`).MatchString(name) || len(name) > 127 {
+						return diag.Errorf("key name can't be empty and can have only letters, numbers, dashes and underscores, it also should be less than 128 symbols")
+					}
+					return nil
+				},
 				Description: "A name of new storage key resource.",
 			},
 			StorageKeySchemaKey: {
