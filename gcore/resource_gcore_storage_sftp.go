@@ -300,26 +300,36 @@ func resourceStorageSFTPRead(ctx context.Context, d *schema.ResourceData, m inte
 	resourceId := storageResourceID(d)
 	log.Printf("[DEBUG] Start SFTP Storage Resource reading (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish SFTP Storage Resource reading")
-	if resourceId == "" {
-		return diag.Errorf("get storage: empty storage id")
-	}
 
 	config := m.(*Config)
 	client := config.StorageClient
 
 	opts := []func(opt *storage.StorageListHTTPV2Params){
 		func(opt *storage.StorageListHTTPV2Params) { opt.Context = ctx },
-		func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId },
+		func(opt *storage.StorageListHTTPV2Params) { opt.ShowDeleted = new(bool) },
 	}
+	if resourceId != "" {
+		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId })
+	}
+	name := d.Get(StorageSchemaName).(string)
+	if name != "" {
+		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.Name = &name })
+	}
+	if resourceId == "" && name == "" {
+		return diag.Errorf("get storage: empty storage id/name")
+	}
+
 	result, err := client.StoragesList(opts...)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("storages list: %w", err))
 	}
-	if len(result) != 1 {
+
+	if (len(result) == 0) || (name == "" && len(result) != 1) {
 		return diag.Errorf("get storage: wrong length of search result (%d), want 1", len(result))
 	}
 	st := result[0]
 
+	d.SetId(fmt.Sprint(st.ID))
 	nameParts := strings.Split(st.Name, "-")
 	if len(nameParts) > 1 {
 		clientID, _ := strconv.ParseInt(nameParts[0], 10, 64)
@@ -327,6 +337,16 @@ func resourceStorageSFTPRead(ctx context.Context, d *schema.ResourceData, m inte
 		_ = d.Set(StorageSchemaName, strings.Join(nameParts[1:], "-"))
 	} else {
 		_ = d.Set(StorageSchemaName, st.Name)
+	}
+	if len(st.Credentials.Keys) > 0 {
+		keys := make([]int, 0, len(st.Credentials.Keys))
+		for _, k := range st.Credentials.Keys {
+			if k == nil {
+				continue
+			}
+			keys = append(keys, int(k.ID))
+		}
+		_ = d.Set(StorageKeySchemaId, keys)
 	}
 	_ = d.Set(StorageSFTPSchemaServerAlias, st.ServerAlias)
 	_ = d.Set(StorageSFTPSchemaExpires, st.Expires)

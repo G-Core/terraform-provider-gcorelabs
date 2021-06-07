@@ -152,26 +152,38 @@ func resourceStorageS3Read(ctx context.Context, d *schema.ResourceData, m interf
 	resourceId := storageResourceID(d)
 	log.Printf("[DEBUG] Start S3 Storage Resource reading (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish S3 Storage Resource reading")
-	if resourceId == "" {
-		return diag.Errorf("get storage: empty storage id")
-	}
 
 	config := m.(*Config)
 	client := config.StorageClient
 
 	opts := []func(opt *storage.StorageListHTTPV2Params){
 		func(opt *storage.StorageListHTTPV2Params) { opt.Context = ctx },
-		func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId },
+		func(opt *storage.StorageListHTTPV2Params) { opt.ShowDeleted = new(bool) },
 	}
+	if resourceId != "" {
+		log.Printf("[DEBUG] S3 Storage Resource reading (id=%s)\n", resourceId)
+		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId })
+	}
+	name := d.Get(StorageSchemaName).(string)
+	if name != "" {
+		log.Printf("[DEBUG] S3 Storage Resource reading (name=%s)\n", name)
+		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.Name = &name })
+	}
+	if resourceId == "" && name == "" {
+		return diag.Errorf("get storage: empty storage id/name")
+	}
+
 	result, err := client.StoragesList(opts...)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("storages list: %w", err))
 	}
-	if len(result) != 1 {
+
+	if (len(result) == 0) || (name == "" && len(result) != 1) {
 		return diag.Errorf("get storage: wrong length of search result (%d), want 1", len(result))
 	}
 	st := result[0]
 
+	d.SetId(fmt.Sprint(st.ID))
 	nameParts := strings.Split(st.Name, "-")
 	if len(nameParts) > 1 {
 		clientID, _ := strconv.ParseInt(nameParts[0], 10, 64)
@@ -218,7 +230,10 @@ func resourceStorageS3Delete(ctx context.Context, d *schema.ResourceData, m inte
 func storageResourceID(d *schema.ResourceData) string {
 	resourceID := d.Id()
 	if resourceID == "" {
-		resourceID = fmt.Sprint(d.Get(StorageSchemaId).(int))
+		id := d.Get(StorageSchemaId).(int)
+		if id > 0 {
+			resourceID = fmt.Sprint(id)
+		}
 	}
 	return resourceID
 }

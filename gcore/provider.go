@@ -116,6 +116,8 @@ func Provider() *schema.Provider {
 			"gcore_lbpool":          dataSourceLBPool(),
 			"gcore_instance":        dataSourceInstance(),
 			"gcore_floatingip":      dataSourceFloatingIP(),
+			"gcore_storage_s3":      dataSourceStorageS3(),
+			"gcore_storage_sftp":    dataSourceStorageSFTP(),
 			"gcore_reservedfixedip": dataSourceReservedFixedIP(),
 			"gcore_servergroup":     dataSourceServerGroup(),
 		},
