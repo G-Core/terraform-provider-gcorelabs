@@ -23,6 +23,8 @@ const (
 	StorageSFTPSchemaKeyId                = "ssh_key_id"
 	StorageSFTPSchemaExpires              = "http_expires_header_value"
 	StorageSFTPSchemaServerAlias          = "http_servername_alias"
+
+	StorageSFTPSchemaUpdateAfterCreate = "update_after_create"
 )
 
 func resourceStorageSFTP() *schema.Resource {
@@ -33,6 +35,12 @@ func resourceStorageSFTP() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "An id of new storage resource.",
+			},
+			StorageSFTPSchemaUpdateAfterCreate: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "A temporary flag. An internal cheat, to skip update ssh keys. Skip it.",
 			},
 			StorageSchemaClientId: {
 				Type:        schema.TypeInt,
@@ -281,6 +289,7 @@ func resourceStorageSFTPCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	if strings.TrimSpace(d.Get(StorageSFTPSchemaExpires).(string)) != "" ||
 		strings.TrimSpace(d.Get(StorageSFTPSchemaServerAlias).(string)) != "" {
+		_ = d.Set(StorageSFTPSchemaUpdateAfterCreate, true)
 		return resourceStorageSFTPUpdate(ctx, d, m)
 	}
 
@@ -357,6 +366,10 @@ func resourceStorageSFTPUpdate(ctx context.Context, d *schema.ResourceData, m in
 	_, err = client.ModifyStorage(opts...)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("update storage: %w", err))
+	}
+	if d.Get(StorageSFTPSchemaUpdateAfterCreate).(bool) {
+		_ = d.Set(StorageSFTPSchemaUpdateAfterCreate, false)
+		return nil
 	}
 	if d.HasChange(StorageSFTPSchemaSftpPassword) {
 		pass := d.Get(StorageSFTPSchemaSftpPassword).(string)
