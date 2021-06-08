@@ -2,6 +2,7 @@ package gcore
 
 import (
 	"fmt"
+	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 	"net/http"
 	"os"
 	"strconv"
@@ -284,9 +285,17 @@ func createTestConfig() (*Config, error) {
 	}))
 	cdnService := gcdn.NewService(cdnProvider)
 
+	storageAPI := GCORE_STORAGE_API
+	stHost, stPath, err := ExtractHosAndPath(storageAPI)
+	var storageClient *storageSDK.SDK
+	if err == nil {
+		storageClient = storageSDK.NewSDK(stHost, stPath, storageSDK.WithBearerAuth(provider.AccessToken))
+	}
+
 	config := Config{
-		Provider:  provider,
-		CDNClient: cdnService,
+		Provider:      provider,
+		CDNClient:     cdnService,
+		StorageClient: storageClient,
 	}
 
 	return &config, err

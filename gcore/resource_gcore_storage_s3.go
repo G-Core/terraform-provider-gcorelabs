@@ -161,12 +161,10 @@ func resourceStorageS3Read(ctx context.Context, d *schema.ResourceData, m interf
 		func(opt *storage.StorageListHTTPV2Params) { opt.ShowDeleted = new(bool) },
 	}
 	if resourceId != "" {
-		log.Printf("[DEBUG] S3 Storage Resource reading (id=%s)\n", resourceId)
 		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId })
 	}
 	name := d.Get(StorageSchemaName).(string)
 	if name != "" {
-		log.Printf("[DEBUG] S3 Storage Resource reading (name=%s)\n", name)
 		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.Name = &name })
 	}
 	if resourceId == "" && name == "" {

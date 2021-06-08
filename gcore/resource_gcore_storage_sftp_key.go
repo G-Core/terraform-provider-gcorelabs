@@ -88,20 +88,22 @@ func resourceStorageSFTPKeyRead(ctx context.Context, d *schema.ResourceData, m i
 	resourceId := storageKeyResourceID(d)
 	log.Printf("[DEBUG] Start Storage Key Resource reading (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish Storage Key Resource reading")
-	if resourceId == "" {
-		return diag.Errorf("get storage: empty storage id")
-	}
 
 	config := m.(*Config)
 	client := config.StorageClient
 
 	opts := []func(opt *key.KeyListHTTPV2Params){
 		func(opt *key.KeyListHTTPV2Params) { opt.Context = ctx },
-		func(opt *key.KeyListHTTPV2Params) { opt.ID = &resourceId },
+	}
+	if resourceId != "" {
+		opts = append(opts, func(opt *key.KeyListHTTPV2Params) { opt.ID = &resourceId })
 	}
 	name := strings.TrimSpace(d.Get(StorageKeySchemaName).(string))
 	if name != "" {
 		opts = append(opts, func(opt *key.KeyListHTTPV2Params) { opt.Name = &name })
+	}
+	if resourceId == "" && name == "" {
+		return diag.Errorf("get storage: empty storage id/name")
 	}
 	result, err := client.KeysList(opts...)
 	if err != nil {
@@ -112,6 +114,7 @@ func resourceStorageSFTPKeyRead(ctx context.Context, d *schema.ResourceData, m i
 	}
 	st := result[0]
 
+	d.SetId(fmt.Sprint(st.ID))
 	_ = d.Set(StorageKeySchemaId, st.ID)
 	_ = d.Set(StorageKeySchemaName, st.Name)
 
@@ -150,7 +153,10 @@ func resourceStorageSFTPKeyDelete(ctx context.Context, d *schema.ResourceData, m
 func storageKeyResourceID(d *schema.ResourceData) string {
 	resourceID := d.Id()
 	if resourceID == "" {
-		resourceID = fmt.Sprint(d.Get(StorageKeySchemaId).(int))
+		id := d.Get(StorageKeySchemaId).(int)
+		if id > 0 {
+			resourceID = fmt.Sprint(id)
+		}
 	}
 	return resourceID
 }
