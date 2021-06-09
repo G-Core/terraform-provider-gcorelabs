@@ -15,14 +15,16 @@ import (
 )
 
 const (
-	StorageS3SchemaGenerateAccessKey = "generated_access_key"
-	StorageS3SchemaGenerateSecretKey = "generated_secret_key"
+	StorageS3SchemaGenerateAccessKey  = "generated_access_key"
+	StorageS3SchemaGenerateSecretKey  = "generated_secret_key"
+	StorageSchemaGenerateHTTPEndpoint = "generated_http_endpoint"
+	StorageSchemaGenerateS3Endpoint   = "generated_s3_endpoint"
+	StorageSchemaGenerateEndpoint     = "generated_endpoint"
 
-	StorageSchemaGenerateEndpoint = "generated_endpoint"
-	StorageSchemaLocation         = "location"
-	StorageSchemaName             = "name"
-	StorageSchemaId               = "storage_id"
-	StorageSchemaClientId         = "client_id"
+	StorageSchemaLocation = "location"
+	StorageSchemaName     = "name"
+	StorageSchemaId       = "storage_id"
+	StorageSchemaClientId = "client_id"
 )
 
 func resourceStorageS3() *schema.Resource {
@@ -81,6 +83,18 @@ func resourceStorageS3() *schema.Resource {
 				Computed:    true,
 				Description: "A s3 secret key for new storage resource.",
 			},
+			StorageSchemaGenerateHTTPEndpoint: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "A http s3 entry point for new storage resource.",
+			},
+			StorageSchemaGenerateS3Endpoint: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "A s3 endpoint for new storage resource.",
+			},
 			StorageSchemaGenerateEndpoint: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -128,6 +142,8 @@ func resourceStorageS3Create(ctx context.Context, d *schema.ResourceData, m inte
 		_ = d.Set(StorageS3SchemaGenerateSecretKey, result.Credentials.S3.SecretKey)
 	}
 	_ = d.Set(StorageSchemaGenerateEndpoint, fmt.Sprintf("%s.cloud.gcore.lu/%s", result.Location, result.Name))
+	_ = d.Set(StorageSchemaGenerateHTTPEndpoint, fmt.Sprintf("https://%s.cloud.gcore.lu/{bucket_name}", result.Location))
+	_ = d.Set(StorageSchemaGenerateS3Endpoint, fmt.Sprintf("https://%s.cloud.gcore.lu", result.Location))
 
 	return resourceStorageS3Read(ctx, d, m)
 }
@@ -136,26 +152,36 @@ func resourceStorageS3Read(ctx context.Context, d *schema.ResourceData, m interf
 	resourceId := storageResourceID(d)
 	log.Printf("[DEBUG] Start S3 Storage Resource reading (id=%s)\n", resourceId)
 	defer log.Println("[DEBUG] Finish S3 Storage Resource reading")
-	if resourceId == "" {
-		return diag.Errorf("get storage: empty storage id")
-	}
 
 	config := m.(*Config)
 	client := config.StorageClient
 
 	opts := []func(opt *storage.StorageListHTTPV2Params){
 		func(opt *storage.StorageListHTTPV2Params) { opt.Context = ctx },
-		func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId },
+		func(opt *storage.StorageListHTTPV2Params) { opt.ShowDeleted = new(bool) },
 	}
+	if resourceId != "" {
+		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.ID = &resourceId })
+	}
+	name := d.Get(StorageSchemaName).(string)
+	if name != "" {
+		opts = append(opts, func(opt *storage.StorageListHTTPV2Params) { opt.Name = &name })
+	}
+	if resourceId == "" && name == "" {
+		return diag.Errorf("get storage: empty storage id/name")
+	}
+
 	result, err := client.StoragesList(opts...)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("storages list: %w", err))
 	}
-	if len(result) != 1 {
+
+	if (len(result) == 0) || (name == "" && len(result) != 1) {
 		return diag.Errorf("get storage: wrong length of search result (%d), want 1", len(result))
 	}
 	st := result[0]
 
+	d.SetId(fmt.Sprint(st.ID))
 	nameParts := strings.Split(st.Name, "-")
 	if len(nameParts) > 1 {
 		clientID, _ := strconv.ParseInt(nameParts[0], 10, 64)
@@ -202,7 +228,10 @@ func resourceStorageS3Delete(ctx context.Context, d *schema.ResourceData, m inte
 func storageResourceID(d *schema.ResourceData) string {
 	resourceID := d.Id()
 	if resourceID == "" {
-		resourceID = fmt.Sprint(d.Get(StorageSchemaId).(int))
+		id := d.Get(StorageSchemaId).(int)
+		if id > 0 {
+			resourceID = fmt.Sprint(id)
+		}
 	}
 	return resourceID
 }
