@@ -54,13 +54,15 @@ func resourceCDNResource() *schema.Resource {
 				Description: "List of additional CNAMEs.",
 			},
 			"ssl_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Use HTTPS protocol for content delivery.",
 			},
 			"ssl_data": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				RequiredWith: []string{"ssl_enabled"},
+				Description:  "Specify the SSL Certificate ID which should be used for the CDN Resource.",
 			},
 			"options": {
 				Type:        schema.TypeList,
@@ -132,10 +134,6 @@ func resourceCDNResource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Status of a CDN resource content availability. Possible values are: Active, Suspended, Processed.",
-			},
-			"last_updated": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 		},
 		CreateContext: resourceCDNResourceCreate,
