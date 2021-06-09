@@ -10,7 +10,7 @@ resource "gcore_cdn_origingroup" "origin_group_1" {
   use_next = true
   origin {
     source = "example.com"
-    enabled = false
+    enabled = true
   }
   origin {
     source = "mirror.example.com"
