@@ -166,17 +166,22 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}))
 	cdnService := gcdn.NewService(cdnProvider)
 
-	stHost, stPath, err := ExtractHostAndPath(storageAPI)
-	if err != nil {
-		return nil, diag.FromErr(fmt.Errorf("storage api url: %w", err))
-	}
-
 	config := Config{
 		Provider:  provider,
 		CDNClient: cdnService,
-		StorageClient: storageSDK.NewSDK(stHost, stPath,
+	}
+
+	if storageAPI != "" {
+		stHost, stPath, err := ExtractHostAndPath(storageAPI)
+		if err != nil {
+			return nil, diag.FromErr(fmt.Errorf("storage api url: %w", err))
+		}
+		config.StorageClient = storageSDK.NewSDK(
+			stHost,
+			stPath,
 			storageSDK.WithBearerAuth(provider.AccessToken),
-			storageSDK.WithPermanentTokenAuth(func() string { return permanentToken })),
+			storageSDK.WithPermanentTokenAuth(func() string { return permanentToken }),
+		)
 	}
 
 	return &config, diags
