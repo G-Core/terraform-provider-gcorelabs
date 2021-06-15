@@ -81,7 +81,7 @@ func dataSourceSecurityGroup() *schema.Resource {
 						"protocol": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: fmt.Sprintf("Available value is %s", strings.Join(types.ProtocolICMP.StringList(), ",")),
+							Description: fmt.Sprintf("Available value is %s", strings.Join(types.Protocol("").StringList(), ",")),
 						},
 						"port_range_min": &schema.Schema{
 							Type:     schema.TypeInt,

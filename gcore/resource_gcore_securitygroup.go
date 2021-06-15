@@ -111,7 +111,7 @@ func resourceSecurityGroup() *schema.Resource {
 						"protocol": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: fmt.Sprintf("Available value is %s", strings.Join(types.ProtocolICMP.StringList(), ",")),
+							Description: fmt.Sprintf("Available value is %s", strings.Join(types.Protocol("").StringList(), ",")),
 							ValidateDiagFunc: func(v interface{}, path cty.Path) diag.Diagnostics {
 								val := types.Protocol(v.(string))
 								if err := val.IsValid(); err == nil {
