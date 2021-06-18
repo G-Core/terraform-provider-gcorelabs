@@ -96,6 +96,8 @@ func Provider() *schema.Provider {
 			"gcore_baremetal":        resourceBmInstance(),
 			"gcore_snapshot":         resourceSnapshot(),
 			"gcore_servergroup":      resourceServerGroup(),
+			"gcore_k8s":              resourceK8s(),
+			"gcore_k8s_pool":         resourceK8sPool(),
 			"gcore_storage_s3":       resourceStorageS3(),
 			"gcore_storage_sftp":     resourceStorageSFTP(),
 			"gcore_storage_sftp_key": resourceStorageSFTPKey(),
@@ -124,6 +126,8 @@ func Provider() *schema.Provider {
 			"gcore_storage_sftp_key": dataSourceStorageSFTPKey(),
 			"gcore_reservedfixedip":  dataSourceReservedFixedIP(),
 			"gcore_servergroup":      dataSourceServerGroup(),
+			"gcore_k8s":              dataSourceK8s(),
+			"gcore_k8s_pool":         dataSourceK8sPool(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

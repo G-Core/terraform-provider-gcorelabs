@@ -601,3 +601,14 @@ func ExtractHostAndPath(uri string) (host, path string, err error) {
 	}
 	return pUrl.Scheme + "://" + pUrl.Host, pUrl.Path, nil
 }
+
+func parseCIDRFromString(cidr string) (gcorecloud.CIDR, error) {
+	var gccidr gcorecloud.CIDR
+	_, netIPNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return gccidr, err
+	}
+	gccidr.IP = netIPNet.IP
+	gccidr.Mask = netIPNet.Mask
+	return gccidr, nil
+}
