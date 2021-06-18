@@ -2,12 +2,13 @@ package gcore
 
 import (
 	"fmt"
-	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+
+	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -37,6 +38,10 @@ const (
 	GCORE_VOLUME_ID_VAR          VarName = "GCORE_VOLUME_ID"
 	GCORE_CDN_ORIGINGROUP_ID_VAR VarName = "GCORE_CDN_ORIGINGROUP_ID"
 	GCORE_CDN_RESOURCE_ID_VAR    VarName = "GCORE_CDN_RESOURCE_ID"
+	GCORE_NETWORK_ID_VAR         VarName = "GCORE_NETWORK_ID"
+	GCORE_SUBNET_ID_VAR          VarName = "GCORE_SUBNET_ID"
+	GCORE_CLUSTER_ID_VAR         VarName = "GCORE_CLUSTER_ID"
+	GCORE_CLUSTER_POOL_ID_VAR    VarName = "GCORE_CLUSTER_POOL_ID"
 )
 
 func getEnv(name VarName) string {
@@ -59,6 +64,10 @@ var (
 	GCORE_CDN_ORIGINGROUP_ID = getEnv(GCORE_CDN_ORIGINGROUP_ID_VAR)
 	GCORE_CDN_RESOURCE_ID    = getEnv(GCORE_CDN_RESOURCE_ID_VAR)
 	GCORE_STORAGE_API        = getEnv(GCORE_STORAGE_URL_VAR)
+	GCORE_NETWORK_ID         = getEnv(GCORE_NETWORK_ID_VAR)
+	GCORE_SUBNET_ID          = getEnv(GCORE_SUBNET_ID_VAR)
+	GCORE_CLUSTER_ID         = getEnv(GCORE_CLUSTER_ID_VAR)
+	GCORE_CLUSTER_POOL_ID    = getEnv(GCORE_CLUSTER_POOL_ID_VAR)
 )
 
 var varsMap = map[VarName]string{
@@ -77,6 +86,10 @@ var varsMap = map[VarName]string{
 	GCORE_CDN_ORIGINGROUP_ID_VAR: GCORE_CDN_ORIGINGROUP_ID,
 	GCORE_CDN_RESOURCE_ID_VAR:    GCORE_CDN_RESOURCE_ID,
 	GCORE_STORAGE_URL_VAR:        GCORE_STORAGE_API,
+	GCORE_NETWORK_ID_VAR:         GCORE_NETWORK_ID,
+	GCORE_SUBNET_ID_VAR:          GCORE_SUBNET_ID,
+	GCORE_CLUSTER_ID_VAR:         GCORE_CLUSTER_ID,
+	GCORE_CLUSTER_POOL_ID_VAR:    GCORE_CLUSTER_POOL_ID,
 }
 
 func testAccPreCheckVars(t *testing.T, vars ...VarName) {
@@ -124,6 +137,60 @@ func testAccPreCheckLBListener(t *testing.T) {
 		"GCORE_USERNAME": GCORE_USERNAME,
 		"GCORE_PASSWORD": GCORE_PASSWORD,
 		"GCORE_LB_ID":    GCORE_LB_ID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckK8s(t *testing.T) {
+	vars := map[string]interface{}{
+		"GCORE_USERNAME":   GCORE_USERNAME,
+		"GCORE_PASSWORD":   GCORE_PASSWORD,
+		"GCORE_NETWORK_ID": GCORE_NETWORK_ID,
+		"GCORE_SUBNET_ID":  GCORE_SUBNET_ID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckK8sPool(t *testing.T) {
+	vars := map[string]interface{}{
+		"GCORE_USERNAME":   GCORE_USERNAME,
+		"GCORE_PASSWORD":   GCORE_PASSWORD,
+		"GCORE_CLUSTER_ID": GCORE_CLUSTER_ID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckK8sDataSource(t *testing.T) {
+	vars := map[string]interface{}{
+		"GCORE_USERNAME":   GCORE_USERNAME,
+		"GCORE_PASSWORD":   GCORE_PASSWORD,
+		"GCORE_CLUSTER_ID": GCORE_CLUSTER_ID,
+	}
+	for k, v := range vars {
+		if v == "" {
+			t.Fatalf("'%s' must be set for acceptance test", k)
+		}
+	}
+}
+
+func testAccPreCheckK8sPoolDataSource(t *testing.T) {
+	vars := map[string]interface{}{
+		"GCORE_USERNAME":        GCORE_USERNAME,
+		"GCORE_PASSWORD":        GCORE_PASSWORD,
+		"GCORE_CLUSTER_ID":      GCORE_CLUSTER_ID,
+		"GCORE_CLUSTER_POOL_ID": GCORE_CLUSTER_POOL_ID,
 	}
 	for k, v := range vars {
 		if v == "" {
@@ -286,7 +353,7 @@ func createTestConfig() (*Config, error) {
 	cdnService := gcdn.NewService(cdnProvider)
 
 	storageAPI := GCORE_STORAGE_API
-	stHost, stPath, err := ExtractHosAndPath(storageAPI)
+	stHost, stPath, err := ExtractHostAndPath(storageAPI)
 	var storageClient *storageSDK.SDK
 	if err == nil {
 		storageClient = storageSDK.NewSDK(stHost, stPath, storageSDK.WithBearerAuth(provider.AccessToken))
