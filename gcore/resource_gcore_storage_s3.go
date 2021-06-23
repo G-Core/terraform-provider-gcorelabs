@@ -106,6 +106,9 @@ func resourceStorageS3() *schema.Resource {
 		ReadContext:   resourceStorageS3Read,
 		DeleteContext: resourceStorageS3Delete,
 		Description:   "Represent s3 storage resource. https://storage.gcorelabs.com/storage/list",
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
@@ -141,9 +144,6 @@ func resourceStorageS3Create(ctx context.Context, d *schema.ResourceData, m inte
 	if result.Credentials.S3.SecretKey != "" {
 		_ = d.Set(StorageS3SchemaGenerateSecretKey, result.Credentials.S3.SecretKey)
 	}
-	_ = d.Set(StorageSchemaGenerateEndpoint, fmt.Sprintf("%s.cloud.gcore.lu/%s", result.Location, result.Name))
-	_ = d.Set(StorageSchemaGenerateHTTPEndpoint, fmt.Sprintf("https://%s.cloud.gcore.lu/{bucket_name}", result.Location))
-	_ = d.Set(StorageSchemaGenerateS3Endpoint, fmt.Sprintf("https://%s.cloud.gcore.lu", result.Location))
 
 	return resourceStorageS3Read(ctx, d, m)
 }
@@ -192,6 +192,9 @@ func resourceStorageS3Read(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	_ = d.Set(StorageSchemaId, st.ID)
 	_ = d.Set(StorageSchemaLocation, st.Location)
+	_ = d.Set(StorageSchemaGenerateEndpoint, fmt.Sprintf("%s.cloud.gcore.lu/%s", st.Location, st.Name))
+	_ = d.Set(StorageSchemaGenerateHTTPEndpoint, fmt.Sprintf("https://%s.cloud.gcore.lu/{bucket_name}", st.Location))
+	_ = d.Set(StorageSchemaGenerateS3Endpoint, fmt.Sprintf("https://%s.cloud.gcore.lu", st.Location))
 
 	return nil
 }

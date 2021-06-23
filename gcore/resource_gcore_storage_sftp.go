@@ -139,6 +139,9 @@ func resourceStorageSFTP() *schema.Resource {
 		UpdateContext: resourceStorageSFTPUpdate,
 		DeleteContext: resourceStorageSFTPDelete,
 		Description:   "Represent sftp storage resource. https://storage.gcorelabs.com/storage/list",
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
@@ -277,10 +280,6 @@ func resourceStorageSFTPCreate(ctx context.Context, d *schema.ResourceData, m in
 	if result.Credentials.SftpPassword != "" {
 		_ = d.Set(StorageSFTPSchemaSftpPassword, result.Credentials.SftpPassword)
 	}
-	_ = d.Set(StorageSchemaGenerateHTTPEndpoint,
-		fmt.Sprintf("http://%s.%s.origin.gcdn.co", result.Name, result.Location))
-	_ = d.Set(StorageSchemaGenerateSFTPEndpoint,
-		fmt.Sprintf("ssh://%s@%s.origin.gcdn.co:2200", result.Name, result.Location))
 
 	err = resourceStorageLinkKeys(ctx, client, d, result.ID)
 	if err != nil {
@@ -352,6 +351,10 @@ func resourceStorageSFTPRead(ctx context.Context, d *schema.ResourceData, m inte
 	_ = d.Set(StorageSFTPSchemaExpires, st.Expires)
 	_ = d.Set(StorageSchemaId, st.ID)
 	_ = d.Set(StorageSchemaLocation, st.Location)
+	_ = d.Set(StorageSchemaGenerateHTTPEndpoint,
+		fmt.Sprintf("http://%s.%s.origin.gcdn.co", st.Name, st.Location))
+	_ = d.Set(StorageSchemaGenerateSFTPEndpoint,
+		fmt.Sprintf("ssh://%s@%s.origin.gcdn.co:2200", st.Name, st.Location))
 
 	return nil
 }
