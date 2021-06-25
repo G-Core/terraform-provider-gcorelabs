@@ -45,12 +45,11 @@ resource "gcore_cdn_resource" "cdn_example_com" {
 - **origin_group** (Number) ID of the Origins Group. Use one of your Origins Group or create a new one. You can use either 'origin' parameter or 'originGroup' in the resource definition.
 - **origin_protocol** (String) This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, we will use HTTP to connect to an origin server. Possible values are: HTTPS, HTTP, MATCH.
 - **secondary_hostnames** (Set of String) List of additional CNAMEs.
-- **ssl_data** (Number)
-- **ssl_enabled** (Boolean)
+- **ssl_data** (Number) Specify the SSL Certificate ID which should be used for the CDN Resource.
+- **ssl_enabled** (Boolean) Use HTTPS protocol for content delivery.
 
 ### Read-Only
 
-- **last_updated** (String)
 - **status** (String) Status of a CDN resource content availability. Possible values are: Active, Suspended, Processed.
 
 <a id="nestedblock--options"></a>
