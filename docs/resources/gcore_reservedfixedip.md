@@ -50,7 +50,8 @@ resource "gcore_reservedfixedip" "fixed_ip" {
 
 ### Read-Only
 
-- **allowed_address_pairs** (List of Object) (see [below for nested schema](#nestedatt--allowed_address_pairs))
+- **allowed_address_pairs** (List of Object) Group of IP addresses that share the current IP as VIP (see [below for nested schema](#nestedatt--allowed_address_pairs))
+- **port_id** (String) ID of the port_id underlying the reserved fixed IP
 - **status** (String)
 
 <a id="nestedatt--allowed_address_pairs"></a>

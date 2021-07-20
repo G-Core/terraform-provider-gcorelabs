@@ -59,6 +59,7 @@ output "view" {
 - **allowed_address_pairs** (List of Object) (see [below for nested schema](#nestedatt--allowed_address_pairs))
 - **is_vip** (Boolean)
 - **network_id** (String)
+- **port_id** (String) ID of the port_id underlying the reserved fixed IP
 - **status** (String)
 - **subnet_id** (String)
 

@@ -6,9 +6,9 @@ variable "external_gateway_info" {
   }))
   default = [
     {
-      type = "default"
+      type = "manual"
       enable_snat = false
-      network_id = ""
+      network_id = "" //set external network id
     },
   ]
 }

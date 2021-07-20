@@ -78,6 +78,11 @@ func dataSourceReservedFixedIP() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			"port_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "ID of the port_id underlying the reserved fixed IP",
+				Computed:    true,
+			},
 			"allowed_address_pairs": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -138,6 +143,7 @@ func dataSourceReservedFixedIPRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("subnet_id", reservedFixedIP.SubnetID)
 	d.Set("network_id", reservedFixedIP.NetworkID)
 	d.Set("is_vip", reservedFixedIP.IsVip)
+	d.Set("port_id", reservedFixedIP.PortID)
 
 	allowedPairs := make([]map[string]interface{}, len(reservedFixedIP.AllowedAddressPairs))
 	for i, p := range reservedFixedIP.AllowedAddressPairs {

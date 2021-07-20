@@ -8,6 +8,7 @@ require (
 	github.com/G-Core/gcorelabscloud-go v0.4.15
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
+	github.com/hashicorp/terraform-plugin-docs v0.4.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.3
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect

@@ -80,22 +80,25 @@ func resourceRouter() *schema.Resource {
 			"external_gateway_info": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
 							Type:        schema.TypeString,
 							Description: "Must be 'manual'",
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 						},
 						"enable_snat": {
 							Type:     schema.TypeBool,
-							Required: true,
-						},
-						"network_id": {
-							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
+						},
+						"network_id": {
+							Type:        schema.TypeString,
+							Description: "Id of the external network",
+							Required:    true,
 						},
 						"external_fixed_ips": {
 							Type:     schema.TypeList,
@@ -127,8 +130,9 @@ func resourceRouter() *schema.Resource {
 							Required:    true,
 						},
 						"subnet_id": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "Subnet for router interface must have a gateway IP",
+							Required:    true,
 						},
 					},
 				},

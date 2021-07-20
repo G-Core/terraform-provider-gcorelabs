@@ -80,12 +80,12 @@ resource "gcore_router" "router" {
 
 Required:
 
-- **enable_snat** (Boolean)
-- **type** (String) Must be 'manual'
+- **network_id** (String) Id of the external network
 
 Optional:
 
-- **network_id** (String)
+- **enable_snat** (Boolean)
+- **type** (String) Must be 'manual'
 
 Read-Only:
 
@@ -106,7 +106,7 @@ Read-Only:
 
 Required:
 
-- **subnet_id** (String)
+- **subnet_id** (String) Subnet for router interface must have a gateway IP
 - **type** (String) must be 'subnet'
 
 
