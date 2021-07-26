@@ -366,6 +366,26 @@ func ImportStringParser(infoStr string) (int, int, string, error) {
 	return projectID, regionID, infoStrings[2], nil
 }
 
+// ImportStringParserExtended is a helper function for the import module. It parses check and parse an input command line string (id part).
+// Uses for import where need four elements, e. g. k8s pool(cluster_id), lb_member(lbpool_id).
+func ImportStringParserExtended(infoStr string) (int, int, string, string, error) {
+	log.Printf("[DEBUG] Input id string: %s", infoStr)
+	infoStrings := strings.Split(infoStr, ":")
+	if len(infoStrings) != 4 {
+		return 0, 0, "", "", fmt.Errorf("Failed import: wrong input id: %s", infoStr)
+
+	}
+	projectID, err := strconv.Atoi(infoStrings[0])
+	if err != nil {
+		return 0, 0, "", "", err
+	}
+	regionID, err := strconv.Atoi(infoStrings[1])
+	if err != nil {
+		return 0, 0, "", "", err
+	}
+	return projectID, regionID, infoStrings[2], infoStrings[3], nil
+}
+
 func CreateClient(provider *gcorecloud.ProviderClient, d *schema.ResourceData, endpoint string, version string) (*gcorecloud.ServiceClient, error) {
 	projectID, err := GetProject(provider, d.Get("project_id").(int), d.Get("project_name").(string))
 	if err != nil {

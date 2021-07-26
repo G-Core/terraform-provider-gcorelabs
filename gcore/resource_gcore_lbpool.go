@@ -32,6 +32,21 @@ func resourceLBPool() *schema.Resource {
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
+
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				projectID, regionID, lbPoolID, err := ImportStringParser(d.Id())
+
+				if err != nil {
+					return nil, err
+				}
+				d.Set("project_id", projectID)
+				d.Set("region_id", regionID)
+				d.SetId(lbPoolID)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,

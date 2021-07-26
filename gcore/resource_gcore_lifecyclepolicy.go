@@ -3,13 +3,14 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"log"
+	"regexp"
+	"strconv"
+
 	"github.com/G-Core/gcorelabscloud-go/gcore/lifecyclepolicy/v1/lifecyclepolicy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"log"
-	"regexp"
-	"strconv"
 )
 
 const (
@@ -30,6 +31,21 @@ func resourceLifecyclePolicy() *schema.Resource {
 		UpdateContext: resourceLifecyclePolicyUpdate,
 		DeleteContext: resourceLifecyclePolicyDelete,
 		Description:   "Represent lifecycle policy. Use to periodically take snapshots",
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				projectID, regionID, lcpID, err := ImportStringParser(d.Id())
+
+				if err != nil {
+					return nil, err
+				}
+				d.Set("project_id", projectID)
+				d.Set("region_id", regionID)
+				d.SetId(lcpID)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeInt,

@@ -49,4 +49,11 @@ resource "gcore_volume" "volume" {
 - **snapshot_id** (String) Mandatory if volume is created from a snapshot
 - **type_name** (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using <project_id>:<region_id>:<volume_id> format
+terraform import gcore_volume.volume1 1:6:447d2959-8ae0-4ca0-8d47-9f050a3637d7
+```
