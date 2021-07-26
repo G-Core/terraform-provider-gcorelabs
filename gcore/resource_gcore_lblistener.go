@@ -31,6 +31,22 @@ func resourceLbListener() *schema.Resource {
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				projectID, regionID, listenerID, lbID, err := ImportStringParserExtended(d.Id())
+
+				if err != nil {
+					return nil, err
+				}
+				d.Set("project_id", projectID)
+				d.Set("region_id", regionID)
+				d.Set("loadbalancer_id", lbID)
+				d.SetId(listenerID)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,

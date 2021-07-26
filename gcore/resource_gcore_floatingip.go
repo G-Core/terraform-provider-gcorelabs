@@ -27,6 +27,21 @@ func resourceFloatingIP() *schema.Resource {
 		UpdateContext: resourceFloatingIPUpdate,
 		DeleteContext: resourceFloatingIPDelete,
 		Description:   "A floating IP is a static IP address that points to one of your Instances. It allows you to redirect network traffic to any of your Instances in the same datacenter.",
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				projectID, regionID, fipID, err := ImportStringParser(d.Id())
+
+				if err != nil {
+					return nil, err
+				}
+				d.Set("project_id", projectID)
+				d.Set("region_id", regionID)
+				d.SetId(fipID)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,

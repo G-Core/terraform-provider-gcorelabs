@@ -19,6 +19,21 @@ func resourceServerGroup() *schema.Resource {
 		ReadContext:   resourceServerGroupRead,
 		DeleteContext: resourceServerGroupDelete,
 		Description:   "Represent server group resource",
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				projectID, regionID, sgID, err := ImportStringParser(d.Id())
+
+				if err != nil {
+					return nil, err
+				}
+				d.Set("project_id", projectID)
+				d.Set("region_id", regionID)
+				d.SetId(sgID)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeInt,

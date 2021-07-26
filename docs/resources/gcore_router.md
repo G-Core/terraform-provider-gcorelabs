@@ -118,4 +118,11 @@ Required:
 - **destination** (String)
 - **nexthop** (String) IPv4 address to forward traffic to if it's destination IP matches 'destination' CIDR
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using <project_id>:<region_id>:<router_id> format
+terraform import gcore_router.router1 1:6:447d2959-8ae0-4ca0-8d47-9f050a3637d7
+```
