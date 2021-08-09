@@ -14,12 +14,19 @@ import (
 	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-const InstanceDeleting int = 1200
-const InstanceCreatingTimeout int = 1200
-const InstancePoint = "instances"
+const (
+	InstanceDeleting        int = 1200
+	InstanceCreatingTimeout int = 1200
+	InstancePoint               = "instances"
+
+	InstanceVMStateActive  = "active"
+	InstanceVMStateStopped = "stopped"
+)
 
 func resourceInstance() *schema.Resource {
 	return &schema.Resource{
@@ -128,6 +135,7 @@ func resourceInstance() *schema.Resource {
 						"size": {
 							Type:     schema.TypeInt,
 							Optional: true,
+							Computed: true,
 						},
 						"volume_id": {
 							Type:     schema.TypeString,
@@ -280,9 +288,13 @@ func resourceInstance() *schema.Resource {
 				Computed: true,
 			},
 			"vm_state": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: fmt.Sprintf("Current vm state, use %s to stop vm and %s to start", InstanceVMStateStopped, InstanceVMStateActive),
+				ValidateFunc: validation.StringInSlice([]string{
+					InstanceVMStateActive, InstanceVMStateStopped,
+				}, true),
 			},
 			"addresses": &schema.Schema{
 				Type:     schema.TypeList,
@@ -773,6 +785,42 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
+	if d.HasChange("vm_state") {
+		state := d.Get("vm_state").(string)
+		switch state {
+		case InstanceVMStateActive:
+			if _, err := instances.Start(client, instanceID).Extract(); err != nil {
+				return diag.FromErr(err)
+			}
+			startStateConf := &resource.StateChangeConf{
+				Target:     []string{InstanceVMStateActive},
+				Refresh:    ServerV2StateRefreshFunc(client, instanceID),
+				Timeout:    d.Timeout(schema.TimeoutCreate),
+				Delay:      10 * time.Second,
+				MinTimeout: 3 * time.Second,
+			}
+			_, err = startStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return diag.Errorf("Error waiting for instance (%s) to become active: %s", d.Id(), err)
+			}
+		case InstanceVMStateStopped:
+			if _, err := instances.Stop(client, instanceID).Extract(); err != nil {
+				return diag.FromErr(err)
+			}
+			stopStateConf := &resource.StateChangeConf{
+				Target:     []string{InstanceVMStateStopped},
+				Refresh:    ServerV2StateRefreshFunc(client, instanceID),
+				Timeout:    d.Timeout(schema.TimeoutCreate),
+				Delay:      10 * time.Second,
+				MinTimeout: 3 * time.Second,
+			}
+			_, err = stopStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return diag.Errorf("Error waiting for instance (%s) to become inactive(stopped): %s", d.Id(), err)
+			}
+		}
+	}
+
 	d.Set("last_updated", time.Now().Format(time.RFC850))
 	log.Println("[DEBUG] Finish Instance updating")
 	return resourceInstanceRead(ctx, d, m)
@@ -819,4 +867,20 @@ func resourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m inter
 	d.SetId("")
 	log.Printf("[DEBUG] Finish of Instance deleting")
 	return diags
+}
+
+// ServerV2StateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
+// a gcorecloud instance.
+func ServerV2StateRefreshFunc(client *gcorecloud.ServiceClient, instanceID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		s, err := instances.Get(client, instanceID).Extract()
+		if err != nil {
+			if _, ok := err.(gcorecloud.ErrDefault404); ok {
+				return s, "DELETED", nil
+			}
+			return nil, "", err
+		}
+
+		return s, s.VMState, nil
+	}
 }

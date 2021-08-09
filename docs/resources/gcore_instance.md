@@ -139,7 +139,7 @@ resource "gcore_instance" "instance" {
 - **status** (String)
 - **userdata** (String)
 - **username** (String)
-- **vm_state** (String)
+- **vm_state** (String) Current vm state, use stopped to stop vm and active to start
 
 <a id="nestedblock--interface"></a>
 ### Nested Schema for `interface`

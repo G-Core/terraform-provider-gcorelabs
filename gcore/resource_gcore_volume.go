@@ -90,11 +90,13 @@ func resourceVolume() *schema.Resource {
 			"image_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Mandatory if volume is created from image",
 			},
 			"snapshot_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Mandatory if volume is created from a snapshot",
 			},
 			"last_updated": &schema.Schema{
@@ -203,13 +205,15 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.HasChange("size") {
 		newValue := d.Get("size")
 		newSize := newValue.(int)
-		if volume.Size < newSize {
-			err = ExtendVolume(client, volumeID, newSize)
-			if err != nil {
-				return diag.FromErr(err)
+		if newSize != 0 {
+			if volume.Size < newSize {
+				err = ExtendVolume(client, volumeID, newSize)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			} else {
+				return diag.Errorf("Validation error: unable to update size field because new volume size must be greater than current size")
 			}
-		} else {
-			return diag.Errorf("Validation error: unable to update size field because new volume size must be greater than current size")
 		}
 	}
 
