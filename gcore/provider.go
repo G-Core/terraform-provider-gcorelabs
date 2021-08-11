@@ -3,8 +3,10 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"github.com/terraform-providers/terraform-provider-gcorelabs/gcore/dnssdk"
 	"log"
 	"net/http"
+	"net/url"
 
 	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
@@ -99,6 +101,7 @@ func Provider() *schema.Provider {
 			"gcore_k8s":              resourceK8s(),
 			"gcore_k8s_pool":         resourceK8sPool(),
 			"gcore_storage_s3":       resourceStorageS3(),
+			DNSZoneResource:          resourceDNSZone(),
 			"gcore_storage_sftp":     resourceStorageSFTP(),
 			"gcore_storage_sftp_key": resourceStorageSFTPKey(),
 			"gcore_cdn_resource":     resourceCDNResource(),
@@ -140,6 +143,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	api := d.Get("gcore_api").(string)
 	cdnAPI := d.Get("gcore_cdn_api").(string)
 	storageAPI := d.Get("gcore_storage_api").(string)
+	dnsAPI := d.Get("gcore_dns_api").(string)
 	platform := d.Get("gcore_platform").(string)
 	clientID := d.Get("gcore_client_id").(string)
 
@@ -186,6 +190,19 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 			storageSDK.WithBearerAuth(provider.AccessToken),
 			storageSDK.WithPermanentTokenAuth(func() string { return permanentToken }),
 		)
+	}
+	if dnsAPI != "" {
+		baseUrl, err := url.Parse(dnsAPI)
+		if err != nil {
+			return nil, diag.FromErr(fmt.Errorf("dns api url: %w", err))
+		}
+		authorizer := dnssdk.BearerAuth(provider.AccessToken())
+		if permanentToken != "" {
+			authorizer = dnssdk.PermanentAPIKeyAuth(permanentToken)
+		}
+		config.DNSClient = dnssdk.NewClient(authorizer, func(client *dnssdk.Client) {
+			client.BaseURL = baseUrl
+		})
 	}
 
 	return &config, diags

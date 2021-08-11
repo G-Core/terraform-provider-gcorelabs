@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/terraform-providers/terraform-provider-gcorelabs/gcore/dnssdk"
 	"io"
 	"log"
 	"net"
@@ -47,6 +48,7 @@ type Config struct {
 	Provider      *gcorecloud.ProviderClient
 	CDNClient     gcdn.ClientService
 	StorageClient *storageSDK.SDK
+	DNSClient     *dnssdk.Client
 }
 
 type Project struct {
@@ -93,9 +95,9 @@ func StringToNetHookFunc() mapstructure.DecodeHookFuncType {
 		}
 		if t == reflect.TypeOf(gcorecloud.CIDR{}) {
 			var gccidr gcorecloud.CIDR
-			_, net, err := net.ParseCIDR(data.(string))
-			gccidr.IP = net.IP
-			gccidr.Mask = net.Mask
+			_, ipNet, err := net.ParseCIDR(data.(string))
+			gccidr.IP = ipNet.IP
+			gccidr.Mask = ipNet.Mask
 			return gccidr, err
 		}
 		if t == reflect.TypeOf(net.IP{}) {
