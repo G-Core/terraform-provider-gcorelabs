@@ -30,7 +30,7 @@ func resourceDNSZone() *schema.Resource {
 					}
 					return nil
 				},
-				Description: "A name of new DNS Zone resource.",
+				Description: "A name of DNS Zone resource.",
 			},
 		},
 		CreateContext: resourceDNSZoneCreate,

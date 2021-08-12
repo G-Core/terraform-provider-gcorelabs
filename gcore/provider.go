@@ -102,6 +102,7 @@ func Provider() *schema.Provider {
 			"gcore_k8s_pool":         resourceK8sPool(),
 			"gcore_storage_s3":       resourceStorageS3(),
 			DNSZoneResource:          resourceDNSZone(),
+			DNSZoneRecordResource:    resourceDNSZoneRecord(),
 			"gcore_storage_sftp":     resourceStorageSFTP(),
 			"gcore_storage_sftp_key": resourceStorageSFTPKey(),
 			"gcore_cdn_resource":     resourceCDNResource(),

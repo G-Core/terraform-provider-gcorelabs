@@ -250,8 +250,11 @@ func (c *Client) DeleteRRSetRecord(ctx context.Context, zone, name, recordType s
 }
 
 // AddZoneRRSet create or extend resource record.
-func (c *Client) AddZoneRRSet(ctx context.Context, zone, recordName, recordType string, values []string, ttl int) error {
-	record := RRSet{TTL: ttl, Records: []ResourceRecords{{Content: values}}}
+func (c *Client) AddZoneRRSet(ctx context.Context,
+	zone, recordName, recordType string,
+	values []ResourceRecords, ttl int) error {
+
+	record := RRSet{TTL: ttl, Records: values}
 
 	records, err := c.RRSet(ctx, zone, recordName, recordType)
 	if err == nil && len(records.Records) > 0 {

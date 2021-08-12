@@ -326,7 +326,7 @@ func TestClient_AddRRSet(t *testing.T) {
 			}
 
 			err := cl.AddZoneRRSet(context.Background(),
-				test.zone, test.recordName, txtRecordType, []string{test.value}, testTTL)
+				test.zone, test.recordName, txtRecordType, []ResourceRecords{{Content: []string{test.value}}}, testTTL)
 			if test.wantErr {
 				require.Error(t, err)
 				return
