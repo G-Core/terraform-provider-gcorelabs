@@ -221,6 +221,9 @@ func resourceDNSZoneRecordCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceDNSZoneRecordUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	if d.Id() == "" {
+		return diag.Errorf("empty id")
+	}
 	zone := strings.TrimSpace(d.Get(DNSZoneRecordSchemaZone).(string))
 	domain := strings.TrimSpace(d.Get(DNSZoneRecordSchemaDomain).(string))
 	rType := strings.TrimSpace(d.Get(DNSZoneRecordSchemaType).(string))
@@ -247,6 +250,9 @@ func resourceDNSZoneRecordUpdate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	if d.Id() == "" {
+		return diag.Errorf("empty id")
+	}
 	zone := strings.TrimSpace(d.Get(DNSZoneRecordSchemaZone).(string))
 	domain := strings.TrimSpace(d.Get(DNSZoneRecordSchemaDomain).(string))
 	rType := strings.TrimSpace(d.Get(DNSZoneRecordSchemaType).(string))
@@ -285,6 +291,9 @@ func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceDNSZoneRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	if d.Id() == "" {
+		return diag.Errorf("empty id")
+	}
 	zone := strings.TrimSpace(d.Get(DNSZoneRecordSchemaZone).(string))
 	domain := strings.TrimSpace(d.Get(DNSZoneRecordSchemaDomain).(string))
 	rType := strings.TrimSpace(d.Get(DNSZoneRecordSchemaType).(string))
