@@ -74,6 +74,12 @@ func Provider() *schema.Provider {
 				Description: "Storage API",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_STORAGE_API", ""),
 			},
+			"gcore_dns_api": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "DNS API",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_DNS_API", ""),
+			},
 			"gcore_client_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,

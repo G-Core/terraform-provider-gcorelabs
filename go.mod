@@ -13,6 +13,8 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
+	github.com/stretchr/testify v1.7.0
 	github.com/zclconf/go-cty v1.7.1 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 )

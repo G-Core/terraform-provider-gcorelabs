@@ -3,11 +3,12 @@ package gcore
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/terraform-providers/terraform-provider-gcorelabs/gcore/dnssdk"
 	"log"
 	"net"
-	"strconv"
+	"net/http"
 	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -33,7 +34,9 @@ const (
 	DNSZoneRecordSchemaMetaContinents = "continents"
 	DNSZoneRecordSchemaMetaLatLong    = "latlong"
 	DNSZoneRecordSchemaMetaNotes      = "notes"
-	DNSZoneRecordSchemaMetaFallback   = "fallback"
+	DNSZoneRecordSchemaMetaDefault    = "default"
+
+	DNSZoneRecordSchemaGenZoneWasCreated = "zone_was_created"
 )
 
 func resourceDNSZoneRecord() *schema.Resource {
@@ -98,6 +101,12 @@ func resourceDNSZoneRecord() *schema.Resource {
 				},
 				Description: "A ttl of DNS Zone Record resource.",
 			},
+			DNSZoneRecordSchemaGenZoneWasCreated: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Did zone was created for this domain.",
+			},
 			DNSZoneRecordSchemaResourceRecords: {
 				Type:     schema.TypeSet,
 				Required: true,
@@ -115,39 +124,38 @@ func resourceDNSZoneRecord() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									DNSZoneRecordSchemaMetaAsn: {
-										Type:        schema.TypeInt,
+										Type: schema.TypeList,
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+											ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+												if i.(int) < 0 {
+													return diag.Errorf("asn cannot be less then 0")
+												}
+												return nil
+											},
+										},
 										Optional:    true,
 										Description: "An asn meta (e.g. 12345) of DNS Zone Record resource.",
 									},
 									DNSZoneRecordSchemaMetaIP: {
-										Type:     schema.TypeString,
-										Optional: true,
-										ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
-											val := i.(string)
-											_, _, err := net.ParseCIDR(val)
-											if err != nil {
-												return diag.Errorf("dns record meta ip: %v", err)
-											}
-											return nil
+										Type: schema.TypeList,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+											ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+												val := i.(string)
+												ip := net.ParseIP(val)
+												if ip == nil {
+													return diag.Errorf("dns record meta ip has wrong format: %s", val)
+												}
+												return nil
+											},
 										},
-										Description: "An ip meta (e.g. 127.0.0.0/8) of DNS Zone Record resource.",
+										Optional:    true,
+										Description: "An ip meta (e.g. 127.0.0.0) of DNS Zone Record resource.",
 									},
 									DNSZoneRecordSchemaMetaLatLong: {
 										Optional: true,
 										Type:     schema.TypeList,
-										ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
-											val := i.([]float64)
-											if len(val) != 2 {
-												return diag.Errorf("dns record meta lat long should have 2 value in array")
-											}
-											if val[0] > float64(90) || val[0] < float64(-90) {
-												return diag.Errorf("dns record meta lat should be between -90 and 90")
-											}
-											if val[1] > float64(180) || val[1] < float64(-180) {
-												return diag.Errorf("dns record meta long should be between -180 and 180")
-											}
-											return nil
-										},
 										MaxItems: 2,
 										MinItems: 2,
 										Elem: &schema.Schema{
@@ -156,21 +164,30 @@ func resourceDNSZoneRecord() *schema.Resource {
 										Description: "A latlong meta (e.g. 27.988056, 86.925278) of DNS Zone Record resource.",
 									},
 									DNSZoneRecordSchemaMetaNotes: {
-										Type:        schema.TypeString,
+										Type: schema.TypeList,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 										Optional:    true,
 										Description: "A notes meta (e.g. Miami DC) of DNS Zone Record resource.",
 									},
 									DNSZoneRecordSchemaMetaContinents: {
-										Type:        schema.TypeString,
+										Type: schema.TypeList,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 										Optional:    true,
 										Description: "Continents meta (e.g. Asia) of DNS Zone Record resource.",
 									},
 									DNSZoneRecordSchemaMetaCountries: {
-										Type:        schema.TypeString,
+										Type: schema.TypeList,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 										Optional:    true,
 										Description: "Countries meta (e.g. USA) of DNS Zone Record resource.",
 									},
-									DNSZoneRecordSchemaMetaFallback: {
+									DNSZoneRecordSchemaMetaDefault: {
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "Fallback meta equals true marks records which are used as a default answer (when nothing was selected by specified meta fields).",
@@ -203,13 +220,27 @@ func resourceDNSZoneRecordCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	ttl := d.Get(DNSZoneRecordSchemaTTL).(int)
 	rrSet := dnssdk.RRSet{TTL: ttl, Records: make([]dnssdk.ResourceRecords, 0)}
-	err := fillRRSet(d, rType, rrSet)
+	err := fillRRSet(d, rType, &rrSet)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	config := m.(*Config)
 	client := config.DNSClient
+
+	_, err = client.Zone(ctx, zone)
+	if err != nil {
+		apiErr := &dnssdk.APIError{}
+		if !errors.As(err, apiErr) || apiErr.StatusCode != http.StatusNotFound {
+			return diag.FromErr(fmt.Errorf("get zone: %w", err))
+		}
+		_, err = client.CreateZone(ctx, zone)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("create zone: %w", err))
+		}
+		log.Printf("[WARN] Zone was created for this Record. Be notice that this Zone will be removed with deleting a Record.\n")
+		_ = d.Set(DNSZoneRecordSchemaGenZoneWasCreated, true)
+	}
 
 	err = client.CreateRRSet(ctx, zone, domain, rType, rrSet)
 	if err != nil {
@@ -232,7 +263,7 @@ func resourceDNSZoneRecordUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	ttl := d.Get(DNSZoneRecordSchemaTTL).(int)
 	rrSet := dnssdk.RRSet{TTL: ttl, Records: make([]dnssdk.ResourceRecords, 0)}
-	err := fillRRSet(d, rType, rrSet)
+	err := fillRRSet(d, rType, &rrSet)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -280,7 +311,7 @@ func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m in
 		r[DNSZoneRecordSchemaContent] = strings.Join(rec.Content, " ")
 		meta := map[string]interface{}{}
 		for key, val := range rec.Meta {
-			meta[key] = metaToTerraformField(key, val)
+			meta[key] = val
 		}
 		r[DNSZoneRecordSchemaMeta] = []map[string]interface{}{meta}
 		rr = append(rr, r)
@@ -307,12 +338,20 @@ func resourceDNSZoneRecordDelete(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("delete zone rrset: %w", err))
 	}
+
+	if d.Get(DNSZoneRecordSchemaGenZoneWasCreated).(bool) {
+		log.Printf("[WARN] deleting auto created Zone %s.\n", zone)
+		err = client.DeleteZone(ctx, zone)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("delete zone: %w", err))
+		}
+	}
 	d.SetId("")
 
 	return nil
 }
 
-func fillRRSet(d *schema.ResourceData, rType string, rrSet dnssdk.RRSet) error {
+func fillRRSet(d *schema.ResourceData, rType string, rrSet *dnssdk.RRSet) error {
 	for _, resource := range d.Get(DNSZoneRecordSchemaResourceRecords).(*schema.Set).List() {
 		data := resource.(map[string]interface{})
 		content := data[DNSZoneRecordSchemaContent].(string)
@@ -328,36 +367,62 @@ func fillRRSet(d *schema.ResourceData, rType string, rrSet dnssdk.RRSet) error {
 				return rm
 			}
 
-			val := meta[DNSZoneRecordSchemaMetaIP].(string)
-			if val != "" {
-				rr.AddMeta(dnssdk.NewResourceMetaIP(val))
+			val := meta[DNSZoneRecordSchemaMetaIP].([]interface{})
+			ips := make([]string, len(val))
+			for i, v := range val {
+				ips[i] = v.(string)
 			}
-			val = meta[DNSZoneRecordSchemaMetaCountries].(string)
-			if val != "" {
-				rr.AddMeta(validWrap(dnssdk.NewResourceMetaCountries(val)))
+			if len(ips) > 0 {
+				rr.AddMeta(dnssdk.NewResourceMetaIP(ips...))
 			}
-			val = meta[DNSZoneRecordSchemaMetaContinents].(string)
-			if val != "" {
-				rr.AddMeta(validWrap(dnssdk.NewResourceMetaContinents(val)))
+
+			val = meta[DNSZoneRecordSchemaMetaCountries].([]interface{})
+			countries := make([]string, len(val))
+			for i, v := range val {
+				countries[i] = v.(string)
 			}
-			latLongVal := meta[DNSZoneRecordSchemaMetaLatLong].([]float64)
+			if len(countries) > 0 {
+				rr.AddMeta(dnssdk.NewResourceMetaCountries(countries...))
+			}
+
+			val = meta[DNSZoneRecordSchemaMetaContinents].([]interface{})
+			continents := make([]string, len(val))
+			for i, v := range val {
+				continents[i] = v.(string)
+			}
+			if len(continents) > 0 {
+				rr.AddMeta(dnssdk.NewResourceMetaContinents(continents...))
+			}
+
+			val = meta[DNSZoneRecordSchemaMetaNotes].([]interface{})
+			notes := make([]string, len(val))
+			for i, v := range val {
+				notes[i] = v.(string)
+			}
+			if len(notes) > 0 {
+				rr.AddMeta(dnssdk.NewResourceMetaNotes(notes...))
+			}
+
+			latLongVal := meta[DNSZoneRecordSchemaMetaLatLong].([]interface{})
 			if len(latLongVal) == 2 {
 				rr.AddMeta(
 					validWrap(
 						dnssdk.NewResourceMetaLatLong(
-							fmt.Sprintf("%f,%f", latLongVal[0], latLongVal[1]))))
+							fmt.Sprintf("%f,%f", latLongVal[0].(float64), latLongVal[1].(float64)))))
 			}
-			asnVal := meta[DNSZoneRecordSchemaMetaAsn].(int)
-			if asnVal != 0 {
-				rr.AddMeta(validWrap(dnssdk.NewResourceMetaAsn(fmt.Sprint(asnVal))))
+
+			val = meta[DNSZoneRecordSchemaMetaAsn].([]interface{})
+			asn := make([]uint64, len(val))
+			for i, v := range val {
+				asn[i] = uint64(v.(int))
 			}
-			val = meta[DNSZoneRecordSchemaMetaNotes].(string)
-			if val != "" {
-				rr.AddMeta(validWrap(dnssdk.NewResourceMetaNotes(val)))
+			if len(notes) > 0 {
+				rr.AddMeta(dnssdk.NewResourceMetaAsn(asn...))
 			}
-			val = meta[DNSZoneRecordSchemaMetaFallback].(string)
-			if strings.EqualFold(val, "true") {
-				rr.AddMeta(validWrap(dnssdk.NewResourceMetaFallback()))
+
+			valDefault := meta[DNSZoneRecordSchemaMetaDefault].(bool)
+			if valDefault {
+				rr.AddMeta(validWrap(dnssdk.NewResourceMetaDefault()))
 			}
 		}
 
@@ -367,25 +432,4 @@ func fillRRSet(d *schema.ResourceData, rType string, rrSet dnssdk.RRSet) error {
 		rrSet.Records = append(rrSet.Records, *rr)
 	}
 	return nil
-}
-
-func metaToTerraformField(name, value string) interface{} {
-	if value == "" {
-		return ""
-	}
-	switch name {
-	case DNSZoneRecordSchemaMetaLatLong:
-		parts := strings.Split(value, ",")
-		if len(parts) != 2 {
-			return ""
-		}
-		res := make([]float64, 2)
-		res[0], _ = strconv.ParseFloat(parts[0], 64)
-		res[1], _ = strconv.ParseFloat(parts[1], 64)
-		return res
-	case DNSZoneRecordSchemaMetaAsn:
-		v, _ := strconv.ParseInt(value, 10, 64)
-		return int(v)
-	}
-	return value
 }

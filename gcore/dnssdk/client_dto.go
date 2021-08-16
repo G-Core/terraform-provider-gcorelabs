@@ -37,8 +37,8 @@ type RRSet struct {
 
 // ResourceRecords dto describe records in RRSet
 type ResourceRecords struct {
-	Content []string          `json:"content"`
-	Meta    map[string]string `json:"meta"`
+	Content []string               `json:"content"`
+	Meta    map[string]interface{} `json:"meta"`
 }
 
 type RecordType interface {
@@ -113,7 +113,7 @@ func ContentFromValue(recordType, content string) []string {
 // ResourceMeta for ResourceRecords
 type ResourceMeta struct {
 	name     string
-	value    string
+	value    interface{}
 	validErr error
 }
 
@@ -123,26 +123,24 @@ func (rm ResourceMeta) Valid() error {
 }
 
 // NewResourceMetaIP for ip meta
-func NewResourceMetaIP(ipNet string) ResourceMeta {
-	_, ip, err := net.ParseCIDR(ipNet)
-	if err != nil {
-		return ResourceMeta{validErr: fmt.Errorf("ip cidr: %w", err)}
+func NewResourceMetaIP(ips ...string) ResourceMeta {
+	for _, v := range ips {
+		ip := net.ParseIP(v)
+		if ip == nil {
+			return ResourceMeta{validErr: fmt.Errorf("empty ip")}
+		}
 	}
 	return ResourceMeta{
 		name:  "ip",
-		value: ip.Network(),
+		value: ips,
 	}
 }
 
 // NewResourceMetaAsn for asn meta
-func NewResourceMetaAsn(asn string) ResourceMeta {
-	_, err := strconv.ParseUint(asn, 10, 64)
-	if err != nil {
-		return ResourceMeta{validErr: fmt.Errorf("asn uint: %w", err)}
-	}
+func NewResourceMetaAsn(asn ...uint64) ResourceMeta {
 	return ResourceMeta{
 		name:  "asn",
-		value: fmt.Sprint(asn),
+		value: asn,
 	}
 }
 
@@ -158,42 +156,50 @@ func NewResourceMetaLatLong(latlong string) ResourceMeta {
 	if len(parts) != 2 {
 		return ResourceMeta{validErr: fmt.Errorf("latlong invalid format")}
 	}
+	lat, err := strconv.ParseFloat(parts[0], 64)
+	if err != nil {
+		return ResourceMeta{validErr: fmt.Errorf("lat is invalid: %w", err)}
+	}
+	long, err := strconv.ParseFloat(parts[1], 64)
+	if err != nil {
+		return ResourceMeta{validErr: fmt.Errorf("long is invalid: %w", err)}
+	}
 
 	return ResourceMeta{
 		name:  "latlong",
-		value: fmt.Sprintf("%s,%s", parts[0], parts[1]),
+		value: []float64{lat, long},
 	}
 }
 
 // NewResourceMetaNotes for notes meta
-func NewResourceMetaNotes(note string) ResourceMeta {
+func NewResourceMetaNotes(notes ...string) ResourceMeta {
 	return ResourceMeta{
 		name:  "notes",
-		value: note,
+		value: notes,
 	}
 }
 
 // NewResourceMetaCountries for Countries meta
-func NewResourceMetaCountries(country string) ResourceMeta {
+func NewResourceMetaCountries(countries ...string) ResourceMeta {
 	return ResourceMeta{
 		name:  "countries",
-		value: country,
+		value: countries,
 	}
 }
 
 // NewResourceMetaContinents for continents meta
-func NewResourceMetaContinents(continent string) ResourceMeta {
+func NewResourceMetaContinents(continents ...string) ResourceMeta {
 	return ResourceMeta{
 		name:  "continents",
-		value: continent,
+		value: continents,
 	}
 }
 
-// NewResourceMetaFallback for fallback meta
-func NewResourceMetaFallback() ResourceMeta {
+// NewResourceMetaDefault for default meta
+func NewResourceMetaDefault() ResourceMeta {
 	return ResourceMeta{
-		name:  "fallback",
-		value: "true",
+		name:  "default",
+		value: true,
 	}
 }
 
@@ -209,7 +215,7 @@ func (r *ResourceRecords) AddMeta(meta ResourceMeta) *ResourceRecords {
 		return r
 	}
 	if r.Meta == nil {
-		r.Meta = map[string]string{}
+		r.Meta = map[string]interface{}{}
 	}
 	r.Meta[meta.name] = meta.value
 	return r

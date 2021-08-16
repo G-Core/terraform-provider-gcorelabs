@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDnsZone(t *testing.T) {
+func TestAccDnsZone1(t *testing.T) {
 
 	random := time.Now().Nanosecond()
-	name := fmt.Sprintf("terraform_test_key_%d", random)
+	name := fmt.Sprintf("terraformtestkey%d", random)
 	zone := name + ".com"
 	resourceName := fmt.Sprintf("%s.%s", DNSZoneResource, name)
 
@@ -33,7 +33,7 @@ resource "%s" "%s" {
 				Config: templateCreate(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, DNSZoneSchemaName, name),
+					resource.TestCheckResourceAttr(resourceName, DNSZoneSchemaName, zone),
 				),
 			},
 		},

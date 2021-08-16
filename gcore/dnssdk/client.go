@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -295,6 +296,8 @@ func (c *Client) do(ctx context.Context, method, uri string, bodyParams interfac
 	if err != nil {
 		return fmt.Errorf("failed to parse endpoint: %w", err)
 	}
+
+	log.Printf("[DEBUG] dns api request: %s %s %s \n", method, uri, bs)
 
 	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), strings.NewReader(string(bs)))
 	if err != nil {
