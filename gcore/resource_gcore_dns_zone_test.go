@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDnsZone1(t *testing.T) {
+func TestAccDnsZone(t *testing.T) {
 
 	random := time.Now().Nanosecond()
 	name := fmt.Sprintf("terraformtestkey%d", random)

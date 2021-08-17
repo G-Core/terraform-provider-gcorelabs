@@ -43,6 +43,29 @@ resource "%s" "%s" {
 }
 		`, DNSZoneRecordResource, name, zone, fullDomain)
 	}
+	templateUpdate := func() string {
+		return fmt.Sprintf(`
+resource "%s" "%s" {
+  zone = "%s"
+  domain = "%s"
+  type = "TXT"
+  ttl = 20
+
+  resource_records {
+    content  = "12345"
+    
+    meta {
+      latlong = [52.367,4.9041]
+	  ip = ["1.1.2.2"]
+	  notes = ["notes"]
+	  continents = ["america"]
+	  countries = ["usa"]
+	  default = false
+  	}
+  }
+}
+		`, DNSZoneRecordResource, name, zone, fullDomain)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -92,6 +115,48 @@ resource "%s" "%s" {
 						fmt.Sprintf("%s.0.%s.0.%s",
 							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaDefault),
 						"true"),
+				),
+			},
+			{
+				Config: templateUpdate(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, DNSZoneRecordSchemaDomain, fullDomain),
+					resource.TestCheckResourceAttr(resourceName, DNSZoneRecordSchemaType, "TXT"),
+					resource.TestCheckResourceAttr(resourceName, DNSZoneRecordSchemaTTL, "20"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s", DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaContent),
+						"12345"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s.0.%s.0",
+							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaLatLong),
+						"52.367"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s.0.%s.1",
+							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaLatLong),
+						"4.9041"),
+					resource.TestCheckNoResourceAttr(resourceName, fmt.Sprintf("%s.0.%s.0.%s.0",
+						DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaAsn)),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s.0.%s.0",
+							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaIP),
+						"1.1.2.2"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s.0.%s.0",
+							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaNotes),
+						"notes"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s.0.%s.0",
+							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaContinents),
+						"america"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s.0.%s.0",
+							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaCountries),
+						"usa"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s.0.%s",
+							DNSZoneRecordSchemaResourceRecords, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaDefault),
+						"false"),
 				),
 			},
 		},
