@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-gcorelabs/gcore/dnssdk"
 	"io"
 	"log"
 	"net"
@@ -14,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	dnssdk "github.com/G-Core/g-dns-sdk-go"
 	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"

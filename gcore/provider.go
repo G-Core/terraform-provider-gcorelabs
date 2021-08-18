@@ -3,11 +3,11 @@ package gcore
 import (
 	"context"
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-gcorelabs/gcore/dnssdk"
 	"log"
 	"net/http"
 	"net/url"
 
+	dnssdk "github.com/G-Core/g-dns-sdk-go"
 	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcdnProvider "github.com/G-Core/gcorelabscdn-go/gcore/provider"

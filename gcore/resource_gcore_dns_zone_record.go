@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-gcorelabs/gcore/dnssdk"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 
+	dnssdk "github.com/G-Core/g-dns-sdk-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
