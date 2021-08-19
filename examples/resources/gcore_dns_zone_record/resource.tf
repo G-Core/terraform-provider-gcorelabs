@@ -13,7 +13,7 @@ resource "gcore_dns_zone_record" "subdomain_examplezone" {
   type = "TXT"
   ttl = 10
 
-  resource_records {
+  resource_record {
     content  = "1234"
 
     meta {

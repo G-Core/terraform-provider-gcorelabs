@@ -28,7 +28,7 @@ resource "gcore_dns_zone_record" "subdomain_examplezone" {
   type = "TXT"
   ttl = 10
 
-  resource_records {
+  resource_record {
     content  = "1234"
 
     meta {
@@ -50,7 +50,7 @@ resource "gcore_dns_zone_record" "subdomain_examplezone" {
 ### Required
 
 - **domain** (String) A domain of DNS Zone Record resource.
-- **resource_records** (Block Set, Min: 1) An array of contents with meta of DNS Zone Record resource. (see [below for nested schema](#nestedblock--resource_records))
+- **resource_record** (Block Set, Min: 1) An array of contents with meta of DNS Zone Record resource. (see [below for nested schema](#nestedblock--resource_record))
 - **type** (String) A type of DNS Zone Record resource.
 - **zone** (String) A zone of DNS Zone Record resource.
 
@@ -59,8 +59,8 @@ resource "gcore_dns_zone_record" "subdomain_examplezone" {
 - **id** (String) The ID of this resource.
 - **ttl** (Number) A ttl of DNS Zone Record resource.
 
-<a id="nestedblock--resource_records"></a>
-### Nested Schema for `resource_records`
+<a id="nestedblock--resource_record"></a>
+### Nested Schema for `resource_record`
 
 Required:
 
@@ -68,10 +68,10 @@ Required:
 
 Optional:
 
-- **meta** (Block Set, Max: 1) (see [below for nested schema](#nestedblock--resource_records--meta))
+- **meta** (Block Set, Max: 1) (see [below for nested schema](#nestedblock--resource_record--meta))
 
-<a id="nestedblock--resource_records--meta"></a>
-### Nested Schema for `resource_records.meta`
+<a id="nestedblock--resource_record--meta"></a>
+### Nested Schema for `resource_record.meta`
 
 Optional:
 

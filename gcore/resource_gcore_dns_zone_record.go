@@ -22,9 +22,9 @@ const (
 	DNSZoneRecordSchemaType   = "type"
 	DNSZoneRecordSchemaTTL    = "ttl"
 
-	DNSZoneRecordSchemaResourceRecords = "resource_records"
-	DNSZoneRecordSchemaContent         = "content"
-	DNSZoneRecordSchemaMeta            = "meta"
+	DNSZoneRecordSchemaResourceRecord = "resource_record"
+	DNSZoneRecordSchemaContent        = "content"
+	DNSZoneRecordSchemaMeta           = "meta"
 
 	DNSZoneRecordSchemaMetaAsn        = "asn"
 	DNSZoneRecordSchemaMetaIP         = "ip"
@@ -97,7 +97,7 @@ func resourceDNSZoneRecord() *schema.Resource {
 				},
 				Description: "A ttl of DNS Zone Record resource.",
 			},
-			DNSZoneRecordSchemaResourceRecords: {
+			DNSZoneRecordSchemaResourceRecord: {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
@@ -300,7 +300,7 @@ func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m in
 		rr = append(rr, r)
 	}
 	if len(rr) > 0 {
-		_ = d.Set(DNSZoneRecordSchemaResourceRecords, rr)
+		_ = d.Set(DNSZoneRecordSchemaResourceRecord, rr)
 	}
 
 	return nil
@@ -330,7 +330,7 @@ func resourceDNSZoneRecordDelete(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func fillRRSet(d *schema.ResourceData, rType string, rrSet *dnssdk.RRSet) error {
-	for _, resource := range d.Get(DNSZoneRecordSchemaResourceRecords).(*schema.Set).List() {
+	for _, resource := range d.Get(DNSZoneRecordSchemaResourceRecord).(*schema.Set).List() {
 		data := resource.(map[string]interface{})
 		content := data[DNSZoneRecordSchemaContent].(string)
 		rr := (&dnssdk.ResourceRecords{}).SetContent(rType, content)
