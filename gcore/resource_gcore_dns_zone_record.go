@@ -3,11 +3,9 @@ package gcore
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"strings"
 
 	dnssdk "github.com/G-Core/g-dns-sdk-go"
@@ -35,8 +33,6 @@ const (
 	DNSZoneRecordSchemaMetaLatLong    = "latlong"
 	DNSZoneRecordSchemaMetaNotes      = "notes"
 	DNSZoneRecordSchemaMetaDefault    = "default"
-
-	DNSZoneRecordSchemaGenZoneWasCreated = "zone_was_created"
 )
 
 func resourceDNSZoneRecord() *schema.Resource {
@@ -100,12 +96,6 @@ func resourceDNSZoneRecord() *schema.Resource {
 					return nil
 				},
 				Description: "A ttl of DNS Zone Record resource.",
-			},
-			DNSZoneRecordSchemaGenZoneWasCreated: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Did zone was created for this domain.",
 			},
 			DNSZoneRecordSchemaResourceRecords: {
 				Type:     schema.TypeSet,
@@ -230,16 +220,7 @@ func resourceDNSZoneRecordCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	_, err = client.Zone(ctx, zone)
 	if err != nil {
-		apiErr := &dnssdk.APIError{}
-		if !errors.As(err, apiErr) || apiErr.StatusCode != http.StatusNotFound {
-			return diag.FromErr(fmt.Errorf("get zone: %w", err))
-		}
-		_, err = client.CreateZone(ctx, zone)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("create zone: %w", err))
-		}
-		log.Printf("[WARN] Zone was created for this Record. Be notice that this Zone will be removed with deleting a Record.\n")
-		_ = d.Set(DNSZoneRecordSchemaGenZoneWasCreated, true)
+		return diag.FromErr(fmt.Errorf("find zone: %w", err))
 	}
 
 	err = client.CreateRRSet(ctx, zone, domain, rType, rrSet)
@@ -313,10 +294,14 @@ func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m in
 		for key, val := range rec.Meta {
 			meta[key] = val
 		}
-		r[DNSZoneRecordSchemaMeta] = []map[string]interface{}{meta}
+		if len(meta) > 0 {
+			r[DNSZoneRecordSchemaMeta] = []map[string]interface{}{meta}
+		}
 		rr = append(rr, r)
 	}
-	_ = d.Set(DNSZoneRecordSchemaResourceRecords, rr)
+	if len(rr) > 0 {
+		_ = d.Set(DNSZoneRecordSchemaResourceRecords, rr)
+	}
 
 	return nil
 }
@@ -339,13 +324,6 @@ func resourceDNSZoneRecordDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(fmt.Errorf("delete zone rrset: %w", err))
 	}
 
-	if d.Get(DNSZoneRecordSchemaGenZoneWasCreated).(bool) {
-		log.Printf("[WARN] deleting auto created Zone %s.\n", zone)
-		err = client.DeleteZone(ctx, zone)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("delete zone: %w", err))
-		}
-	}
 	d.SetId("")
 
 	return nil

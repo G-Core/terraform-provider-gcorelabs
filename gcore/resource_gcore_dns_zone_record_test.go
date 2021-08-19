@@ -11,8 +11,8 @@ import (
 func TestAccDnsZoneRecord(t *testing.T) {
 
 	random := time.Now().Nanosecond()
-	subDomain := "terraformtest"
-	domain := fmt.Sprintf("key%d", random)
+	domain := "terraformtest"
+	subDomain := fmt.Sprintf("key%d", random)
 	name := fmt.Sprintf("%s_%s", subDomain, domain)
 	zone := domain + ".com"
 	fullDomain := subDomain + "." + zone
