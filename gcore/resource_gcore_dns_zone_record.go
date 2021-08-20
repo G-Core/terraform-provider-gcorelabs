@@ -334,7 +334,9 @@ func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m in
 			DNSZoneRecordSchemaFilterStrict: f.Strict,
 		})
 	}
-	_ = d.Set(DNSZoneRecordSchemaFilter, filters)
+	if len(filters) > 0 {
+		_ = d.Set(DNSZoneRecordSchemaFilter, filters)
+	}
 
 	rr := make([]map[string]interface{}, 0)
 	for _, rec := range result.Records {
