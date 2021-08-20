@@ -41,8 +41,8 @@ github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6L
 github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbtp2fGCgRFtBroKn4Dk=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/G-Core/g-dns-sdk-go v0.0.0-20210817143738-34f4db9f1823 h1:n1Ij++0h4EttP9BU8a6gBA6XJ84OETGqo84tB1EnaBk=
-github.com/G-Core/g-dns-sdk-go v0.0.0-20210817143738-34f4db9f1823/go.mod h1:uArGxDKZjXzfIYGoBd9kuXkrd3RbMzv63TzGbyAci/c=
+github.com/G-Core/g-dns-sdk-go v0.1.0 h1:5i1c5E2Gk0Lqlk2krajYomEGbuDjW5KRZx+hBbiuNi8=
+github.com/G-Core/g-dns-sdk-go v0.1.0/go.mod h1:uArGxDKZjXzfIYGoBd9kuXkrd3RbMzv63TzGbyAci/c=
 github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9 h1:6uyKbknI8Q2pIJApPBf6JA0CN5O8bSDU5hBAyoqre8w=
 github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9/go.mod h1:BZef79y4G28n8ic3x6iQWbW+mtpHPSUyJRfIRSkeAJw=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff h1:kIH66Shwb0Y9kvBgykpzmQn2soiHDTCJ/Rr5cQQ1cOk=

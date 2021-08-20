@@ -21,9 +21,15 @@ const (
 	DNSZoneRecordSchemaDomain = "domain"
 	DNSZoneRecordSchemaType   = "type"
 	DNSZoneRecordSchemaTTL    = "ttl"
+	DNSZoneRecordSchemaFilter = "filter"
+
+	DNSZoneRecordSchemaFilterLimit  = "limit"
+	DNSZoneRecordSchemaFilterType   = "type"
+	DNSZoneRecordSchemaFilterStrict = "strict"
 
 	DNSZoneRecordSchemaResourceRecord = "resource_record"
 	DNSZoneRecordSchemaContent        = "content"
+	DNSZoneRecordSchemaEnabled        = "enabled"
 	DNSZoneRecordSchemaMeta           = "meta"
 
 	DNSZoneRecordSchemaMetaAsn        = "asn"
@@ -71,17 +77,13 @@ func resourceDNSZoneRecord() *schema.Resource {
 				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
 					val := strings.TrimSpace(i.(string))
 					types := []string{"A", "AAAA", "MX", "CNAME", "TXT", "CAA", "NS", "SRV"}
-					valid := false
 					for _, t := range types {
 						if strings.EqualFold(t, val) {
-							valid = true
-							break
+							return nil
 						}
 					}
-					if !valid {
-						return diag.Errorf("dns record type should be one of %v", types)
-					}
-					return nil
+					return diag.Errorf("dns record type should be one of %v", types)
+
 				},
 				Description: "A type of DNS Zone Record resource.",
 			},
@@ -97,6 +99,39 @@ func resourceDNSZoneRecord() *schema.Resource {
 				},
 				Description: "A ttl of DNS Zone Record resource.",
 			},
+			DNSZoneRecordSchemaFilter: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						DNSZoneRecordSchemaFilterLimit: {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "A DNS Zone Record filter option that describe how many records will be percolated.",
+						},
+						DNSZoneRecordSchemaFilterStrict: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "A DNS Zone Record filter option that describe possibility to return answers if no records were percolated through filter.",
+						},
+						DNSZoneRecordSchemaFilterType: {
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+								names := []string{"geodns", "geodistance", "default", "first_n"}
+								name := i.(string)
+								for _, n := range names {
+									if n == name {
+										return nil
+									}
+								}
+								return diag.Errorf("dns record filter type should be one of %v", names)
+							},
+							Description: "A DNS Zone Record filter option that describe a name of filter.",
+						},
+					},
+				},
+			},
 			DNSZoneRecordSchemaResourceRecord: {
 				Type:     schema.TypeSet,
 				Required: true,
@@ -106,6 +141,11 @@ func resourceDNSZoneRecord() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "A content of DNS Zone Record resource.",
+						},
+						DNSZoneRecordSchemaEnabled: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Manage of public appearing of DNS Zone Record resource.",
 						},
 						DNSZoneRecordSchemaMeta: {
 							Type:     schema.TypeSet,
@@ -209,7 +249,7 @@ func resourceDNSZoneRecordCreate(ctx context.Context, d *schema.ResourceData, m 
 	defer log.Printf("[DEBUG] Finish DNS Zone Record Resource creating (id=%s %s %s)\n", zone, domain, rType)
 
 	ttl := d.Get(DNSZoneRecordSchemaTTL).(int)
-	rrSet := dnssdk.RRSet{TTL: ttl, Records: make([]dnssdk.ResourceRecords, 0)}
+	rrSet := dnssdk.RRSet{TTL: ttl, Records: make([]dnssdk.ResourceRecord, 0)}
 	err := fillRRSet(d, rType, &rrSet)
 	if err != nil {
 		return diag.FromErr(err)
@@ -243,7 +283,7 @@ func resourceDNSZoneRecordUpdate(ctx context.Context, d *schema.ResourceData, m 
 	defer log.Printf("[DEBUG] Finish DNS Zone Record Resource updating (id=%s %s %s)\n", zone, domain, rType)
 
 	ttl := d.Get(DNSZoneRecordSchemaTTL).(int)
-	rrSet := dnssdk.RRSet{TTL: ttl, Records: make([]dnssdk.ResourceRecords, 0)}
+	rrSet := dnssdk.RRSet{TTL: ttl, Records: make([]dnssdk.ResourceRecord, 0)}
 	err := fillRRSet(d, rType, &rrSet)
 	if err != nil {
 		return diag.FromErr(err)
@@ -286,9 +326,20 @@ func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m in
 	_ = d.Set(DNSZoneRecordSchemaType, rType)
 	_ = d.Set(DNSZoneRecordSchemaTTL, result.TTL)
 
+	filters := make([]map[string]interface{}, 0)
+	for _, f := range result.Filters {
+		filters = append(filters, map[string]interface{}{
+			DNSZoneRecordSchemaFilterLimit:  f.Limit,
+			DNSZoneRecordSchemaFilterType:   f.Type,
+			DNSZoneRecordSchemaFilterStrict: f.Strict,
+		})
+	}
+	_ = d.Set(DNSZoneRecordSchemaFilter, filters)
+
 	rr := make([]map[string]interface{}, 0)
 	for _, rec := range result.Records {
 		r := map[string]interface{}{}
+		r[DNSZoneRecordSchemaEnabled] = rec.Enabled
 		r[DNSZoneRecordSchemaContent] = strings.Join(rec.Content, " ")
 		meta := map[string]interface{}{}
 		for key, val := range rec.Meta {
@@ -330,10 +381,29 @@ func resourceDNSZoneRecordDelete(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func fillRRSet(d *schema.ResourceData, rType string, rrSet *dnssdk.RRSet) error {
+	// set filters
+	for _, resource := range d.Get(DNSZoneRecordSchemaFilter).(*schema.Set).List() {
+		filter := dnssdk.RecordFilter{}
+		filterData := resource.(map[string]interface{})
+		name := filterData[DNSZoneRecordSchemaFilterType].(string)
+		filter.Type = name
+		limit, ok := filterData[DNSZoneRecordSchemaFilterLimit].(int)
+		if ok {
+			filter.Limit = uint(limit)
+		}
+		strict, ok := filterData[DNSZoneRecordSchemaFilterStrict].(bool)
+		if ok {
+			filter.Strict = strict
+		}
+		rrSet.AddFilter(filter)
+	}
+	// set meta
 	for _, resource := range d.Get(DNSZoneRecordSchemaResourceRecord).(*schema.Set).List() {
 		data := resource.(map[string]interface{})
 		content := data[DNSZoneRecordSchemaContent].(string)
-		rr := (&dnssdk.ResourceRecords{}).SetContent(rType, content)
+		rr := (&dnssdk.ResourceRecord{}).SetContent(rType, content)
+		enabled := data[DNSZoneRecordSchemaEnabled].(bool)
+		rr.Enabled = enabled
 		metaErrs := make([]error, 0)
 
 		for _, dataMeta := range data[DNSZoneRecordSchemaMeta].(*schema.Set).List() {

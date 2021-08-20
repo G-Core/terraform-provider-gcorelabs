@@ -27,8 +27,15 @@ resource "%s" "%s" {
   type = "TXT"
   ttl = 10
 
+  filter {
+    type = "geodistance"
+    limit = 1
+    strict = true
+  }
+
   resource_record {
     content  = "1234"
+    enabled = true
     
     meta {
       latlong = [52.367,4.9041]
@@ -81,8 +88,20 @@ resource "%s" "%s" {
 					resource.TestCheckResourceAttr(resourceName, DNSZoneRecordSchemaType, "TXT"),
 					resource.TestCheckResourceAttr(resourceName, DNSZoneRecordSchemaTTL, "10"),
 					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s", DNSZoneRecordSchemaFilter, DNSZoneRecordSchemaFilterType),
+						"geodistance"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s", DNSZoneRecordSchemaFilter, DNSZoneRecordSchemaFilterLimit),
+						"1"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s", DNSZoneRecordSchemaFilter, DNSZoneRecordSchemaFilterStrict),
+						"true"),
+					resource.TestCheckResourceAttr(resourceName,
 						fmt.Sprintf("%s.0.%s", DNSZoneRecordSchemaResourceRecord, DNSZoneRecordSchemaContent),
 						"1234"),
+					resource.TestCheckResourceAttr(resourceName,
+						fmt.Sprintf("%s.0.%s", DNSZoneRecordSchemaResourceRecord, DNSZoneRecordSchemaEnabled),
+						"true"),
 					resource.TestCheckResourceAttr(resourceName,
 						fmt.Sprintf("%s.0.%s.0.%s.0",
 							DNSZoneRecordSchemaResourceRecord, DNSZoneRecordSchemaMeta, DNSZoneRecordSchemaMetaLatLong),

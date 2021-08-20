@@ -3,7 +3,7 @@ module github.com/terraform-providers/terraform-provider-gcorelabs
 go 1.16
 
 require (
-	github.com/G-Core/g-dns-sdk-go v0.0.0-20210817143738-34f4db9f1823
+	github.com/G-Core/g-dns-sdk-go v0.1.0
 	github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9
 	github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff
 	github.com/G-Core/gcorelabscloud-go v0.4.15
@@ -13,8 +13,6 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/stretchr/testify v1.7.0
 	github.com/zclconf/go-cty v1.7.1 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )

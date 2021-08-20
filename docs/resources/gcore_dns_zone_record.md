@@ -28,8 +28,15 @@ resource "gcore_dns_zone_record" "subdomain_examplezone" {
   type = "TXT"
   ttl = 10
 
+  filter {
+    type = "geodistance"
+    limit = 1
+    strict = true
+  }
+
   resource_record {
     content  = "1234"
+    enabled = true
 
     meta {
       latlong = [52.367,4.9041]
@@ -56,6 +63,7 @@ resource "gcore_dns_zone_record" "subdomain_examplezone" {
 
 ### Optional
 
+- **filter** (Block Set) (see [below for nested schema](#nestedblock--filter))
 - **id** (String) The ID of this resource.
 - **ttl** (Number) A ttl of DNS Zone Record resource.
 
@@ -68,6 +76,7 @@ Required:
 
 Optional:
 
+- **enabled** (Boolean) Manage of public appearing of DNS Zone Record resource.
 - **meta** (Block Set, Max: 1) (see [below for nested schema](#nestedblock--resource_record--meta))
 
 <a id="nestedblock--resource_record--meta"></a>
@@ -82,5 +91,19 @@ Optional:
 - **ip** (List of String) An ip meta (e.g. 127.0.0.0) of DNS Zone Record resource.
 - **latlong** (List of Number) A latlong meta (e.g. 27.988056, 86.925278) of DNS Zone Record resource.
 - **notes** (List of String) A notes meta (e.g. Miami DC) of DNS Zone Record resource.
+
+
+
+<a id="nestedblock--filter"></a>
+### Nested Schema for `filter`
+
+Required:
+
+- **type** (String) A DNS Zone Record filter option that describe a name of filter.
+
+Optional:
+
+- **limit** (Number) A DNS Zone Record filter option that describe how many records will be percolated.
+- **strict** (Boolean) A DNS Zone Record filter option that describe possibility to return answers if no records were percolated through filter.
 
 

@@ -13,8 +13,15 @@ resource "gcore_dns_zone_record" "subdomain_examplezone" {
   type = "TXT"
   ttl = 10
 
+  filter {
+    type = "geodistance"
+    limit = 1
+    strict = true
+  }
+
   resource_record {
     content  = "1234"
+    enabled = true
 
     meta {
       latlong = [52.367,4.9041]
