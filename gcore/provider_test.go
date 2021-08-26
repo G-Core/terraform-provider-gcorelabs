@@ -3,21 +3,21 @@ package gcore
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 
+	dnssdk "github.com/G-Core/g-dns-sdk-go"
 	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcdnProvider "github.com/G-Core/gcorelabscdn-go/gcore/provider"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 type VarName string
@@ -27,6 +27,7 @@ const (
 	GCORE_PASSWORD_VAR           VarName = "GCORE_PASSWORD"
 	GCORE_CDN_URL_VAR            VarName = "GCORE_CDN_URL"
 	GCORE_STORAGE_URL_VAR        VarName = "GCORE_STORAGE_API"
+	GCORE_DNS_URL_VAR            VarName = "GCORE_DNS_API"
 	GCORE_IMAGE_VAR              VarName = "GCORE_IMAGE"
 	GCORE_SECGROUP_VAR           VarName = "GCORE_SECGROUP"
 	GCORE_EXT_NET_VAR            VarName = "GCORE_EXT_NET"
@@ -64,6 +65,7 @@ var (
 	GCORE_CDN_ORIGINGROUP_ID = getEnv(GCORE_CDN_ORIGINGROUP_ID_VAR)
 	GCORE_CDN_RESOURCE_ID    = getEnv(GCORE_CDN_RESOURCE_ID_VAR)
 	GCORE_STORAGE_API        = getEnv(GCORE_STORAGE_URL_VAR)
+	GCORE_DNS_API            = getEnv(GCORE_DNS_URL_VAR)
 	GCORE_NETWORK_ID         = getEnv(GCORE_NETWORK_ID_VAR)
 	GCORE_SUBNET_ID          = getEnv(GCORE_SUBNET_ID_VAR)
 	GCORE_CLUSTER_ID         = getEnv(GCORE_CLUSTER_ID_VAR)
@@ -86,6 +88,7 @@ var varsMap = map[VarName]string{
 	GCORE_CDN_ORIGINGROUP_ID_VAR: GCORE_CDN_ORIGINGROUP_ID,
 	GCORE_CDN_RESOURCE_ID_VAR:    GCORE_CDN_RESOURCE_ID,
 	GCORE_STORAGE_URL_VAR:        GCORE_STORAGE_API,
+	GCORE_DNS_URL_VAR:            GCORE_DNS_API,
 	GCORE_NETWORK_ID_VAR:         GCORE_NETWORK_ID,
 	GCORE_SUBNET_ID_VAR:          GCORE_SUBNET_ID,
 	GCORE_CLUSTER_ID_VAR:         GCORE_CLUSTER_ID,
@@ -359,10 +362,23 @@ func createTestConfig() (*Config, error) {
 		storageClient = storageSDK.NewSDK(stHost, stPath, storageSDK.WithBearerAuth(provider.AccessToken))
 	}
 
+	var dnsClient *dnssdk.Client
+	if GCORE_DNS_API != "" {
+		baseUrl, err := url.Parse(GCORE_DNS_API)
+		if err == nil {
+			authorizer := dnssdk.BearerAuth(provider.AccessToken())
+			dnsClient = dnssdk.NewClient(authorizer, func(client *dnssdk.Client) {
+				client.BaseURL = baseUrl
+			})
+		}
+
+	}
+
 	config := Config{
 		Provider:      provider,
 		CDNClient:     cdnService,
 		StorageClient: storageClient,
+		DNSClient:     dnsClient,
 	}
 
 	return &config, err
