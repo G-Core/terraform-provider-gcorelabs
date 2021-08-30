@@ -33,13 +33,26 @@ func resourceDNSZone() *schema.Resource {
 				Description: "A name of DNS Zone resource.",
 			},
 		},
-		CreateContext: resourceDNSZoneCreate,
-		ReadContext:   resourceDNSZoneRead,
-		DeleteContext: resourceDNSZoneDelete,
+		CreateContext: checkDNSDependency(resourceDNSZoneCreate),
+		ReadContext:   checkDNSDependency(resourceDNSZoneRead),
+		DeleteContext: checkDNSDependency(resourceDNSZoneDelete),
 		Description:   "Represent DNS zone resource. https://dns.gcorelabs.com/zones",
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+	}
+}
+
+func checkDNSDependency(next func(context.Context, *schema.ResourceData,
+	interface{}) diag.Diagnostics) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
+
+	return func(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+		config := i.(*Config)
+		client := config.DNSClient
+		if client == nil {
+			return diag.Errorf("dns api client is null. make sure that you defined gcore_dns_api var in gcore provider section.")
+		}
+		return next(ctx, data, i)
 	}
 }
 
