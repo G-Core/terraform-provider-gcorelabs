@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"time"
 
@@ -168,6 +169,11 @@ func resourceInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: fmt.Sprintf("Avalilable value is '%s', '%s', '%s', '%s'", types.SubnetInterfaceType, types.AnySubnetInterfaceType, types.ExternalInterfaceType, types.ReservedFixedIpType),
+						},
+						"order": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Order of attaching interface",
 						},
 						"network_id": {
 							Type:        schema.TypeString,
@@ -380,6 +386,8 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	ifs := d.Get("interface").(*schema.Set).List()
+	//sort interfaces by 'order' key to attach it in right order
+	sort.Sort(instanceInterfaces(ifs))
 	if len(ifs) > 0 {
 		ifaces, err := extractInstanceInterfacesMap(ifs)
 		if err != nil {
@@ -415,6 +423,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		createOpts.Configuration = &conf
 	}
 
+	log.Printf("[DEBUG] Interface create options: %+v", createOpts)
 	results, err := instances.Create(clientv2, createOpts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
@@ -448,7 +457,6 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start Instance reading")
-	log.Printf("[DEBUG] Start Instance reading%s", d.State())
 	var diags diag.Diagnostics
 	config := m.(*Config)
 	provider := config.Provider
@@ -523,9 +531,13 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 			//bad idea, but what to do
 			var iOpts instances.InterfaceOpts
+			var orderedIOpts OrderedInterfaceOpts
 			var ok bool
+			// we need to match our interfaces with api's interfaces
+			// but with don't have any unique value, that's why we use exactly that list of keys
 			for _, k := range []string{subnetID, iface.PortID, iface.NetworkID, types.ExternalInterfaceType.String()} {
-				if iOpts, ok = interfaces[k]; ok {
+				if orderedIOpts, ok = interfaces[k]; ok {
+					iOpts = orderedIOpts.InterfaceOpts
 					break
 				}
 			}
@@ -540,11 +552,12 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 			i["network_id"] = iface.NetworkID
 			i["subnet_id"] = subnetID
 			i["port_id"] = iface.PortID
+			i["order"] = orderedIOpts.Order
 			if iOpts.FloatingIP != nil {
 				i["fip_source"] = iOpts.FloatingIP.Source.String()
 				i["existing_fip_id"] = iOpts.FloatingIP.ExistingFloatingID
 			}
-			i["ip_address"] = iface.IPAssignments[0].IPAddress.String()
+			i["ip_address"] = assignment.IPAddress.String()
 
 			cleanInterfaces = append(cleanInterfaces, i)
 		}
@@ -680,41 +693,37 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if d.HasChange("interface") {
 		ifsOldRaw, ifsNewRaw := d.GetChange("interface")
 
-		//ifsOld, err := extractInstanceInterfaceIntoMap(ifsOldRaw.(*schema.Set).List())
-		//if err != nil {
-		//	return diag.FromErr(err)
-		//}
-		//
-		//ifsNew, err := extractInstanceInterfaceIntoMap(ifsNewRaw.(*schema.Set).List())
-		//if err != nil {
-		//	return diag.FromErr(err)
-		//}
-
 		ifsOld := ifsOldRaw.(*schema.Set)
 		ifsNew := ifsNewRaw.(*schema.Set)
 
 		for _, i := range ifsOld.List() {
-			if ifsNew.Contains(i) {
-				log.Println("[DEBUG] Skipped, dont need detach")
-				continue
-			}
-
 			iface := i.(map[string]interface{})
 			var opts instances.InterfaceOpts
 			opts.PortID = iface["port_id"].(string)
 			opts.IpAddress = iface["ip_address"].(string)
 
-			if err := instances.DetachInterface(client, instanceID, opts).Err; err != nil {
+			log.Printf("[DEBUG] detach interface: %+v", opts)
+			results, err := instances.DetachInterface(client, instanceID, opts).Extract()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			taskID := results.Tasks[0]
+			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+				taskInfo, err := tasks.Get(client, string(task)).Extract()
+				if err != nil {
+					return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w, task: %+v", task, err, taskInfo)
+				}
+				return nil, nil
+			},
+			)
+			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		for _, i := range ifsNew.List() {
-			if ifsOld.Contains(i) {
-				log.Println("[DEBUG] Skipped, dont need attach")
-				continue
-			}
-
+		sortedNewIfs := ifsNew.List()
+		sort.Sort(instanceInterfaces(sortedNewIfs))
+		for _, i := range sortedNewIfs {
 			iface := i.(map[string]interface{})
 
 			iType := types.InterfaceType(iface["type"].(string))
@@ -728,6 +737,7 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 				opts.PortID = iface["port_id"].(string)
 			}
 
+			log.Printf("[DEBUG] attach interface: %+v", opts)
 			results, err := instances.AttachInterface(client, instanceID, opts).Extract()
 			if err != nil {
 				return diag.Errorf("cannot attach interface: %s. Error: %s", iType, err)

@@ -75,6 +75,22 @@ var config = &mapstructure.DecoderConfig{
 	TagName: "json",
 }
 
+type instanceInterfaces []interface{}
+
+func (s instanceInterfaces) Len() int {
+	return len(s)
+}
+
+func (s instanceInterfaces) Less(i, j int) bool {
+	ifLeft := s[i].(map[string]interface{})
+	ifRight := s[j].(map[string]interface{})
+	return ifLeft["order"].(int) < ifRight["order"].(int)
+}
+
+func (s instanceInterfaces) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
 func MapStructureDecoder(strct interface{}, v *map[string]interface{}, config *mapstructure.DecoderConfig) error {
 	config.Result = strct
 	decoder, _ := mapstructure.NewDecoder(config)
@@ -212,9 +228,14 @@ func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.Interfa
 	return Interfaces, nil
 }
 
+type OrderedInterfaceOpts struct {
+	instances.InterfaceOpts
+	Order int
+}
+
 //todo refactoring
-func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]instances.InterfaceOpts, error) {
-	Interfaces := make(map[string]instances.InterfaceOpts)
+func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]OrderedInterfaceOpts, error) {
+	Interfaces := make(map[string]OrderedInterfaceOpts)
 	for _, iface := range interfaces {
 		if iface == nil {
 			continue
@@ -237,11 +258,12 @@ func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]insta
 			}
 			I.FloatingIP = &fip
 		}
-		Interfaces[I.SubnetID] = I
-		Interfaces[I.NetworkID] = I
-		Interfaces[I.PortID] = I
+		orderedInt := OrderedInterfaceOpts{I, inter["order"].(int)}
+		Interfaces[I.SubnetID] = orderedInt
+		Interfaces[I.NetworkID] = orderedInt
+		Interfaces[I.PortID] = orderedInt
 		if I.Type == types.ExternalInterfaceType {
-			Interfaces[I.Type.String()] = I
+			Interfaces[I.Type.String()] = orderedInt
 		}
 	}
 	return Interfaces, nil
@@ -508,6 +530,8 @@ func interfaceUniqueID(i interface{}) int {
 	h := md5.New()
 	iType := e["type"].(string)
 	io.WriteString(h, iType)
+	iOrder := e["order"].(int)
+	io.WriteString(h, strconv.Itoa(iOrder))
 	switch types.InterfaceType(iType) {
 	case types.ReservedFixedIpType:
 		io.WriteString(h, e["port_id"].(string))

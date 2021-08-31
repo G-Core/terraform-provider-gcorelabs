@@ -150,6 +150,7 @@ Optional:
 - **fip_source** (String)
 - **ip_address** (String)
 - **network_id** (String) required if type is 'subnet' or 'any_subnet'
+- **order** (Number) Order of attaching interface
 - **port_id** (String) required if type is  'reserved_fixed_ip'
 - **subnet_id** (String) required if type is 'subnet'
 - **type** (String) Avalilable value is 'subnet', 'any_subnet', 'external', 'reserved_fixed_ip'
