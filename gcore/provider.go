@@ -27,12 +27,12 @@ const (
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"user_name": &schema.Schema{
+			"user_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_USERNAME", ""),
 			},
-			"password": &schema.Schema{
+			"password": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PASSWORD", ""),
@@ -50,37 +50,37 @@ func Provider() *schema.Provider {
 				Description: "Should be set to true when you are gonna to use storage resource with permanent API-token only.",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", ""),
 			},
-			"gcore_platform": &schema.Schema{
+			"gcore_platform": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Platform ulr is used for generate jwt",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM", ""),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM", "https://api.gcdn.co"),
 			},
-			"gcore_api": &schema.Schema{
+			"gcore_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Region API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_API", ""),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_API", "https://api.cloud.gcorelabs.com"),
 			},
-			"gcore_cdn_api": &schema.Schema{
+			"gcore_cdn_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "CDN API",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", ""),
 			},
-			"gcore_storage_api": &schema.Schema{
+			"gcore_storage_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Storage API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_STORAGE_API", ""),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_STORAGE_API", "https://storage.gcorelabs.com/api"),
 			},
 			"gcore_dns_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "DNS API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_DNS_API", ""),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_DNS_API", "https://dnsapi.gcorelabs.com"),
 			},
-			"gcore_client_id": &schema.Schema{
+			"gcore_client_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Client id",
@@ -143,7 +143,7 @@ func Provider() *schema.Provider {
 	}
 }
 
-func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	username := d.Get("user_name").(string)
 	password := d.Get("password").(string)
 	permanentToken := d.Get(ProviderOptPermanentToken).(string)
