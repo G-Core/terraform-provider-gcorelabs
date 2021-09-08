@@ -11,6 +11,9 @@ resource "gcore_snapshot" "snapshot" {
   name = "snapshot example"
   volume_id = "28e9edcb-1593-41fe-971b-da729c6ec301"
   description = "snapshot example description"
+  metadata = {
+    env = "test"
+  }
 }
 
 

@@ -93,6 +93,14 @@ func resourceSnapshot() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"metadata": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -174,6 +182,9 @@ func resourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 	d.Set("volume_id", snapshot.VolumeID)
 	d.Set("region_id", snapshot.RegionID)
 	d.Set("project_id", snapshot.ProjectID)
+	if err := d.Set("metadata", snapshot.Metadata); err != nil {
+		return diag.FromErr(err)
+	}
 
 	log.Println("[DEBUG] Finish snapshot reading")
 	return diags
@@ -182,7 +193,24 @@ func resourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start snapshot updating")
 	snapshotID := d.Id()
-	log.Printf("[DEBUG] Snapshot id = %s", snapshotID)
+	if d.HasChange("metadata") {
+		config := m.(*Config)
+		provider := config.Provider
+		client, err := CreateClient(provider, d, snapshotsPoint, versionPointV1)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		newMeta := prepareRawMetadata(d.Get("metadata").(map[string]interface{}))
+		metadata := make([]snapshots.MetadataOpts, 0, len(newMeta))
+		for k, v := range newMeta {
+			metadata = append(metadata, snapshots.MetadataOpts{Key: k, Value: v})
+		}
+		opts := snapshots.MetadataSetOpts{Metadata: metadata}
+		if _, err := snapshots.MetadataReplace(client, snapshotID, opts).Extract(); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	d.Set("last_updated", time.Now().Format(time.RFC850))
 	log.Println("[DEBUG] Finish snapshot updating")
 	return resourceSnapshotRead(ctx, d, m)
@@ -233,6 +261,18 @@ func getSnapshotData(d *schema.ResourceData) (*snapshots.CreateOpts, error) {
 	snapshotData.Name = d.Get("name").(string)
 	snapshotData.VolumeID = d.Get("volume_id").(string)
 	snapshotData.Description = d.Get("description").(string)
+	metadataRaw := d.Get("metadata").(map[string]interface{})
+	if len(metadataRaw) > 0 {
+		snapshotData.Metadata = prepareRawMetadata(metadataRaw)
+	}
 
 	return &snapshotData, nil
+}
+
+func prepareRawMetadata(raw map[string]interface{}) map[string]string {
+	meta := make(map[string]string, len(raw))
+	for k, v := range raw {
+		meta[k] = v.(string)
+	}
+	return meta
 }

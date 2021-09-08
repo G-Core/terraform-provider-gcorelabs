@@ -464,7 +464,6 @@ func resourceK8sUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 		if d.HasChange("pool.0.node_count") {
 			resizeOpts := clusters.ResizeOpts{
 				NodeCount: pool["node_count"].(int),
-				Pool:      poolID,
 			}
 			results, err := clusters.Resize(client, clusterID, poolID, resizeOpts).Extract()
 			if err != nil {

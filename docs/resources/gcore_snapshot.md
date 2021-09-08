@@ -26,6 +26,9 @@ resource "gcore_snapshot" "snapshot" {
   name = "snapshot example"
   volume_id = "28e9edcb-1593-41fe-971b-da729c6ec301"
   description = "snapshot example description"
+  metadata = {
+    env = "test"
+  }
 }
 ```
 
@@ -42,6 +45,7 @@ resource "gcore_snapshot" "snapshot" {
 - **description** (String)
 - **id** (String) The ID of this resource.
 - **last_updated** (String)
+- **metadata** (Map of String)
 - **project_id** (Number)
 - **project_name** (String)
 - **region_id** (Number)

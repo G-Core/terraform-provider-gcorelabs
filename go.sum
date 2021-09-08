@@ -47,8 +47,8 @@ github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9 h1:6uyKbknI8Q2pIJApPBf6JA0CN5O
 github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9/go.mod h1:BZef79y4G28n8ic3x6iQWbW+mtpHPSUyJRfIRSkeAJw=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff h1:kIH66Shwb0Y9kvBgykpzmQn2soiHDTCJ/Rr5cQQ1cOk=
 github.com/G-Core/gcorelabscdn-go v0.0.0-20210503173228-b4ac8b2402ff/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
-github.com/G-Core/gcorelabscloud-go v0.4.15 h1:cu1GUGiUaGQlljlxRACqNvr6eKx2MCyEXyB8zEVcH50=
-github.com/G-Core/gcorelabscloud-go v0.4.15/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
+github.com/G-Core/gcorelabscloud-go v0.4.26 h1:jClzBf/JG9vX426Qjb+2IFFFSUF5N3E9JbjxaxuVuto=
+github.com/G-Core/gcorelabscloud-go v0.4.26/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/Masterminds/goutils v1.1.0 h1:zukEsf/1JZwCMgHiK3GZftabmxiCw4apj3a28RPBiVg=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver v1.5.0 h1:H65muMkzWKEuNDnfl9d70GUjFniHKHRbFPGBuZ3QEww=
