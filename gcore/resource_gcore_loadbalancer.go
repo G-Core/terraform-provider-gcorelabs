@@ -201,6 +201,11 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 		VipSubnetID:  d.Get("vip_subnet_id").(string),
 	}
 
+	lbFlavor := d.Get("flavor").(string)
+	if len(lbFlavor) != 0 {
+		opts.Flavor = &lbFlavor
+	}
+
 	results, err := loadbalancers.Create(client, opts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
