@@ -103,6 +103,11 @@ func resourceLoadBalancer() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			"vip_address": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Load balancer IP address",
+				Computed:    true,
+			},
 			//todo fix client and enabled vip_port_id
 			//"vip_port_id": &schema.Schema{
 			//	Type: schema.TypeString,
@@ -243,6 +248,10 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 	d.Set("project_id", lb.ProjectID)
 	d.Set("region_id", lb.RegionID)
 	d.Set("name", lb.Name)
+
+	if lb.VipAddress != nil {
+		d.Set("vip_address", lb.VipAddress.String())
+	}
 
 	fields := []string{"flavor", "vip_network_id", "vip_subnet_id"}
 	revertState(d, &fields)

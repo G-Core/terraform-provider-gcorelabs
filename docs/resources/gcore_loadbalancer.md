@@ -54,6 +54,10 @@ resource "gcore_loadbalancer" "lb" {
 - **vip_network_id** (String)
 - **vip_subnet_id** (String)
 
+### Read-Only
+
+- **vip_address** (String) Load balancer IP address
+
 <a id="nestedblock--listener"></a>
 ### Nested Schema for `listener`
 
