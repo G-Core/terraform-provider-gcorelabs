@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	K8sPoint         = "k8s"
+	K8sPoint         = "k8s/clusters"
 	K8sCreateTimeout = 3600
 )
 
