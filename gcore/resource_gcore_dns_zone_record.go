@@ -342,7 +342,7 @@ func resourceDNSZoneRecordRead(ctx context.Context, d *schema.ResourceData, m in
 	for _, rec := range result.Records {
 		r := map[string]interface{}{}
 		r[DNSZoneRecordSchemaEnabled] = rec.Enabled
-		r[DNSZoneRecordSchemaContent] = strings.Join(rec.Content, " ")
+		r[DNSZoneRecordSchemaContent] = rec.ContentToString()
 		meta := map[string]interface{}{}
 		for key, val := range rec.Meta {
 			meta[key] = val
