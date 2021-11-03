@@ -66,7 +66,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "CDN API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", "https://api.gcdn.co/cdn"),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", "https://api.gcdn.co"),
 			},
 			"gcore_storage_api": {
 				Type:        schema.TypeString,
