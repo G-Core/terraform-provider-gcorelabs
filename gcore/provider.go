@@ -41,7 +41,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				Description: "A permanent API-token. Implemented for Storage Terraform Resource only. https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens",
+				Description: "A permanent API-token. Implemented for Storage and Cloud Terraform Resources only. https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", ""),
 			},
 			ProviderOptSkipCredsAuthErr: {
@@ -156,14 +156,23 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 
 	var diags diag.Diagnostics
 
-	provider, err := gc.AuthenticatedClient(gcorecloud.AuthOptions{
-		APIURL:      api,
-		AuthURL:     platform,
-		Username:    username,
-		Password:    password,
-		AllowReauth: true,
-		ClientID:    clientID,
-	})
+	var err error
+	var provider *gcorecloud.ProviderClient
+	if permanentToken != "" {
+		provider, err = gc.APITokenClient(gcorecloud.APITokenOptions{
+			APIURL:   api,
+			APIToken: permanentToken,
+		})
+	} else {
+		provider, err = gc.AuthenticatedClient(gcorecloud.AuthOptions{
+			APIURL:      api,
+			AuthURL:     platform,
+			Username:    username,
+			Password:    password,
+			AllowReauth: true,
+			ClientID:    clientID,
+		})
+	}
 
 	skipAuthErr, ok := d.GetOk(ProviderOptSkipCredsAuthErr)
 	if err != nil && !(ok == true || skipAuthErr.(bool) == true) {
