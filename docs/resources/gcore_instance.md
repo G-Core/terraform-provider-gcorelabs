@@ -93,9 +93,14 @@ resource "gcore_instance" "instance" {
     name = "default"
   }
 
-  metadata {
-    key = "some_key"
-    value = "some_data"
+  //deprecated, use metadata_map instead
+  //metadata {
+  //  key = "some_key"
+  //  value = "some_data"
+  //}
+  metadata_map = {
+    some_key = "some_value"
+    stage = "dev"
   }
 
   configuration {
@@ -180,7 +185,8 @@ resource "gcore_instance" "v" {
 - **id** (String) The ID of this resource.
 - **keypair_name** (String)
 - **last_updated** (String)
-- **metadata** (Block List) (see [below for nested schema](#nestedblock--metadata))
+- **metadata** (Block List, Deprecated) (see [below for nested schema](#nestedblock--metadata))
+- **metadata_map** (Map of String)
 - **name** (String)
 - **name_templates** (List of String)
 - **password** (String)
