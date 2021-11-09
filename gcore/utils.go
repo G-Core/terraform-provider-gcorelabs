@@ -283,7 +283,7 @@ func extractSecurityGroupsMap(secgroups []interface{}) ([]gcorecloud.ItemID, err
 	return SecGroups, nil
 }
 
-func extractMetadataMap(metadata []interface{}) (instances.MetadataSetOpts, error) {
+func extractKeyValue(metadata []interface{}) (instances.MetadataSetOpts, error) {
 	MetaData := make([]instances.MetadataOpts, len(metadata))
 	var MetadataSetOpts instances.MetadataSetOpts
 	for i, meta := range metadata {
@@ -296,6 +296,16 @@ func extractMetadataMap(metadata []interface{}) (instances.MetadataSetOpts, erro
 		MetaData[i] = MD
 	}
 	MetadataSetOpts.Metadata = MetaData
+	return MetadataSetOpts, nil
+}
+
+func extractMetadataMap(metadata map[string]interface{}) (instances.MetadataSetOpts, error) {
+	result := make([]instances.MetadataOpts, 0, len(metadata))
+	var MetadataSetOpts instances.MetadataSetOpts
+	for k, v := range metadata {
+		result = append(result, instances.MetadataOpts{Key: k, Value: v.(string)})
+	}
+	MetadataSetOpts.Metadata = result
 	return MetadataSetOpts, nil
 }
 

@@ -78,9 +78,14 @@ resource "gcore_instance" "instance" {
     name = "default"
   }
 
-  metadata {
-    key = "some_key"
-    value = "some_data"
+  //deprecated, use metadata_map instead
+  //metadata {
+  //  key = "some_key"
+  //  value = "some_data"
+  //}
+  metadata_map = {
+    some_key = "some_value"
+    stage = "dev"
   }
 
   configuration {

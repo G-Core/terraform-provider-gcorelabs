@@ -244,8 +244,10 @@ func resourceInstance() *schema.Resource {
 				Optional: true,
 			},
 			"metadata": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:          schema.TypeList,
+				Optional:      true,
+				Deprecated:    "Use metadata_map instead",
+				ConflictsWith: []string{"metadata_map"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -257,6 +259,14 @@ func resourceInstance() *schema.Resource {
 							Required: true,
 						},
 					},
+				},
+			},
+			"metadata_map": &schema.Schema{
+				Type:          schema.TypeMap,
+				Optional:      true,
+				ConflictsWith: []string{"metadata"},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"configuration": &schema.Schema{
@@ -405,9 +415,16 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		createOpts.SecurityGroups = groups
 	}
 
-	metadata := d.Get("metadata")
-	if len(metadata.([]interface{})) > 0 {
-		md, err := extractMetadataMap(metadata.([]interface{}))
+	if metadata, ok := d.GetOk("metadata"); ok {
+		if len(metadata.([]interface{})) > 0 {
+			md, err := extractKeyValue(metadata.([]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			createOpts.Metadata = &md
+		}
+	} else if metadataRaw, ok := d.GetOk("metadata_map"); ok {
+		md, err := extractMetadataMap(metadataRaw.(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -416,7 +433,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	configuration := d.Get("configuration")
 	if len(configuration.([]interface{})) > 0 {
-		conf, err := extractMetadataMap(configuration.([]interface{}))
+		conf, err := extractKeyValue(configuration.([]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -566,20 +583,35 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	metadata := d.Get("metadata").([]interface{})
-	sliced := make([]map[string]string, len(metadata))
-	for i, data := range metadata {
-		d := data.(map[string]interface{})
-		mdata := make(map[string]string, 2)
-		md, err := instances.MetadataGet(client, instanceID, d["key"].(string)).Extract()
-		if err != nil {
-			return diag.Errorf("cannot get metadata with key: %s. Error: %s", instanceID, err)
+	if metadataRaw, ok := d.GetOk("metadata"); ok {
+		metadata := metadataRaw.([]interface{})
+		sliced := make([]map[string]string, len(metadata))
+		for i, data := range metadata {
+			d := data.(map[string]interface{})
+			mdata := make(map[string]string, 2)
+			md, err := instances.MetadataGet(client, instanceID, d["key"].(string)).Extract()
+			if err != nil {
+				return diag.Errorf("cannot get metadata with key: %s. Error: %s", instanceID, err)
+			}
+			mdata["key"] = md.Key
+			mdata["value"] = md.Value
+			sliced[i] = mdata
 		}
-		mdata["key"] = md.Key
-		mdata["value"] = md.Value
-		sliced[i] = mdata
+		d.Set("metadata", sliced)
+	} else {
+		metadata := d.Get("metadata_map").(map[string]interface{})
+		newMetadata := make(map[string]interface{}, len(metadata))
+		for k, _ := range metadata {
+			md, err := instances.MetadataGet(client, instanceID, k).Extract()
+			if err != nil {
+				return diag.Errorf("cannot get metadata with key: %s. Error: %s", instanceID, err)
+			}
+			newMetadata[k] = md.Value
+		}
+		if err := d.Set("metadata_map", newMetadata); err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	d.Set("metadata", sliced)
 
 	addresses := []map[string][]map[string]string{}
 	for _, data := range instance.Addresses {
@@ -633,33 +665,64 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	if d.HasChange("metadata") {
-		omd, nmd := d.GetChange("metadata")
-		if len(omd.([]interface{})) > 0 {
-			for _, data := range omd.([]interface{}) {
-				d := data.(map[string]interface{})
-				k := d["key"].(string)
-				err := instances.MetadataDelete(client, instanceID, k).Err
+	if _, ok := d.GetOk("metadata"); ok {
+		if d.HasChange("metadata") {
+			omd, nmd := d.GetChange("metadata")
+			if len(omd.([]interface{})) > 0 {
+				for _, data := range omd.([]interface{}) {
+					d := data.(map[string]interface{})
+					k := d["key"].(string)
+					err := instances.MetadataDelete(client, instanceID, k).Err
+					if err != nil {
+						return diag.Errorf("cannot delete metadata key: %s. Error: %s", k, err)
+					}
+				}
+			}
+			if len(nmd.([]interface{})) > 0 {
+				var MetaData []instances.MetadataOpts
+				for _, data := range nmd.([]interface{}) {
+					d := data.(map[string]interface{})
+					var md instances.MetadataOpts
+					md.Key = d["key"].(string)
+					md.Value = d["value"].(string)
+					MetaData = append(MetaData, md)
+				}
+				createOpts := instances.MetadataSetOpts{
+					Metadata: MetaData,
+				}
+				err := instances.MetadataCreate(client, instanceID, createOpts).Err
 				if err != nil {
-					return diag.Errorf("cannot delete metadata key: %s. Error: %s", k, err)
+					return diag.Errorf("cannot create metadata. Error: %s", err)
 				}
 			}
 		}
-		if len(nmd.([]interface{})) > 0 {
-			var MetaData []instances.MetadataOpts
-			for _, data := range nmd.([]interface{}) {
-				d := data.(map[string]interface{})
-				var md instances.MetadataOpts
-				md.Key = d["key"].(string)
-				md.Value = d["value"].(string)
-				MetaData = append(MetaData, md)
+	} else if _, ok := d.GetOk("metadata_map"); ok {
+		if d.HasChange("metadata_map") {
+			omd, nmd := d.GetChange("metadata_map")
+			if len(omd.(map[string]interface{})) > 0 {
+				for k, _ := range omd.(map[string]interface{}) {
+					err := instances.MetadataDelete(client, instanceID, k).Err
+					if err != nil {
+						return diag.Errorf("cannot delete metadata key: %s. Error: %s", k, err)
+					}
+				}
 			}
-			createOpts := instances.MetadataSetOpts{
-				Metadata: MetaData,
-			}
-			err := instances.MetadataCreate(client, instanceID, createOpts).Err
-			if err != nil {
-				return diag.Errorf("cannot create metadata. Error: %s", err)
+			if len(nmd.(map[string]interface{})) > 0 {
+				var MetaData []instances.MetadataOpts
+				for k, v := range nmd.(map[string]interface{}) {
+					md := instances.MetadataOpts{
+						Key:   k,
+						Value: v.(string),
+					}
+					MetaData = append(MetaData, md)
+				}
+				createOpts := instances.MetadataSetOpts{
+					Metadata: MetaData,
+				}
+				err := instances.MetadataCreate(client, instanceID, createOpts).Err
+				if err != nil {
+					return diag.Errorf("cannot create metadata. Error: %s", err)
+				}
 			}
 		}
 	}
