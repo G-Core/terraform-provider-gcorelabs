@@ -275,8 +275,8 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 		}
 
 		for _, cl := range currentListeners {
-			currentL := cl.(map[string]interface{})
-			if currentL != nil {
+			currentL, ok := cl.(map[string]interface{})
+			if currentL != nil && ok {
 				if currentL["name"].(string) == listener.Name {
 					currentL["id"] = listener.ID
 					newListeners[i] = currentL
