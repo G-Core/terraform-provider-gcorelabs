@@ -117,6 +117,7 @@ func resourceLoadBalancer() *schema.Resource {
 			"listener": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
@@ -156,6 +157,19 @@ func resourceLoadBalancer() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"insert_x_forwarded": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"secret_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"sni_secret_id": &schema.Schema{
+							Type:     schema.TypeList,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -190,7 +204,18 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 			Certificate:      l["certificate"].(string),
 			CertificateChain: l["certificate_chain"].(string),
 			PrivateKey:       l["private_key"].(string),
+			InsertXForwarded: l["insert_x_forwarded"].(bool),
+			SecretID:         l["secret_id"].(string),
 		}
+		sniSecretIDRaw := l["sni_secret_id"].([]interface{})
+		if len(sniSecretIDRaw) != 0 {
+			sniSecretID := make([]string, len(sniSecretIDRaw))
+			for i, s := range sniSecretIDRaw {
+				sniSecretID[i] = s.(string)
+			}
+			opts.SNISecretID = sniSecretID
+		}
+
 		listenersOpts[i] = opts
 	}
 
@@ -261,38 +286,30 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 	fields := []string{"flavor", "vip_network_id", "vip_subnet_id"}
 	revertState(d, &fields)
 
-	currentListeners := d.Get("listener").([]interface{})
-	newListeners := make([]map[string]interface{}, len(lb.Listeners))
+	cl := d.Get("listener").([]interface{})[0]
 	listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	for i, l := range lb.Listeners {
+	currentL := cl.(map[string]interface{})
+	for _, l := range lb.Listeners {
 		listener, err := listeners.Get(listenersClient, l.ID).Extract()
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		for _, cl := range currentListeners {
-			currentL, ok := cl.(map[string]interface{})
-			if currentL != nil && ok {
-				if currentL["name"].(string) == listener.Name {
-					currentL["id"] = listener.ID
-					newListeners[i] = currentL
-					break
-				}
-			} else {
-				newListeners[i] = map[string]interface{}{
-					"id":            listener.ID,
-					"name":          listener.Name,
-					"protocol":      listener.Protocol.String(),
-					"protocol_port": listener.ProtocolPort,
-				}
-			}
+		if listener.ProtocolPort == currentL["protocol_port"].(int) && listener.Protocol.String() == currentL["protocol"] {
+			currentL["id"] = listener.ID
+			currentL["name"] = listener.Name
+			currentL["protocol"] = listener.Protocol.String()
+			currentL["protocol_port"] = listener.ProtocolPort
+			currentL["secret_id"] = listener.SecretID
+			currentL["sni_secret_id"] = listener.SNISecretID
+			break
 		}
 	}
-	if err := d.Set("listener", newListeners); err != nil {
+	if err := d.Set("listener", []interface{}{currentL}); err != nil {
 		diag.FromErr(err)
 	}
 
@@ -320,6 +337,99 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 		}
 
 		d.Set("last_updated", time.Now().Format(time.RFC850))
+	}
+
+	if d.HasChange("listener") {
+		client, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		oldListenerRaw, newListenerRaw := d.GetChange("listener")
+		oldListener := oldListenerRaw.([]interface{})[0].(map[string]interface{})
+		newListener := newListenerRaw.([]interface{})[0].(map[string]interface{})
+
+		listenerID := oldListener["id"].(string)
+		if oldListener["protocol"].(string) != newListener["protocol"].(string) ||
+			oldListener["protocol_port"].(int) != newListener["protocol_port"].(int) {
+			//if protocol or port changed listener need to be recreated
+			//delete at first
+			results, err := listeners.Delete(client, listenerID).Extract()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			taskID := results.Tasks[0]
+			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, LBListenerCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
+				_, err := listeners.Get(client, listenerID).Extract()
+				if err == nil {
+					return nil, fmt.Errorf("cannot delete LBListener with ID: %s", listenerID)
+				}
+				switch err.(type) {
+				case gcorecloud.ErrDefault404:
+					return nil, nil
+				default:
+					return nil, err
+				}
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			//create new one
+			opts := listeners.CreateOpts{
+				Name:             newListener["name"].(string),
+				Protocol:         types.ProtocolType(newListener["protocol"].(string)),
+				ProtocolPort:     newListener["protocol_port"].(int),
+				LoadBalancerID:   d.Id(),
+				InsertXForwarded: newListener["insert_x_forwarded"].(bool),
+				SecretID:         newListener["secret_id"].(string),
+			}
+			sniSecretIDRaw := newListener["sni_secret_id"].([]interface{})
+			if len(sniSecretIDRaw) != 0 {
+				sniSecretID := make([]string, len(sniSecretIDRaw))
+				for i, s := range sniSecretIDRaw {
+					sniSecretID[i] = s.(string)
+				}
+				opts.SNISecretID = sniSecretID
+			}
+
+			results, err = listeners.Create(client, opts).Extract()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			taskID = results.Tasks[0]
+			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, LBListenerCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
+				taskInfo, err := tasks.Get(client, string(task)).Extract()
+				if err != nil {
+					return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+				}
+				listenerID, err := listeners.ExtractListenerIDFromTask(taskInfo)
+				if err != nil {
+					return nil, fmt.Errorf("cannot retrieve LBListener ID from task info: %w", err)
+				}
+				return listenerID, nil
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			//update
+			opts := listeners.UpdateOpts{
+				Name:     newListener["name"].(string),
+				SecretID: newListener["secret_id"].(string),
+			}
+			sniSecretIDRaw := newListener["sni_secret_id"].([]interface{})
+			sniSecretID := make([]string, len(sniSecretIDRaw))
+			for i, s := range sniSecretIDRaw {
+				sniSecretID[i] = s.(string)
+			}
+			opts.SNISecretID = sniSecretID
+			if _, err := listeners.Update(client, listenerID, opts).Extract(); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	log.Println("[DEBUG] Finish LoadBalancer updating")
