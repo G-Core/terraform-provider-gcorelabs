@@ -47,8 +47,8 @@ github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9 h1:6uyKbknI8Q2pIJApPBf6JA0CN5O
 github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9/go.mod h1:BZef79y4G28n8ic3x6iQWbW+mtpHPSUyJRfIRSkeAJw=
 github.com/G-Core/gcorelabscdn-go v0.1.2 h1:AiwZY3oIHL4wMJNmIlLgxw4eQmSqtQmkTzrkGpa7ckc=
 github.com/G-Core/gcorelabscdn-go v0.1.2/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
-github.com/G-Core/gcorelabscloud-go v0.4.33 h1:lmQaOGMlc47RM+B07anyOavISj9Pq67pnfAMJa9ZCVE=
-github.com/G-Core/gcorelabscloud-go v0.4.33/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
+github.com/G-Core/gcorelabscloud-go v0.4.34 h1:ZaPag1y7fh+jMzlsI6ZQ0Iwm/NsKyJP0KhBm9P9OX2M=
+github.com/G-Core/gcorelabscloud-go v0.4.34/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/Masterminds/sprig v2.22.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuNhlNS5hqE0NB0E6fgfo2Br3o=
