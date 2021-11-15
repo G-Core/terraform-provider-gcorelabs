@@ -130,6 +130,15 @@ func resourceLbListener() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"secret_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"sni_secret_id": &schema.Schema{
+				Type:     schema.TypeList,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Optional: true,
+			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -156,6 +165,15 @@ func resourceLBListenerCreate(ctx context.Context, d *schema.ResourceData, m int
 		ProtocolPort:     d.Get("protocol_port").(int),
 		LoadBalancerID:   d.Get("loadbalancer_id").(string),
 		InsertXForwarded: d.Get("insert_x_forwarded").(bool),
+		SecretID:         d.Get("secret_id").(string),
+	}
+	sniSecretIDRaw := d.Get("sni_secret_id").([]interface{})
+	if len(sniSecretIDRaw) != 0 {
+		sniSecretID := make([]string, len(sniSecretIDRaw))
+		for i, s := range sniSecretIDRaw {
+			sniSecretID[i] = s.(string)
+		}
+		opts.SNISecretID = sniSecretID
 	}
 
 	results, err := listeners.Create(client, opts).Extract()
@@ -208,6 +226,8 @@ func resourceLBListenerRead(ctx context.Context, d *schema.ResourceData, m inter
 	d.Set("pool_count", lb.PoolCount)
 	d.Set("operating_status", lb.OperationStatus.String())
 	d.Set("provisioning_status", lb.ProvisioningStatus.String())
+	d.Set("secret_id", lb.SecretID)
+	d.Set("sni_secret_id", lb.SNISecretID)
 
 	fields := []string{"project_id", "region_id", "loadbalancer_id", "insert_x_forwarded"}
 	revertState(d, &fields)
@@ -226,10 +246,29 @@ func resourceLBListenerUpdate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
+	var changed bool
+	opts := listeners.UpdateOpts{}
 	if d.HasChange("name") {
-		opts := listeners.UpdateOpts{
-			Name: d.Get("name").(string),
+		opts.Name = d.Get("name").(string)
+		changed = true
+	}
+
+	if d.HasChange("secret_id") {
+		opts.SecretID = d.Get("secret_id").(string)
+		changed = true
+	}
+
+	if d.HasChange("sni_secret_id") {
+		sniSecretIDRaw := d.Get("sni_secret_id").([]interface{})
+		sniSecretID := make([]string, len(sniSecretIDRaw))
+		for i, s := range sniSecretIDRaw {
+			sniSecretID[i] = s.(string)
 		}
+		opts.SNISecretID = sniSecretID
+		changed = true
+	}
+
+	if changed {
 		_, err = listeners.Update(client, d.Id(), opts).Extract()
 		if err != nil {
 			return diag.FromErr(err)
