@@ -540,7 +540,7 @@ func interfaceUniqueID(i interface{}) int {
 	h := md5.New()
 	iType := e["type"].(string)
 	io.WriteString(h, iType)
-	iOrder := e["order"].(int)
+	iOrder, _ := e["order"].(int)
 	io.WriteString(h, strconv.Itoa(iOrder))
 	switch types.InterfaceType(iType) {
 	case types.ReservedFixedIpType:
