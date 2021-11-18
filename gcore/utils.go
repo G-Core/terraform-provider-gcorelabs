@@ -258,7 +258,8 @@ func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]Order
 			}
 			I.FloatingIP = &fip
 		}
-		orderedInt := OrderedInterfaceOpts{I, inter["order"].(int)}
+		o, _ := inter["order"].(int)
+		orderedInt := OrderedInterfaceOpts{I, o}
 		Interfaces[I.SubnetID] = orderedInt
 		Interfaces[I.NetworkID] = orderedInt
 		Interfaces[I.PortID] = orderedInt
