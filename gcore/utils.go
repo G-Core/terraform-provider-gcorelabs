@@ -84,7 +84,9 @@ func (s instanceInterfaces) Len() int {
 func (s instanceInterfaces) Less(i, j int) bool {
 	ifLeft := s[i].(map[string]interface{})
 	ifRight := s[j].(map[string]interface{})
-	return ifLeft["order"].(int) < ifRight["order"].(int)
+	lOrder, _ := ifLeft["order"].(int)
+	rOrder, _ := ifRight["order"].(int)
+	return lOrder < rOrder
 }
 
 func (s instanceInterfaces) Swap(i, j int) {
@@ -668,4 +670,30 @@ func parseCIDRFromString(cidr string) (gcorecloud.CIDR, error) {
 	gccidr.IP = netIPNet.IP
 	gccidr.Mask = netIPNet.Mask
 	return gccidr, nil
+}
+
+func isInterfaceAttached(ifs []instances.Interface, ifs2 map[string]interface{}) bool {
+	subnetID, _ := ifs2["subnet_id"].(string)
+	iType := types.InterfaceType(ifs2["type"].(string))
+	for _, i := range ifs {
+		if iType == types.ExternalInterfaceType && i.NetworkDetails.External {
+			return true
+		}
+		for _, assignement := range i.IPAssignments {
+			if assignement.SubnetID == subnetID {
+				return true
+			}
+		}
+		for _, subPort := range i.SubPorts {
+			if iType == types.ExternalInterfaceType && subPort.NetworkDetails.External {
+				return true
+			}
+			for _, assignement := range subPort.IPAssignments {
+				if assignement.SubnetID == subnetID {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }

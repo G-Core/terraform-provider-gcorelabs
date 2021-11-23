@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -114,20 +114,18 @@ func resourceBmInstance() *schema.Resource {
 			"interface": &schema.Schema{
 				Type:     schema.TypeSet,
 				Set:      interfaceUniqueID,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: fmt.Sprintf("Avalilable value is '%s', '%s'", types.SubnetInterfaceType, types.ExternalInterfaceType),
-							ValidateDiagFunc: func(val interface{}, path cty.Path) diag.Diagnostics {
-								v := types.InterfaceType(val.(string))
-								if v != types.SubnetInterfaceType {
-									return diag.Errorf("subnet type only")
-								}
-								return nil
-							},
+						},
+						"is_trunk": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Calculated after creation. Can't detach interface if is_trunk true",
 						},
 						"network_id": {
 							Type:        schema.TypeString,
@@ -273,10 +271,6 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		newInterface[i] = newIface
 	}
-	//for api interface is required, but we cant attach external, and not receive it in interfaceList method
-	if len(ints) == 0 {
-		newInterface = []bminstances.InterfaceOpts{{Type: types.ExternalInterfaceType}}
-	}
 
 	opts := bminstances.CreateOpts{
 		Flavor:        d.Get("flavor_id").(string),
@@ -372,32 +366,79 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	var cleanInterfaces []interface{}
-	for _, iface := range ifs[0].SubPorts {
-		if len(iface.IPAssignments) == 0 {
-			continue
-		}
-
+	for _, iface := range ifs {
 		for _, assignment := range iface.IPAssignments {
 			subnetID := assignment.SubnetID
 
-			_, ok := interfaces[subnetID]
+			//bad idea, but what to do
+			var iOpts instances.InterfaceOpts
+			var orderedIOpts OrderedInterfaceOpts
+			var ok bool
+			// we need to match our interfaces with api's interfaces
+			// but with don't have any unique value, that's why we use exactly that list of keys
+			for _, k := range []string{subnetID, iface.PortID, iface.NetworkID, types.ExternalInterfaceType.String()} {
+				if orderedIOpts, ok = interfaces[k]; ok {
+					iOpts = orderedIOpts.InterfaceOpts
+					break
+				}
+			}
+
 			if !ok {
 				continue
 			}
 
 			i := make(map[string]interface{})
 
-			i["type"] = interfaces[subnetID].Type.String()
+			i["type"] = iOpts.Type.String()
 			i["network_id"] = iface.NetworkID
 			i["subnet_id"] = subnetID
 			i["port_id"] = iface.PortID
-			if interfaces[subnetID].FloatingIP != nil {
-				i["fip_source"] = interfaces[subnetID].FloatingIP.Source.String()
-				i["existing_fip_id"] = interfaces[subnetID].FloatingIP.ExistingFloatingID
+			i["is_trunk"] = true
+			if iOpts.FloatingIP != nil {
+				i["fip_source"] = iOpts.FloatingIP.Source.String()
+				i["existing_fip_id"] = iOpts.FloatingIP.ExistingFloatingID
 			}
-			i["ip_address"] = iface.IPAssignments[0].IPAddress.String()
+			i["ip_address"] = assignment.IPAddress.String()
 
 			cleanInterfaces = append(cleanInterfaces, i)
+		}
+
+		for _, iface1 := range iface.SubPorts {
+			for _, assignment := range iface1.IPAssignments {
+				subnetID := assignment.SubnetID
+
+				//bad idea, but what to do
+				var iOpts instances.InterfaceOpts
+				var orderedIOpts OrderedInterfaceOpts
+				var ok bool
+				// we need to match our interfaces with api's interfaces
+				// but with don't have any unique value, that's why we use exactly that list of keys
+				for _, k := range []string{subnetID, iface1.PortID, iface1.NetworkID, types.ExternalInterfaceType.String()} {
+					if orderedIOpts, ok = interfaces[k]; ok {
+						iOpts = orderedIOpts.InterfaceOpts
+						break
+					}
+				}
+
+				if !ok {
+					continue
+				}
+
+				i := make(map[string]interface{})
+
+				i["type"] = iOpts.Type.String()
+				i["network_id"] = iface1.NetworkID
+				i["subnet_id"] = subnetID
+				i["port_id"] = iface1.PortID
+				i["is_trunk"] = false
+				if iOpts.FloatingIP != nil {
+					i["fip_source"] = iOpts.FloatingIP.Source.String()
+					i["existing_fip_id"] = iOpts.FloatingIP.ExistingFloatingID
+				}
+				i["ip_address"] = assignment.IPAddress.String()
+
+				cleanInterfaces = append(cleanInterfaces, i)
+			}
 		}
 	}
 	if err := d.Set("interface", schema.NewSet(interfaceUniqueID, cleanInterfaces)); err != nil {
@@ -500,33 +541,62 @@ func resourceBmInstanceUpdate(ctx context.Context, d *schema.ResourceData, m int
 			}
 
 			iface := i.(map[string]interface{})
+			if iface["is_trunk"].(bool) {
+				return diag.Errorf("could not detach trunk interface")
+			}
+
 			var opts instances.InterfaceOpts
 			opts.PortID = iface["port_id"].(string)
 			opts.IpAddress = iface["ip_address"].(string)
 
-			if err := instances.DetachInterface(client, instanceID, opts).Err; err != nil {
+			log.Printf("[DEBUG] detach interface: %+v", opts)
+			results, err := instances.DetachInterface(client, instanceID, opts).Extract()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			taskID := results.Tasks[0]
+			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+				taskInfo, err := tasks.Get(client, string(task)).Extract()
+				if err != nil {
+					return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w, task: %+v", task, err, taskInfo)
+				}
+				return nil, nil
+			},
+			)
+			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		for _, i := range ifsNew.List() {
+		currentIfs, err := instances.ListInterfacesAll(client, d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		sortedNewIfs := ifsNew.List()
+		sort.Sort(instanceInterfaces(sortedNewIfs))
+		for _, i := range sortedNewIfs {
 			if ifsOld.Contains(i) {
 				log.Println("[DEBUG] Skipped, dont need attach")
 				continue
 			}
-
 			iface := i.(map[string]interface{})
+			if isInterfaceAttached(currentIfs, iface) {
+				continue
+			}
 
 			iType := types.InterfaceType(iface["type"].(string))
 			opts := instances.InterfaceOpts{Type: iType}
 			switch iType {
 			case types.SubnetInterfaceType:
 				opts.SubnetID = iface["subnet_id"].(string)
-				//opts.NetworkID = iface["network_id"].(string)
-			case types.ExternalInterfaceType:
-				continue
+			case types.AnySubnetInterfaceType:
+				opts.NetworkID = iface["network_id"].(string)
+			case types.ReservedFixedIpType:
+				opts.PortID = iface["port_id"].(string)
 			}
 
+			log.Printf("[DEBUG] attach interface: %+v", opts)
 			results, err := instances.AttachInterface(client, instanceID, opts).Extract()
 			if err != nil {
 				return diag.Errorf("cannot attach interface: %s. Error: %s", iType, err)
