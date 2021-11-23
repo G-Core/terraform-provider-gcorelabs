@@ -27,11 +27,15 @@ resource "gcore_baremetal" "bm" {
   flavor_id = "bm1-infrastructure-small"
   image_id = "1ee7ccee-5003-48c9-8ae0-d96063af75b2" // your image id
 
-  //additional interface, 'subnet' only, 'external' interface create automatically
+  //additional interface, available type is 'subnet' or 'external'
   //  interface {
   //	type = "subnet"
   //	network_id = "9c7867fb-f404-4a2d-8bb5-24acf2fccaf1" //your network_id
   //	subnet_id = "b68ea6e2-c2b6-4a8d-95eb-7194d12a2156" // your subnet_id
+  //  }
+
+  //  interface {
+  //	type = "external"
   //  }
 
   keypair_name = "test" // your keypair name
@@ -44,6 +48,7 @@ resource "gcore_baremetal" "bm" {
 ### Required
 
 - **flavor_id** (String)
+- **interface** (Block Set, Min: 1) (see [below for nested schema](#nestedblock--interface))
 - **name** (String)
 
 ### Optional
@@ -52,7 +57,6 @@ resource "gcore_baremetal" "bm" {
 - **apptemplate_id** (String)
 - **id** (String) The ID of this resource.
 - **image_id** (String)
-- **interface** (Block Set) (see [below for nested schema](#nestedblock--interface))
 - **keypair_name** (String)
 - **last_updated** (String)
 - **metadata** (Block List) (see [below for nested schema](#nestedblock--metadata))
@@ -90,6 +94,7 @@ Optional:
 Read-Only:
 
 - **ip_address** (String)
+- **is_trunk** (Boolean) Calculated after creation. Can't detach interface if is_trunk true
 - **port_id** (String)
 
 

@@ -38,7 +38,7 @@ resource "gcore_loadbalancer" "lb" {
 
 ### Required
 
-- **listener** (Block List, Min: 1) (see [below for nested schema](#nestedblock--listener))
+- **listener** (Block List, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--listener))
 - **name** (String)
 
 ### Optional
@@ -71,7 +71,10 @@ Optional:
 
 - **certificate** (String)
 - **certificate_chain** (String)
+- **insert_x_forwarded** (Boolean)
 - **private_key** (String)
+- **secret_id** (String)
+- **sni_secret_id** (List of String)
 
 Read-Only:
 

@@ -67,6 +67,8 @@ resource "gcore_lblistener" "listener" {
 - **project_name** (String)
 - **region_id** (Number)
 - **region_name** (String)
+- **secret_id** (String)
+- **sni_secret_id** (List of String)
 - **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
