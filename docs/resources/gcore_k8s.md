@@ -44,6 +44,7 @@ resource "gcore_k8s" "v" {
 
 - **fixed_network** (String)
 - **fixed_subnet** (String) Subnet should has router
+- **keypair** (String)
 - **name** (String)
 - **pool** (Block List, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--pool))
 
@@ -51,7 +52,6 @@ resource "gcore_k8s" "v" {
 
 - **auto_healing_enabled** (Boolean)
 - **id** (String) The ID of this resource.
-- **keypair** (String)
 - **last_updated** (String)
 - **master_lb_floating_ip_enabled** (Boolean)
 - **pods_ip_pool** (String)

@@ -116,7 +116,7 @@ func resourceK8s() *schema.Resource {
 			},
 			"keypair": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"pool": &schema.Schema{
 				Type:     schema.TypeList,
