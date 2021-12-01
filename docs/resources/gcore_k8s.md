@@ -51,7 +51,6 @@ resource "gcore_k8s" "v" {
 ### Optional
 
 - **auto_healing_enabled** (Boolean)
-- **external_dns_enabled** (Boolean)
 - **id** (String) The ID of this resource.
 - **last_updated** (String)
 - **master_lb_floating_ip_enabled** (Boolean)

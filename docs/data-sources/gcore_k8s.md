@@ -50,7 +50,6 @@ data "gcore_k8s" "v" {
 - **container_version** (String)
 - **created_at** (String)
 - **discovery_url** (String)
-- **external_dns_enabled** (Boolean)
 - **faults** (Map of String)
 - **fixed_network** (String)
 - **fixed_subnet** (String)

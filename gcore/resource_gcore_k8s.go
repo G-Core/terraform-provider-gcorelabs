@@ -100,10 +100,10 @@ func resourceK8s() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"external_dns_enabled": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
+			//"external_dns_enabled": &schema.Schema{
+			//	Type:     schema.TypeBool,
+			//	Optional: true,
+			//},
 			"master_lb_floating_ip_enabled": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,

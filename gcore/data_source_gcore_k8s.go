@@ -68,10 +68,10 @@ func dataSourceK8s() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"external_dns_enabled": &schema.Schema{
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
+			//"external_dns_enabled": &schema.Schema{
+			//	Type:     schema.TypeBool,
+			//	Computed: true,
+			//},
 			"master_lb_floating_ip_enabled": &schema.Schema{
 				Type:     schema.TypeBool,
 				Computed: true,
