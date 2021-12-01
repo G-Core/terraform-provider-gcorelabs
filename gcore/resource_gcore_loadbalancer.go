@@ -286,13 +286,22 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 	fields := []string{"flavor", "vip_network_id", "vip_subnet_id"}
 	revertState(d, &fields)
 
-	cl := d.Get("listener").([]interface{})[0]
 	listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	currentL := cl.(map[string]interface{})
+	var ok bool
+	currentL := make(map[string]interface{})
+	// we need to find correct listener because after upgrade some of them could be nil
+	// but still in terraform.state
+	cls := d.Get("listener").([]interface{})
+	for _, cl := range cls {
+		if currentL, ok = cl.(map[string]interface{}); ok {
+			break
+		}
+	}
+
 	for _, l := range lb.Listeners {
 		listener, err := listeners.Get(listenersClient, l.ID).Extract()
 		if err != nil {
