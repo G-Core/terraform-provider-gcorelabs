@@ -91,6 +91,7 @@ func resourceInstance() *schema.Resource {
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"name_templates": &schema.Schema{
 				Type:     schema.TypeList,
@@ -641,6 +642,18 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	client, err := CreateClient(provider, d, InstancePoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("name") {
+		nameTemplate := d.Get("name_templates").([]interface{})
+		if len(nameTemplate) == 0 {
+			opts := instances.RenameInstanceOpts{
+				Name: d.Get("name").(string),
+			}
+			if _, err := instances.RenameInstance(client, instanceID, opts).Extract(); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if d.HasChange("flavor_id") {
