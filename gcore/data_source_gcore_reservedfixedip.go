@@ -149,7 +149,7 @@ func dataSourceReservedFixedIPRead(ctx context.Context, d *schema.ResourceData, 
 	for i, p := range reservedFixedIP.AllowedAddressPairs {
 		pair := make(map[string]interface{})
 
-		pair["ip_address"] = p.IPAddress.String()
+		pair["ip_address"] = p.IPAddress
 		pair["mac_address"] = p.MacAddress
 
 		allowedPairs[i] = pair
