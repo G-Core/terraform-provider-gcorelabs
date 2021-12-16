@@ -36,6 +36,7 @@ resource "gcore_baremetal" "bm" {
 
   //  interface {
   //	type = "external"
+  //    is_parent = "true" // if is_parent = true interface cant be detached, and always connected first
   //  }
 
   keypair_name = "test" // your keypair name
@@ -89,13 +90,14 @@ Optional:
 
 - **existing_fip_id** (String)
 - **fip_source** (String)
+- **is_parent** (Boolean) If not set will be calculated after creation. Trunk interface always attached first. Can't detach interface if is_parent true. Fields affect only on creation
 - **network_id** (String) required if type is 'subnet' or 'any_subnet'
+- **order** (Number) Order of attaching interface. Trunk interface always attached first, fields affect only on creation
 - **subnet_id** (String) required if type is 'subnet'
 
 Read-Only:
 
 - **ip_address** (String)
-- **is_trunk** (Boolean) Calculated after creation. Can't detach interface if is_trunk true
 - **port_id** (String)
 
 

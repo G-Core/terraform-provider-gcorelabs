@@ -122,10 +122,16 @@ func resourceBmInstance() *schema.Resource {
 							Required:    true,
 							Description: fmt.Sprintf("Avalilable value is '%s', '%s'", types.SubnetInterfaceType, types.ExternalInterfaceType),
 						},
-						"is_trunk": {
+						"is_parent": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Calculated after creation. Can't detach interface if is_trunk true",
+							Optional:    true,
+							Description: "If not set will be calculated after creation. Trunk interface always attached first. Can't detach interface if is_parent true. Fields affect only on creation",
+						},
+						"order": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Order of attaching interface. Trunk interface always attached first, fields affect only on creation",
 						},
 						"network_id": {
 							Type:        schema.TypeString,
@@ -261,9 +267,11 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	ints := d.Get("interface").(*schema.Set).List()
-	newInterface := make([]bminstances.InterfaceOpts, len(ints))
-	for i, iface := range ints {
+	ifs := d.Get("interface").(*schema.Set).List()
+	//sort interfaces by 'is_parent' at first and by 'order' key to attach it in right order
+	sort.Sort(instanceInterfaces(ifs))
+	newInterface := make([]bminstances.InterfaceOpts, len(ifs))
+	for i, iface := range ifs {
 		raw := iface.(map[string]interface{})
 		newIface := bminstances.InterfaceOpts{
 			Type:      types.InterfaceType(raw["type"].(string)),
@@ -282,6 +290,7 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 		newInterface[i] = newIface
 	}
 
+	log.Printf("[DEBUG] Baremetal interfaces: %+v", newInterface)
 	opts := bminstances.CreateOpts{
 		Flavor:        d.Get("flavor_id").(string),
 		Names:         []string{d.Get("name").(string)},
@@ -397,14 +406,14 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 			subnetID := assignment.SubnetID
 
 			//bad idea, but what to do
-			var iOpts instances.InterfaceOpts
+			var iOpts OrderedInterfaceOpts
 			var orderedIOpts OrderedInterfaceOpts
 			var ok bool
 			// we need to match our interfaces with api's interfaces
 			// but with don't have any unique value, that's why we use exactly that list of keys
 			for _, k := range []string{subnetID, iface.PortID, iface.NetworkID, types.ExternalInterfaceType.String()} {
 				if orderedIOpts, ok = interfaces[k]; ok {
-					iOpts = orderedIOpts.InterfaceOpts
+					iOpts = orderedIOpts
 					break
 				}
 			}
@@ -419,7 +428,8 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 			i["network_id"] = iface.NetworkID
 			i["subnet_id"] = subnetID
 			i["port_id"] = iface.PortID
-			i["is_trunk"] = true
+			i["is_parent"] = true
+			i["order"] = iOpts.Order
 			if iOpts.FloatingIP != nil {
 				i["fip_source"] = iOpts.FloatingIP.Source.String()
 				i["existing_fip_id"] = iOpts.FloatingIP.ExistingFloatingID
@@ -434,14 +444,14 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 				subnetID := assignment.SubnetID
 
 				//bad idea, but what to do
-				var iOpts instances.InterfaceOpts
+				var iOpts OrderedInterfaceOpts
 				var orderedIOpts OrderedInterfaceOpts
 				var ok bool
 				// we need to match our interfaces with api's interfaces
 				// but with don't have any unique value, that's why we use exactly that list of keys
 				for _, k := range []string{subnetID, iface1.PortID, iface1.NetworkID, types.ExternalInterfaceType.String()} {
 					if orderedIOpts, ok = interfaces[k]; ok {
-						iOpts = orderedIOpts.InterfaceOpts
+						iOpts = orderedIOpts
 						break
 					}
 				}
@@ -456,7 +466,8 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 				i["network_id"] = iface1.NetworkID
 				i["subnet_id"] = subnetID
 				i["port_id"] = iface1.PortID
-				i["is_trunk"] = false
+				i["is_parent"] = false
+				i["order"] = iOpts.Order
 				if iOpts.FloatingIP != nil {
 					i["fip_source"] = iOpts.FloatingIP.Source.String()
 					i["existing_fip_id"] = iOpts.FloatingIP.ExistingFloatingID
@@ -607,7 +618,7 @@ func resourceBmInstanceUpdate(ctx context.Context, d *schema.ResourceData, m int
 			}
 
 			iface := i.(map[string]interface{})
-			if iface["is_trunk"].(bool) {
+			if iface["is_parent"].(bool) {
 				return diag.Errorf("could not detach trunk interface")
 			}
 

@@ -21,6 +21,7 @@ resource "gcore_baremetal" "bm" {
 
   //  interface {
   //	type = "external"
+  //    is_parent = "true" // if is_parent = true interface cant be detached, and always connected first
   //  }
 
   keypair_name = "test" // your keypair name

@@ -84,6 +84,21 @@ func (s instanceInterfaces) Len() int {
 func (s instanceInterfaces) Less(i, j int) bool {
 	ifLeft := s[i].(map[string]interface{})
 	ifRight := s[j].(map[string]interface{})
+
+	//only bm instance has a parent interface, and it should be attached first
+	isTrunkLeft, okLeft := ifLeft["is_parent"]
+	isTrunkRight, okRight := ifRight["is_parent"]
+	if okLeft && okRight {
+		left, _ := isTrunkLeft.(bool)
+		right, _ := isTrunkRight.(bool)
+		switch {
+		case left && !right:
+			return true
+		case right && !left:
+			return false
+		}
+	}
+
 	lOrder, _ := ifLeft["order"].(int)
 	rOrder, _ := ifRight["order"].(int)
 	return lOrder < rOrder
