@@ -127,13 +127,6 @@ func resourceSecurityGroup() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: fmt.Sprintf("Available value is %s", strings.Join(types.Protocol("").StringList(), ",")),
-							ValidateDiagFunc: func(v interface{}, path cty.Path) diag.Diagnostics {
-								val := types.Protocol(v.(string))
-								if err := val.IsValid(); err == nil {
-									return nil
-								}
-								return diag.Errorf("wrong protocol '%s', available value is %s", val, strings.Join(types.ProtocolICMP.StringList(), ", "))
-							},
 						},
 						"port_range_min": &schema.Schema{
 							Type:             schema.TypeInt,
