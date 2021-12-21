@@ -294,7 +294,7 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 
 		r["remote_ip_prefix"] = ""
 		if sgr.RemoteIPPrefix != nil {
-			r["remote_ip_prefix"] = *sgr.RemoteIPPrefix
+			r["remote_ip_prefix"] = strings.TrimSuffix(*sgr.RemoteIPPrefix, "/32")
 		}
 
 		r["updated_at"] = sgr.UpdatedAt.String()
