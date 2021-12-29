@@ -50,7 +50,6 @@ resource "gcore_baremetal" "bm" {
 
 - **flavor_id** (String)
 - **interface** (Block Set, Min: 1) (see [below for nested schema](#nestedblock--interface))
-- **name** (String)
 
 ### Optional
 
@@ -62,6 +61,7 @@ resource "gcore_baremetal" "bm" {
 - **last_updated** (String)
 - **metadata** (Block List, Deprecated) (see [below for nested schema](#nestedblock--metadata))
 - **metadata_map** (Map of String)
+- **name** (String)
 - **name_templates** (String)
 - **password** (String)
 - **project_id** (Number)

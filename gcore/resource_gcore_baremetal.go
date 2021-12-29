@@ -89,11 +89,20 @@ func resourceBmInstance() *schema.Resource {
 			},
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
+				ExactlyOneOf: []string{
+					"name",
+					"name_templates",
+				},
 			},
 			"name_templates": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ExactlyOneOf: []string{
+					"name",
+					"name_templates",
+				},
 			},
 			"image_id": {
 				Type:     schema.TypeString,
@@ -293,7 +302,6 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 	log.Printf("[DEBUG] Baremetal interfaces: %+v", newInterface)
 	opts := bminstances.CreateOpts{
 		Flavor:        d.Get("flavor_id").(string),
-		Names:         []string{d.Get("name").(string)},
 		ImageID:       d.Get("image_id").(string),
 		AppTemplateID: d.Get("apptemplate_id").(string),
 		Keypair:       d.Get("keypair_name").(string),
@@ -302,6 +310,11 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 		UserData:      d.Get("user_data").(string),
 		AppConfig:     d.Get("app_config").(map[string]interface{}),
 		Interfaces:    newInterface,
+	}
+
+	name := d.Get("name").(string)
+	if len(name) > 0 {
+		opts.Names = []string{name}
 	}
 
 	nameTpl := d.Get("name_templates").(string)
@@ -545,6 +558,18 @@ func resourceBmInstanceUpdate(ctx context.Context, d *schema.ResourceData, m int
 	client, err := CreateClient(provider, d, InstancePoint, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("name") {
+		nameTemplate := d.Get("name_templates").(string)
+		if len(nameTemplate) == 0 {
+			opts := instances.RenameInstanceOpts{
+				Name: d.Get("name").(string),
+			}
+			if _, err := instances.RenameInstance(client, instanceID, opts).Extract(); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if d.HasChange("metadata") {
