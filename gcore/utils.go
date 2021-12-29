@@ -581,9 +581,10 @@ func volumeUniqueID(i interface{}) int {
 func secGroupUniqueID(i interface{}) int {
 	e := i.(map[string]interface{})
 	h := md5.New()
+	proto, _ := e["protocol"].(string)
 	io.WriteString(h, e["direction"].(string))
 	io.WriteString(h, e["ethertype"].(string))
-	io.WriteString(h, e["protocol"].(string))
+	io.WriteString(h, proto)
 	io.WriteString(h, strconv.Itoa(e["port_range_min"].(int)))
 	io.WriteString(h, strconv.Itoa(e["port_range_max"].(int)))
 	io.WriteString(h, e["description"].(string))

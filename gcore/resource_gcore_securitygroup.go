@@ -276,6 +276,8 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 
 		if sgr.Protocol != nil {
 			r["protocol"] = sgr.Protocol.String()
+		} else {
+			r["protocol"] = types.ProtocolAny
 		}
 
 		r["port_range_max"] = 0
