@@ -221,6 +221,7 @@ func resourceDNSZoneRecord() *schema.Resource {
 									DNSZoneRecordSchemaMetaDefault: {
 										Type:        schema.TypeBool,
 										Optional:    true,
+										Default:     false,
 										Description: "Fallback meta equals true marks records which are used as a default answer (when nothing was selected by specified meta fields).",
 									},
 								},
@@ -467,7 +468,7 @@ func fillRRSet(d *schema.ResourceData, rType string, rrSet *dnssdk.RRSet) error 
 			for i, v := range val {
 				asn[i] = uint64(v.(int))
 			}
-			if len(notes) > 0 {
+			if len(asn) > 0 {
 				rr.AddMeta(dnssdk.NewResourceMetaAsn(asn...))
 			}
 
