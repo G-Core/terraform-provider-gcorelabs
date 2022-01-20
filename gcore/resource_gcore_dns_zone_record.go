@@ -145,6 +145,7 @@ func resourceDNSZoneRecord() *schema.Resource {
 						DNSZoneRecordSchemaEnabled: {
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Default:     true,
 							Description: "Manage of public appearing of DNS Zone Record resource.",
 						},
 						DNSZoneRecordSchemaMeta: {
