@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 
 	dnssdk "github.com/G-Core/g-dns-sdk-go"
 	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
@@ -218,6 +219,7 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		}
 		config.DNSClient = dnssdk.NewClient(authorizer, func(client *dnssdk.Client) {
 			client.BaseURL = baseUrl
+			client.Debug = os.Getenv("TF_LOG") == "DEBUG"
 		})
 	}
 
