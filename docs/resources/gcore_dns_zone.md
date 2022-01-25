@@ -38,4 +38,11 @@ resource "gcore_dns_zone" "example_zone" {
 
 - **id** (String) The ID of this resource.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using zone name format
+terraform import gcore_dns_zone.example_zone example_zone.com
+```

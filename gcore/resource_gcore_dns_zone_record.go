@@ -238,7 +238,18 @@ func resourceDNSZoneRecord() *schema.Resource {
 		DeleteContext: checkDNSDependency(resourceDNSZoneRecordDelete),
 		Description:   "Represent DNS Zone Record resource. https://dns.gcorelabs.com/zones",
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				parts := strings.Split(d.Id(), ":")
+				if len(parts) != 3 {
+					return nil, fmt.Errorf("format must be as zone:domain:type")
+				}
+				_ = d.Set(DNSZoneRecordSchemaZone, parts[0])
+				d.SetId(parts[0])
+				_ = d.Set(DNSZoneRecordSchemaDomain, parts[1])
+				_ = d.Set(DNSZoneRecordSchemaType, parts[2])
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 	}
 }

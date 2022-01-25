@@ -22,6 +22,36 @@ provider gcore {
   gcore_dns_api = "https://dnsapi.gcorelabs.com"
 }
 
+//
+// example0: managing zone and records by TF using variables
+//
+variable "example_domain0" {
+  type    = string
+  default = "examplezone.com"
+}
+
+resource "gcore_dns_zone" "examplezone0" {
+  name = var.example_domain0
+}
+
+resource "gcore_dns_zone_record" "example_rrset0" {
+  zone = gcore_dns_zone.examplezone0.name
+  domain = "${gcore_dns_zone.examplezone0.name}"
+  type = "A"
+  ttl = 100
+
+  resource_record {
+    content = "127.0.0.100"
+  }
+  resource_record {
+    content = "127.0.0.200"
+    // enabled = false
+  }
+}
+
+//
+// example1: managing zone outside of TF 
+//
 resource "gcore_dns_zone_record" "subdomain_examplezone" {
   zone = "examplezone.com"
   domain = "subdomain.examplezone.com"
@@ -106,4 +136,11 @@ Optional:
 - **limit** (Number) A DNS Zone Record filter option that describe how many records will be percolated.
 - **strict** (Boolean) A DNS Zone Record filter option that describe possibility to return answers if no records were percolated through filter.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using zone:domain:type format
+terraform import gcore_dns_zone_record.example_rrset0 example.com:domain.example.com:A
+```
