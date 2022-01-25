@@ -136,4 +136,11 @@ Optional:
 - **limit** (Number) A DNS Zone Record filter option that describe how many records will be percolated.
 - **strict** (Boolean) A DNS Zone Record filter option that describe possibility to return answers if no records were percolated through filter.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using zone:domain:type format
+terraform import gcore_dns_zone_record.example_rrset0 example.com:domain.example.com:A
+```
