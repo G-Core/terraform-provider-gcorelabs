@@ -49,7 +49,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Should be set to true when you are gonna to use storage resource with permanent API-token only.",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", ""),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", false),
 			},
 			"gcore_platform": {
 				Type:        schema.TypeString,

@@ -86,7 +86,7 @@ func resourceRouter() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"type": {
 							Type:        schema.TypeString,
-							Description: "Must be 'manual'",
+							Description: "Must be 'manual' or 'default'",
 							Optional:    true,
 							Computed:    true,
 						},

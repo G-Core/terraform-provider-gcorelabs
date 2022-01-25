@@ -85,7 +85,7 @@ Required:
 Optional:
 
 - **enable_snat** (Boolean)
-- **type** (String) Must be 'manual'
+- **type** (String) Must be 'manual' or 'default'
 
 Read-Only:
 
