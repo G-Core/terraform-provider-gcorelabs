@@ -922,8 +922,6 @@ func resourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	var delOpts instances.DeleteOpts
-	delOpts.DeleteFloatings = true
-
 	results, err := instances.Delete(client, instanceID, delOpts).Extract()
 	if err != nil {
 		return diag.FromErr(err)

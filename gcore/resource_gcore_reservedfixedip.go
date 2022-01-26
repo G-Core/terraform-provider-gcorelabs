@@ -322,7 +322,14 @@ func resourceReservedFixedIPDelete(ctx context.Context, d *schema.ResourceData, 
 	id := d.Id()
 	results, err := reservedfixedips.Delete(client, id).Extract()
 	if err != nil {
-		return diag.FromErr(err)
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			d.SetId("")
+			log.Printf("[DEBUG] Finish of ReservedFixedIP deleting")
+			return diags
+		default:
+			return diag.FromErr(err)
+		}
 	}
 
 	taskID := results.Tasks[0]

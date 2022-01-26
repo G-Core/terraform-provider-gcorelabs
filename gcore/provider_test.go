@@ -381,7 +381,7 @@ func createTestConfig() (*Config, error) {
 		DNSClient:     dnsClient,
 	}
 
-	return &config, err
+	return &config, nil
 }
 
 func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
