@@ -88,6 +88,11 @@ func resourceNetwork() *schema.Resource {
 				Computed:    true,
 				Description: "'vlan' or 'vxlan' network type is allowed. Default value is 'vxlan'",
 			},
+			"create_router": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Create external router to the network, default false",
+			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -108,10 +113,15 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
+	var createRouter bool
+	//for backwards compatibility
+	createRouter, _ = d.Get("create_router").(bool)
+
 	createOpts := networks.CreateOpts{
-		Name: d.Get("name").(string),
-		Mtu:  d.Get("mtu").(int),
-		Type: d.Get("type").(string),
+		Name:         d.Get("name").(string),
+		Mtu:          d.Get("mtu").(int),
+		Type:         d.Get("type").(string),
+		CreateRouter: createRouter,
 	}
 
 	results, err := networks.Create(client, createOpts).Extract()

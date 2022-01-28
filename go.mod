@@ -2,8 +2,6 @@ module github.com/terraform-providers/terraform-provider-gcorelabs
 
 go 1.16
 
-//replace github.com/G-Core/gcorelabscloud-go => /home/ondi/go/src/github.com/G-Core/gcorelabscloud-go
-
 require (
 	github.com/G-Core/g-dns-sdk-go v0.1.2
 	github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9
