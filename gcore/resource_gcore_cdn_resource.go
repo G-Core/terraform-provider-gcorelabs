@@ -139,8 +139,8 @@ func resourceCDNResource() *schema.Resource {
 		CreateContext: resourceCDNResourceCreate,
 		ReadContext:   resourceCDNResourceRead,
 		UpdateContext: resourceCDNResourceUpdate,
-		DeleteContext: resourceCDNRresourceDelete,
-		Description:   "Represent cdn resource",
+		DeleteContext: resourceCDNResourceDelete,
+		Description:   "Represent CDN resource",
 	}
 }
 
@@ -232,7 +232,7 @@ func resourceCDNResourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return resourceCDNResourceRead(ctx, d, m)
 }
 
-func resourceCDNRresourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCDNResourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	resourceID := d.Id()
 	log.Printf("[DEBUG] Start CDN Resource deleting (id=%s)\n", resourceID)
 	config := m.(*Config)
