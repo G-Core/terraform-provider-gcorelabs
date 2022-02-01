@@ -82,6 +82,7 @@ func resourceFloatingIP() *schema.Resource {
 			"fixed_ip_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 					v := val.(string)
 					ip := net.ParseIP(v)
@@ -103,6 +104,7 @@ func resourceFloatingIP() *schema.Resource {
 			"port_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"updated_at": &schema.Schema{
 				Type:     schema.TypeString,
