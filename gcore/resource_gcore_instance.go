@@ -161,8 +161,7 @@ func resourceInstance() *schema.Resource {
 				},
 			},
 			"interface": &schema.Schema{
-				Type:     schema.TypeSet,
-				Set:      interfaceUniqueID,
+				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -180,6 +179,7 @@ func resourceInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "required if type is 'subnet' or 'any_subnet'",
 							Optional:    true,
+							Computed:    true,
 						},
 						"subnet_id": {
 							Type:        schema.TypeString,
@@ -396,7 +396,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		createOpts.Volumes = vs
 	}
 
-	ifs := d.Get("interface").(*schema.Set).List()
+	ifs := d.Get("interface").([]interface{})
 	//sort interfaces by 'order' key to attach it in right order
 	sort.Sort(instanceInterfaces(ifs))
 	if len(ifs) > 0 {
@@ -533,7 +533,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	interfaces, err := extractInstanceInterfaceIntoMap(d.Get("interface").(*schema.Set).List())
+	interfaces, err := extractInstanceInterfaceIntoMap(d.Get("interface").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -580,7 +580,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 			cleanInterfaces = append(cleanInterfaces, i)
 		}
 	}
-	if err := d.Set("interface", schema.NewSet(interfaceUniqueID, cleanInterfaces)); err != nil {
+	if err := d.Set("interface", cleanInterfaces); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -765,10 +765,10 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if d.HasChange("interface") {
 		ifsOldRaw, ifsNewRaw := d.GetChange("interface")
 
-		ifsOld := ifsOldRaw.(*schema.Set)
-		ifsNew := ifsNewRaw.(*schema.Set)
+		ifsOld := ifsOldRaw.([]interface{})
+		ifsNew := ifsNewRaw.([]interface{})
 
-		for _, i := range ifsOld.List() {
+		for _, i := range ifsOld {
 			iface := i.(map[string]interface{})
 			var opts instances.InterfaceOpts
 			opts.PortID = iface["port_id"].(string)
@@ -793,9 +793,8 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			}
 		}
 
-		sortedNewIfs := ifsNew.List()
-		sort.Sort(instanceInterfaces(sortedNewIfs))
-		for _, i := range sortedNewIfs {
+		sort.Sort(instanceInterfaces(ifsNew))
+		for _, i := range ifsNew {
 			iface := i.(map[string]interface{})
 
 			iType := types.InterfaceType(iface["type"].(string))
