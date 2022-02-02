@@ -121,8 +121,8 @@ func resourceBmInstance() *schema.Resource {
 				},
 			},
 			"interface": &schema.Schema{
-				Type:     schema.TypeSet,
-				Set:      interfaceUniqueID,
+				Type: schema.TypeList,
+				//Set:      interfaceUniqueID,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -276,7 +276,7 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	ifs := d.Get("interface").(*schema.Set).List()
+	ifs := d.Get("interface").([]interface{})
 	//sort interfaces by 'is_parent' at first and by 'order' key to attach it in right order
 	sort.Sort(instanceInterfaces(ifs))
 	newInterface := make([]bminstances.InterfaceOpts, len(ifs))
@@ -404,7 +404,7 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	interfaces, err := extractInstanceInterfaceIntoMap(d.Get("interface").(*schema.Set).List())
+	interfaces, err := extractInstanceInterfaceIntoMap(d.Get("interface").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -491,7 +491,7 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 			}
 		}
 	}
-	if err := d.Set("interface", schema.NewSet(interfaceUniqueID, cleanInterfaces)); err != nil {
+	if err := d.Set("interface", cleanInterfaces); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -633,16 +633,16 @@ func resourceBmInstanceUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if d.HasChange("interface") {
 		ifsOldRaw, ifsNewRaw := d.GetChange("interface")
 
-		ifsOld := ifsOldRaw.(*schema.Set)
-		ifsNew := ifsNewRaw.(*schema.Set)
+		ifsOld := ifsOldRaw.([]interface{})
+		ifsNew := ifsNewRaw.([]interface{})
 
-		for _, i := range ifsOld.List() {
-			if ifsNew.Contains(i) {
+		for _, i := range ifsOld {
+			iface := i.(map[string]interface{})
+			if isInterfaceContains(iface, ifsNew) {
 				log.Println("[DEBUG] Skipped, dont need detach")
 				continue
 			}
 
-			iface := i.(map[string]interface{})
 			if iface["is_parent"].(bool) {
 				return diag.Errorf("could not detach trunk interface")
 			}
@@ -675,14 +675,13 @@ func resourceBmInstanceUpdate(ctx context.Context, d *schema.ResourceData, m int
 			return diag.FromErr(err)
 		}
 
-		sortedNewIfs := ifsNew.List()
-		sort.Sort(instanceInterfaces(sortedNewIfs))
-		for _, i := range sortedNewIfs {
-			if ifsOld.Contains(i) {
+		sort.Sort(instanceInterfaces(ifsNew))
+		for _, i := range ifsNew {
+			iface := i.(map[string]interface{})
+			if isInterfaceContains(iface, ifsOld) {
 				log.Println("[DEBUG] Skipped, dont need attach")
 				continue
 			}
-			iface := i.(map[string]interface{})
 			if isInterfaceAttached(currentIfs, iface) {
 				continue
 			}
