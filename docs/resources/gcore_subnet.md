@@ -60,7 +60,7 @@ resource "gcore_subnet" "subnet" {
 
 ### Optional
 
-- **connect_to_network_router** (Boolean)
+- **connect_to_network_router** (Boolean) True if the network's router should get a gateway in this subnet. Must be explicitly 'false' when gateway_ip is null. Default true.
 - **dns_nameservers** (List of String)
 - **enable_dhcp** (Boolean)
 - **gateway_ip** (String)

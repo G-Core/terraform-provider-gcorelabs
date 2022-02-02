@@ -93,8 +93,11 @@ func resourceSubnet() *schema.Resource {
 				Required: true,
 			},
 			"connect_to_network_router": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Description: "True if the network's router should get a gateway in this subnet. Must be explicitly 'false' when gateway_ip is null. Default true.",
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
 			},
 			"dns_nameservers": &schema.Schema{
 				Type:     schema.TypeList,
@@ -192,14 +195,15 @@ func resourceSubnetCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	createOpts.EnableDHCP = d.Get("enable_dhcp").(bool)
 	createOpts.NetworkID = d.Get("network_id").(string)
 	createOpts.ConnectToNetworkRouter = d.Get("connect_to_network_router").(bool)
-	gateway_ip := d.Get("gateway_ip").(string)
-	gw := net.ParseIP(gateway_ip)
-	if gateway_ip == "disable" {
+	gatewayIP := d.Get("gateway_ip").(string)
+	gw := net.ParseIP(gatewayIP)
+	if gatewayIP == "disable" {
 		createOpts.ConnectToNetworkRouter = false
 	} else {
 		createOpts.GatewayIP = &gw
 	}
 
+	log.Printf("Create subnet ops: %+v", createOpts)
 	results, err := subnets.Create(client, createOpts).Extract()
 	if err != nil {
 		return diag.FromErr(err)

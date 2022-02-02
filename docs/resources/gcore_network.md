@@ -38,6 +38,7 @@ resource "gcore_network" "network" {
 
 ### Optional
 
+- **create_router** (Boolean) Create external router to the network, default true
 - **id** (String) The ID of this resource.
 - **last_updated** (String)
 - **mtu** (Number)

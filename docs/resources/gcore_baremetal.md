@@ -49,7 +49,7 @@ resource "gcore_baremetal" "bm" {
 ### Required
 
 - **flavor_id** (String)
-- **interface** (Block Set, Min: 1) (see [below for nested schema](#nestedblock--interface))
+- **interface** (Block List, Min: 1) (see [below for nested schema](#nestedblock--interface))
 
 ### Optional
 

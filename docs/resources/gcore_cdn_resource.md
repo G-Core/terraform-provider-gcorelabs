@@ -3,12 +3,12 @@
 page_title: "gcore_cdn_resource Resource - terraform-provider-gcorelabs"
 subcategory: ""
 description: |-
-  Represent cdn resource
+  Represent CDN resource
 ---
 
 # gcore_cdn_resource (Resource)
 
-Represent cdn resource
+Represent CDN resource
 
 ## Example Usage
 

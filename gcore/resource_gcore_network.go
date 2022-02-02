@@ -91,7 +91,9 @@ func resourceNetwork() *schema.Resource {
 			"create_router": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Create external router to the network, default false",
+				ForceNew:    true,
+				Default:     true,
+				Description: "Create external router to the network, default true",
 			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,
@@ -113,21 +115,14 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	var createRouter bool
-	//for backwards compatibility
-	if createRouterValue, ok := d.GetOk("create_router"); !ok {
-		createRouter = true
-	} else {
-		createRouter = createRouterValue.(bool)
-	}
-
 	createOpts := networks.CreateOpts{
 		Name:         d.Get("name").(string),
 		Mtu:          d.Get("mtu").(int),
 		Type:         d.Get("type").(string),
-		CreateRouter: createRouter,
+		CreateRouter: d.Get("create_router").(bool),
 	}
 
+	log.Printf("Create network ops: %+v", createOpts)
 	results, err := networks.Create(client, createOpts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
@@ -183,6 +178,9 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("type", network.Type)
 	d.Set("region_id", network.RegionID)
 	d.Set("project_id", network.ProjectID)
+
+	fields := []string{"create_router"}
+	revertState(d, &fields)
 
 	log.Println("[DEBUG] Finish network reading")
 	return diags
