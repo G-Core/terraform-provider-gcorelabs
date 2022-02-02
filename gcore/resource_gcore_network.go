@@ -115,7 +115,11 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	var createRouter bool
 	//for backwards compatibility
-	createRouter, _ = d.Get("create_router").(bool)
+	if createRouterValue, ok := d.GetOk("create_router"); !ok {
+		createRouter = true
+	} else {
+		createRouter = createRouterValue.(bool)
+	}
 
 	createOpts := networks.CreateOpts{
 		Name:         d.Get("name").(string),

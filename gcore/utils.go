@@ -713,3 +713,23 @@ func isInterfaceAttached(ifs []instances.Interface, ifs2 map[string]interface{})
 	}
 	return false
 }
+
+func isInterfaceContains(verifiable map[string]interface{}, ifsSet []interface{}) bool {
+	verifiableType := verifiable["type"].(string)
+	verifiableSubnetID, _ := verifiable["subnet_id"].(string)
+	for _, e := range ifsSet {
+		i := e.(map[string]interface{})
+		iType := i["type"].(string)
+		subnetID, _ := i["subnet_id"].(string)
+		if iType == types.ExternalInterfaceType.String() && verifiableType == types.ExternalInterfaceType.String() {
+			return true
+		}
+
+		if iType == verifiableType {
+			if subnetID == verifiableSubnetID {
+				return true
+			}
+		}
+	}
+	return false
+}
