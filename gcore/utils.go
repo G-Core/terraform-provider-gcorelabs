@@ -21,6 +21,7 @@ import (
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/lbpools"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/listeners"
 	typesLb "github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/availablenetworks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
@@ -732,4 +733,15 @@ func isInterfaceContains(verifiable map[string]interface{}, ifsSet []interface{}
 		}
 	}
 	return false
+}
+
+func extractListenerIntoMap(listener *listeners.Listener) map[string]interface{} {
+	l := make(map[string]interface{})
+	l["id"] = listener.ID
+	l["name"] = listener.Name
+	l["protocol"] = listener.Protocol.String()
+	l["protocol_port"] = listener.ProtocolPort
+	l["secret_id"] = listener.SecretID
+	l["sni_secret_id"] = listener.SNISecretID
+	return l
 }

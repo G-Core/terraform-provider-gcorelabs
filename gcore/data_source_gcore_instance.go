@@ -223,6 +223,7 @@ func dataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	ifs, err := instances.ListInterfacesAll(client, instance.ID)
+	log.Printf("instance data source interfaces: %+v", ifs)
 	if err != nil {
 		return diag.FromErr(err)
 	}

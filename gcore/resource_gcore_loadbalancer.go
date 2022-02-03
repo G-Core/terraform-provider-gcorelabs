@@ -33,8 +33,8 @@ func resourceLoadBalancer() *schema.Resource {
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 		Importer: &schema.ResourceImporter{
-			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				projectID, regionID, lbID, err := ImportStringParser(d.Id())
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+				projectID, regionID, lbID, listenerID, err := ImportStringParserExtended(d.Id())
 
 				if err != nil {
 					return nil, err
@@ -42,6 +42,24 @@ func resourceLoadBalancer() *schema.Resource {
 				d.Set("project_id", projectID)
 				d.Set("region_id", regionID)
 				d.SetId(lbID)
+
+				config := m.(*Config)
+				provider := config.Provider
+
+				listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
+				if err != nil {
+					return nil, err
+				}
+
+				listener, err := listeners.Get(listenersClient, listenerID).Extract()
+				if err != nil {
+					return nil, err
+				}
+
+				l := extractListenerIntoMap(listener)
+				if err := d.Set("listener", []interface{}{l}); err != nil {
+					return nil, err
+				}
 
 				return []*schema.ResourceData{d}, nil
 			},
@@ -278,12 +296,13 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 	d.Set("project_id", lb.ProjectID)
 	d.Set("region_id", lb.RegionID)
 	d.Set("name", lb.Name)
+	d.Set("flavor", lb.Flavor.FlavorName)
 
 	if lb.VipAddress != nil {
 		d.Set("vip_address", lb.VipAddress.String())
 	}
 
-	fields := []string{"flavor", "vip_network_id", "vip_subnet_id"}
+	fields := []string{"vip_network_id", "vip_subnet_id"}
 	revertState(d, &fields)
 
 	listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
@@ -307,14 +326,9 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		if listener.ProtocolPort == currentL["protocol_port"].(int) && listener.Protocol.String() == currentL["protocol"] {
-			currentL["id"] = listener.ID
-			currentL["name"] = listener.Name
-			currentL["protocol"] = listener.Protocol.String()
-			currentL["protocol_port"] = listener.ProtocolPort
-			currentL["secret_id"] = listener.SecretID
-			currentL["sni_secret_id"] = listener.SNISecretID
+		port, _ := currentL["protocol_port"].(int)
+		if (listener.ProtocolPort == port && listener.Protocol.String() == currentL["protocol"]) || len(cls) == 0 {
+			currentL = extractListenerIntoMap(listener)
 			break
 		}
 	}
