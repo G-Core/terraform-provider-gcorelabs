@@ -602,7 +602,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	} else {
 		metadata := d.Get("metadata_map").(map[string]interface{})
 		newMetadata := make(map[string]interface{}, len(metadata))
-		for k, _ := range metadata {
+		for k := range metadata {
 			md, err := instances.MetadataGet(client, instanceID, k).Extract()
 			if err != nil {
 				return diag.Errorf("cannot get metadata with key: %s. Error: %s", instanceID, err)
@@ -710,7 +710,7 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	} else if d.HasChange("metadata_map") {
 		omd, nmd := d.GetChange("metadata_map")
 		if len(omd.(map[string]interface{})) > 0 {
-			for k, _ := range omd.(map[string]interface{}) {
+			for k := range omd.(map[string]interface{}) {
 				err := instances.MetadataDelete(client, instanceID, k).Err
 				if err != nil {
 					return diag.Errorf("cannot delete metadata key: %s. Error: %s", k, err)

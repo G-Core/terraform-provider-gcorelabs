@@ -302,7 +302,7 @@ func objectInfo(resourceType string) string {
 
 func CreateTestClient(provider *gcorecloud.ProviderClient, endpoint, version string) (*gcorecloud.ServiceClient, error) {
 	projectID := 0
-	err := fmt.Errorf("")
+	var err error
 	if strProjectID, exists := os.LookupEnv("TEST_PROJECT_ID"); exists {
 		projectID, err = strconv.Atoi(strProjectID)
 		if err != nil {
@@ -348,6 +348,9 @@ func createTestConfig() (*Config, error) {
 		Password:    os.Getenv("GCORE_PASSWORD"),
 		AllowReauth: true,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	cdnProvider := gcdnProvider.NewClient(GCORE_CDN_URL, gcdnProvider.WithSignerFunc(func(req *http.Request) error {
 		req.Header.Set("Authorization", "Bearer "+provider.AccessToken())

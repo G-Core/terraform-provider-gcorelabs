@@ -319,6 +319,10 @@ func ExtendVolume(client *gcorecloud.ServiceClient, volumeID string, newSize int
 		Size: newSize,
 	}
 	results, err := volumes.Extend(client, volumeID, opts).Extract()
+	if err != nil {
+		return err
+	}
+
 	taskID := results.Tasks[0]
 	log.Printf("[DEBUG] Task id (%s)", taskID)
 	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, volumeExtending, func(task tasks.TaskID) (interface{}, error) {

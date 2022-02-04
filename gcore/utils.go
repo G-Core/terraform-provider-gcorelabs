@@ -387,6 +387,10 @@ func GetRegion(provider *gcorecloud.ProviderClient, regionID int, regionName str
 		Project: 0,
 		Version: "v1",
 	})
+	if err != nil {
+		return 0, err
+	}
+
 	rs, err := regions.ListAll(client)
 	if err != nil {
 		return 0, err
@@ -552,24 +556,6 @@ func extractHealthMonitorMap(d *schema.ResourceData) *lbpools.CreateHealthMonito
 		}
 	}
 	return healthOpts
-}
-
-func interfaceUniqueID(i interface{}) int {
-	e := i.(map[string]interface{})
-	h := md5.New()
-	iType := e["type"].(string)
-	io.WriteString(h, iType)
-	iOrder, _ := e["order"].(int)
-	io.WriteString(h, strconv.Itoa(iOrder))
-	switch types.InterfaceType(iType) {
-	case types.ReservedFixedIpType:
-		io.WriteString(h, e["port_id"].(string))
-	case types.AnySubnetInterfaceType:
-		io.WriteString(h, e["network_id"].(string))
-	case types.SubnetInterfaceType:
-		io.WriteString(h, e["subnet_id"].(string))
-	}
-	return int(binary.BigEndian.Uint64(h.Sum(nil)))
 }
 
 func routerInterfaceUniqueID(i interface{}) int {

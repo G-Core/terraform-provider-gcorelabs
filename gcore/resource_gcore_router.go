@@ -295,7 +295,7 @@ func resourceRouterRead(ctx context.Context, d *schema.ResourceData, m interface
 		ifs[i] = smap
 	}
 	if err := d.Set("interfaces", schema.NewSet(routerInterfaceUniqueID, ifs)); err != nil {
-
+		return diag.FromErr(err)
 	}
 
 	rs := make([]map[string]string, len(router.Routes))

@@ -99,7 +99,7 @@ func dataSourceImageRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	allImages, err := images.ListAll(client, images.ListOpts{})
 	if err != nil {
-
+		return diag.FromErr(err)
 	}
 
 	var found bool
