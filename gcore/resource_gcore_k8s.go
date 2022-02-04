@@ -100,10 +100,10 @@ func resourceK8s() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			//"external_dns_enabled": &schema.Schema{
-			//	Type:     schema.TypeBool,
-			//	Optional: true,
-			//},
+			"external_dns_enabled": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"master_lb_floating_ip_enabled": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -269,12 +269,12 @@ func resourceK8sCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	opts := clusters.CreateOpts{
-		Name:               d.Get("name").(string),
-		FixedNetwork:       d.Get("fixed_network").(string),
-		FixedSubnet:        d.Get("fixed_subnet").(string),
-		KeyPair:            d.Get("keypair").(string),
-		AutoHealingEnabled: d.Get("auto_healing_enabled").(bool),
-		//ExternalDNSEnabled:        d.Get("external_dns_enabled").(bool),
+		Name:                      d.Get("name").(string),
+		FixedNetwork:              d.Get("fixed_network").(string),
+		FixedSubnet:               d.Get("fixed_subnet").(string),
+		KeyPair:                   d.Get("keypair").(string),
+		AutoHealingEnabled:        d.Get("auto_healing_enabled").(bool),
+		ExternalDNSEnabled:        d.Get("external_dns_enabled").(bool),
 		MasterLBFloatingIPEnabled: d.Get("master_lb_floating_ip_enabled").(bool),
 	}
 
@@ -364,7 +364,7 @@ func resourceK8sRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	}
 
 	d.Set("name", cluster.Name)
-	//d.Set("external_dns_enabled", cluster.ExternalDNSEnabled)
+	d.Set("external_dns_enabled", cluster.ExternalDNSEnabled)
 	d.Set("fixed_network", cluster.FixedNetwork)
 	d.Set("fixed_subnet", cluster.FixedSubnet)
 	d.Set("master_lb_floating_ip_enabled", cluster.FloatingIPEnabled)

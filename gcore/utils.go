@@ -572,6 +572,13 @@ func interfaceUniqueID(i interface{}) int {
 	return int(binary.BigEndian.Uint64(h.Sum(nil)))
 }
 
+func routerInterfaceUniqueID(i interface{}) int {
+	e := i.(map[string]interface{})
+	h := md5.New()
+	io.WriteString(h, e["subnet_id"].(string))
+	return int(binary.BigEndian.Uint64(h.Sum(nil)))
+}
+
 func volumeUniqueID(i interface{}) int {
 	e := i.(map[string]interface{})
 	h := md5.New()

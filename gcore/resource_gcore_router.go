@@ -98,7 +98,8 @@ func resourceRouter() *schema.Resource {
 						"network_id": {
 							Type:        schema.TypeString,
 							Description: "Id of the external network",
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 						},
 						"external_fixed_ips": {
 							Type:     schema.TypeList,
@@ -120,8 +121,9 @@ func resourceRouter() *schema.Resource {
 				},
 			},
 			"interfaces": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
+				Set:      routerInterfaceUniqueID,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
@@ -187,9 +189,9 @@ func resourceRouterCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		createOpts.ExternalGatewayInfo = gws
 	}
 
-	ifs := d.Get("interfaces")
-	if len(ifs.([]interface{})) > 0 {
-		ifaces, err := extractInterfacesMap(ifs.([]interface{}))
+	ifs := d.Get("interfaces").(*schema.Set)
+	if ifs.Len() > 0 {
+		ifaces, err := extractInterfacesMap(ifs.List())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -285,14 +287,16 @@ func resourceRouterRead(ctx context.Context, d *schema.ResourceData, m interface
 		d.Set("external_gateway_info", egilst)
 	}
 
-	ifs := make([]map[string]string, len(router.Interfaces))
+	ifs := make([]interface{}, len(router.Interfaces))
 	for i, iface := range router.Interfaces {
-		smap := make(map[string]string, 2)
+		smap := make(map[string]interface{}, 2)
 		smap["type"] = "subnet"
 		smap["subnet_id"] = iface.IPAssignments[0].SubnetID
 		ifs[i] = smap
 	}
-	d.Set("interfaces", ifs)
+	if err := d.Set("interfaces", schema.NewSet(routerInterfaceUniqueID, ifs)); err != nil {
+
+	}
 
 	rs := make([]map[string]string, len(router.Routes))
 	for i, r := range router.Routes {
@@ -340,11 +344,11 @@ func resourceRouterUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if d.HasChange("interfaces") {
 		oldValue, newValue := d.GetChange("interfaces")
-		oifs, err := extractInterfacesMap(oldValue.([]interface{}))
+		oifs, err := extractInterfacesMap(oldValue.(*schema.Set).List())
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		nifs, err := extractInterfacesMap(newValue.([]interface{}))
+		nifs, err := extractInterfacesMap(newValue.(*schema.Set).List())
 		if err != nil {
 			return diag.FromErr(err)
 		}
