@@ -144,6 +144,24 @@ func resourceCDNResource() *schema.Resource {
 								},
 							},
 						},
+						"gzip_on": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+									"value": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -315,6 +333,12 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			Value:   opt["value"].(bool),
 		}
 	}
+	if opt, ok := getOptByName(fields, "gzip_on"); ok {
+		opts.GzipOn = &gcdn.GzipOn{
+			Enabled: opt["enabled"].(bool),
+			Value:   opt["value"].(bool),
+		}
+	}
 	return &opts
 }
 
@@ -353,6 +377,10 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.RedirectHttpToHttps != nil {
 		m := structToMap(options.RedirectHttpToHttps)
 		result["redirect_http_to_https"] = []interface{}{m}
+	}
+	if options.GzipOn != nil {
+		m := structToMap(options.GzipOn)
+		result["gzip_on"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }
