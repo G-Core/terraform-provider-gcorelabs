@@ -21,6 +21,11 @@ func resourceCDNResource() *schema.Resource {
 				Required:    true,
 				Description: "A CNAME that will be used to deliver content though a CDN",
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Custom client description of the resource.",
+			},
 			"origin_group": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -121,6 +126,24 @@ func resourceCDNResource() *schema.Resource {
 								},
 							},
 						},
+						"redirect_http_to_https": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Sets redirect from HTTP protocol to HTTPS for all resource requests.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+									"value": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -151,6 +174,7 @@ func resourceCDNResourceCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	var req resources.CreateRequest
 	req.Cname = d.Get("cname").(string)
+	req.Description = d.Get("description").(string)
 	req.Origin = d.Get("origin").(string)
 	req.OriginGroup = d.Get("origin_group").(int)
 
@@ -187,6 +211,7 @@ func resourceCDNResourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	d.Set("cname", result.Cname)
+	d.Set("description", result.Description)
 	d.Set("origin_group", result.OriginGroup)
 	d.Set("origin_protocol", result.OriginProtocol)
 	d.Set("secondary_hostnames", result.SecondaryHostnames)
@@ -215,6 +240,7 @@ func resourceCDNResourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 
 	var req resources.UpdateRequest
 	req.Active = d.Get("active").(bool)
+	req.Description = d.Get("description").(string)
 	req.SSlEnabled = d.Get("ssl_enabled").(bool)
 	req.SSLData = d.Get("ssl_data").(int)
 	req.OriginGroup = d.Get("origin_group").(int)
@@ -283,7 +309,12 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			Value:   opt["value"].(string),
 		}
 	}
-
+	if opt, ok := getOptByName(fields, "redirect_http_to_https"); ok {
+		opts.RedirectHttpToHttps = &gcdn.RedirectHttpToHttps{
+			Enabled: opt["enabled"].(bool),
+			Value:   opt["value"].(bool),
+		}
+	}
 	return &opts
 }
 
@@ -318,6 +349,10 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.HostHeader != nil {
 		m := structToMap(options.HostHeader)
 		result["host_header"] = []interface{}{m}
+	}
+	if options.RedirectHttpToHttps != nil {
+		m := structToMap(options.RedirectHttpToHttps)
+		result["redirect_http_to_https"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }
