@@ -135,7 +135,8 @@ func resourceCDNResource() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"enabled": {
 										Type:     schema.TypeBool,
-										Required: true,
+										Optional: true,
+										Default:  true,
 									},
 									"value": {
 										Type:     schema.TypeBool,
@@ -153,7 +154,8 @@ func resourceCDNResource() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"enabled": {
 										Type:     schema.TypeBool,
-										Required: true,
+										Optional: true,
+										Default:  true,
 									},
 									"value": {
 										Type:     schema.TypeBool,
@@ -334,8 +336,12 @@ func listToOptions(l []interface{}) *gcdn.Options {
 		}
 	}
 	if opt, ok := getOptByName(fields, "gzip_on"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
 		opts.GzipOn = &gcdn.GzipOn{
-			Enabled: opt["enabled"].(bool),
+			Enabled: enabled,
 			Value:   opt["value"].(bool),
 		}
 	}
