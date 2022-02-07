@@ -186,7 +186,10 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 	}
 
 	cdnProvider := gcdnProvider.NewClient(cdnAPI, gcdnProvider.WithSignerFunc(func(req *http.Request) error {
-		req.Header.Set("Authorization", "Bearer "+provider.AccessToken())
+		for k, v := range provider.AuthenticatedHeaders() {
+			req.Header.Set(k, v)
+		}
+
 		return nil
 	}))
 	cdnService := gcdn.NewService(cdnProvider)
