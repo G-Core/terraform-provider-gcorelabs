@@ -11,8 +11,12 @@ terraform {
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform = "https://api.gcdn.co"
-  gcore_api = "https://api.cloud.gcorelabs.com"
+  ignore_creds_auth_error  = true
+  permanent_api_token = "251$d3361.............1b35f26d8"
+  gcore_api           = "https://api.cloud.gcorelabs.com"
+  gcore_dns_api       = "https://dnsapi.gcorelabs.com"
+  gcore_platform      = "https://api.gcdn.co"
+  gcore_storage_api   = "https://storage.gcorelabs.com/api"
 }
 
 resource "gcore_keypair" "kp" {

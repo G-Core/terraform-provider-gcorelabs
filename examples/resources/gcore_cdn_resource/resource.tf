@@ -8,7 +8,7 @@ provider gcore {
 
 resource "gcore_cdn_resource" "cdn_example_com" {
   cname = "cdn.example.com"
-  origin_group = 11
+  origin_group = gcore_cdn_origingroup.origin_group_1.id
   origin_protocol = "MATCH"
   secondary_hostnames = ["cdn2.example.com"]
 }

@@ -24,10 +24,14 @@ terraform {
 }
 
 provider gcore {
-  user_name = "test"
-  password = "test"
-  gcore_platform = "https://api.gcdn.co"
-  gcore_api = "https://api.cloud.gcorelabs.com"
+  # user_name           = "test"
+  # password            = "test"
+  # ignore_creds_auth_error  = true
+  permanent_api_token = "251$d3361.............1b35f26d8"
+  gcore_api           = "https://api.cloud.gcorelabs.com"
+  gcore_dns_api       = "https://dnsapi.gcorelabs.com"
+  gcore_platform      = "https://api.gcdn.co"
+  gcore_storage_api   = "https://storage.gcorelabs.com/api"
 }
 
 resource "gcore_keypair" "kp" {
@@ -252,5 +256,5 @@ resource "gcore_lbmember" "lbm2" {
 - **gcore_storage_api** (String) Storage API
 - **ignore_creds_auth_error** (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
 - **password** (String)
-- **permanent_api_token** (String, Sensitive) A permanent API-token. Implemented for Storage and Cloud Terraform Resources only. https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens
+- **permanent_api_token** (String, Sensitive) A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)
 - **user_name** (String)
