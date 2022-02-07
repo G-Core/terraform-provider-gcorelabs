@@ -87,7 +87,8 @@ func resourceCDNResource() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"enabled": {
 										Type:     schema.TypeBool,
-										Required: true,
+										Optional: true,
+										Default:  true,
 									},
 									"value": {
 										Type:        schema.TypeString,
@@ -108,6 +109,27 @@ func resourceCDNResource() *schema.Resource {
 								},
 							},
 						},
+						"browser_cache_settings": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "",
+									},
+								},
+							},
+						},
 						"host_header": {
 							Type:        schema.TypeList,
 							MaxItems:    1,
@@ -117,7 +139,8 @@ func resourceCDNResource() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"enabled": {
 										Type:     schema.TypeBool,
-										Required: true,
+										Optional: true,
+										Default:  true,
 									},
 									"value": {
 										Type:     schema.TypeString,
@@ -164,6 +187,78 @@ func resourceCDNResource() *schema.Resource {
 								},
 							},
 						},
+						"cors": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"value": {
+										Type:     schema.TypeSet,
+										Elem:     &schema.Schema{Type: schema.TypeString},
+										Required: true,
+									},
+								},
+							},
+						},
+						"rewrite": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"body": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"flag": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  "break",
+									},
+								},
+							},
+						},
+						"webp": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"jpg_quality": {
+										Type:     schema.TypeInt,
+										Required: true,
+									},
+									"png_quality": {
+										Type:     schema.TypeInt,
+										Required: true,
+									},
+									"png_lossless": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -197,6 +292,8 @@ func resourceCDNResourceCreate(ctx context.Context, d *schema.ResourceData, m in
 	req.Description = d.Get("description").(string)
 	req.Origin = d.Get("origin").(string)
 	req.OriginGroup = d.Get("origin_group").(int)
+
+	req.Options = listToOptions(d.Get("options").([]interface{}))
 
 	for _, hostname := range d.Get("secondary_hostnames").(*schema.Set).List() {
 		req.SecondaryHostnames = append(req.SecondaryHostnames, hostname.(string))
@@ -323,6 +420,16 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			Default:      opt["default"].(string),
 		}
 	}
+	if opt, ok := getOptByName(fields, "browser_cache_settings"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.BrowserCacheSettings = &gcdn.BrowserCacheSettings{
+			Enabled: enabled,
+			Value:   opt["value"].(string),
+		}
+	}
 	if opt, ok := getOptByName(fields, "host_header"); ok {
 		opts.HostHeader = &gcdn.HostHeader{
 			Enabled: opt["enabled"].(bool),
@@ -330,8 +437,12 @@ func listToOptions(l []interface{}) *gcdn.Options {
 		}
 	}
 	if opt, ok := getOptByName(fields, "redirect_http_to_https"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
 		opts.RedirectHttpToHttps = &gcdn.RedirectHttpToHttps{
-			Enabled: opt["enabled"].(bool),
+			Enabled: enabled,
 			Value:   opt["value"].(bool),
 		}
 	}
@@ -343,6 +454,41 @@ func listToOptions(l []interface{}) *gcdn.Options {
 		opts.GzipOn = &gcdn.GzipOn{
 			Enabled: enabled,
 			Value:   opt["value"].(bool),
+		}
+	}
+	if opt, ok := getOptByName(fields, "cors"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.Cors = &gcdn.Cors{
+			Enabled: enabled,
+		}
+		for _, v := range opt["value"].(*schema.Set).List() {
+			opts.Cors.Value = append(opts.Cors.Value, v.(string))
+		}
+	}
+	if opt, ok := getOptByName(fields, "rewrite"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.Rewrite = &gcdn.Rewrite{
+			Enabled: enabled,
+			Body:    opt["body"].(string),
+			Flag:    opt["flag"].(string),
+		}
+	}
+	if opt, ok := getOptByName(fields, "webp"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.Webp = &gcdn.Webp{
+			Enabled:     enabled,
+			JPGQuality:  opt["jpg_quality"].(int),
+			PNGQuality:  opt["png_quality"].(int),
+			PNGLossless: opt["png_lossless"].(bool),
 		}
 	}
 	return &opts
@@ -376,6 +522,10 @@ func optionsToList(options *gcdn.Options) []interface{} {
 		m := structToMap(options.EdgeCacheSettings)
 		result["edge_cache_settings"] = []interface{}{m}
 	}
+	if options.BrowserCacheSettings != nil {
+		m := structToMap(options.BrowserCacheSettings)
+		result["browser_cache_settings"] = []interface{}{m}
+	}
 	if options.HostHeader != nil {
 		m := structToMap(options.HostHeader)
 		result["host_header"] = []interface{}{m}
@@ -387,6 +537,18 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.GzipOn != nil {
 		m := structToMap(options.GzipOn)
 		result["gzip_on"] = []interface{}{m}
+	}
+	if options.Cors != nil {
+		m := structToMap(options.Cors)
+		result["cors"] = []interface{}{m}
+	}
+	if options.Rewrite != nil {
+		m := structToMap(options.Rewrite)
+		result["rewrite"] = []interface{}{m}
+	}
+	if options.Webp != nil {
+		m := structToMap(options.Webp)
+		result["webp"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }
