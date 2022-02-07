@@ -90,6 +90,44 @@ func resourceCDNRule() *schema.Resource {
 								},
 							},
 						},
+						"redirect_http_to_https": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Sets redirect from HTTP protocol to HTTPS for all resource requests.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"value": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+								},
+							},
+						},
+						"gzip_on": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"value": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -113,6 +151,8 @@ func resourceCDNRuleCreate(ctx context.Context, d *schema.ResourceData, m interf
 	req.RuleType = d.Get("rule_type").(int)
 
 	resourceID := d.Get("resource_id").(int)
+
+	req.Options = listToOptions(d.Get("options").([]interface{}))
 
 	result, err := client.Rules().Create(ctx, int64(resourceID), &req)
 	if err != nil {
