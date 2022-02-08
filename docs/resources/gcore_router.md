@@ -67,7 +67,7 @@ resource "gcore_router" "router" {
 
 - **external_gateway_info** (Block List, Max: 1) (see [below for nested schema](#nestedblock--external_gateway_info))
 - **id** (String) The ID of this resource.
-- **interfaces** (Block List) (see [below for nested schema](#nestedblock--interfaces))
+- **interfaces** (Block Set) (see [below for nested schema](#nestedblock--interfaces))
 - **last_updated** (String)
 - **project_id** (Number)
 - **project_name** (String)
@@ -78,13 +78,10 @@ resource "gcore_router" "router" {
 <a id="nestedblock--external_gateway_info"></a>
 ### Nested Schema for `external_gateway_info`
 
-Required:
-
-- **network_id** (String) Id of the external network
-
 Optional:
 
 - **enable_snat** (Boolean)
+- **network_id** (String) Id of the external network
 - **type** (String) Must be 'manual' or 'default'
 
 Read-Only:
