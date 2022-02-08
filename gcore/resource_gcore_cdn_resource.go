@@ -46,8 +46,12 @@ var (
 								Description: "Content will be cached according to origin cache settings. The value applies for a response with codes 200, 201, 204, 206, 301, 302, 303, 304, 307, 308 if an origin server does not have caching HTTP headers. Responses with other codes will not be cached.",
 							},
 							"custom_values": {
-								Type:        schema.TypeMap,
-								Optional:    true,
+								Type:     schema.TypeMap,
+								Optional: true,
+								Computed: true,
+								DefaultFunc: func() (interface{}, error) {
+									return map[string]interface{}{}, nil
+								},
 								Elem:        schema.TypeString,
 								Description: "Caching time for a response with specific codes. These settings have a higher priority than the value field. Response code ('304', '404' for example). Use 'any' to specify caching time for all response codes. Caching time in seconds ('0s', '600s' for example). Use '0s' to disable caching for a specific response code.",
 							},
@@ -278,8 +282,12 @@ func resourceCDNResource() *schema.Resource {
 				Description: "This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, we will use HTTP to connect to an origin server. Possible values are: HTTPS, HTTP, MATCH.",
 			},
 			"secondary_hostnames": {
-				Type:        schema.TypeSet,
-				Optional:    true,
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				DefaultFunc: func() (interface{}, error) {
+					return []string{}, nil
+				},
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "List of additional CNAMEs.",
 			},
@@ -325,6 +333,7 @@ func resourceCDNResourceCreate(ctx context.Context, d *schema.ResourceData, m in
 	req.Description = d.Get("description").(string)
 	req.Origin = d.Get("origin").(string)
 	req.OriginGroup = d.Get("origin_group").(int)
+	req.OriginProtocol = resources.Protocol(d.Get("origin_protocol").(string))
 
 	req.Options = listToOptions(d.Get("options").([]interface{}))
 
