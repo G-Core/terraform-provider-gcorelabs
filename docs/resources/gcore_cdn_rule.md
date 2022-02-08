@@ -120,6 +120,7 @@ Optional:
 - **host_header** (Block List, Max: 1) Specify the Host header that CDN servers use when request content from an origin server. Your server must be able to process requests with the chosen header. If the option is in NULL state Host Header value is taken from the CNAME field. (see [below for nested schema](#nestedblock--options--host_header))
 - **redirect_http_to_https** (Block List, Max: 1) Sets redirect from HTTP protocol to HTTPS for all resource requests. (see [below for nested schema](#nestedblock--options--redirect_http_to_https))
 - **rewrite** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--rewrite))
+- **sni** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--sni))
 - **webp** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--webp))
 
 <a id="nestedblock--options--browser_cache_settings"></a>
@@ -171,8 +172,11 @@ Optional:
 
 Required:
 
-- **enabled** (Boolean)
 - **value** (String)
+
+Optional:
+
+- **enabled** (Boolean)
 
 
 <a id="nestedblock--options--redirect_http_to_https"></a>
@@ -198,6 +202,16 @@ Optional:
 
 - **enabled** (Boolean)
 - **flag** (String)
+
+
+<a id="nestedblock--options--sni"></a>
+### Nested Schema for `options.sni`
+
+Optional:
+
+- **custom_hostname** (String) Required to set custom hostname in case sni-type='custom'
+- **enabled** (Boolean)
+- **sni_type** (String) Available values 'dynamic' or 'custom'
 
 
 <a id="nestedblock--options--webp"></a>
