@@ -17,6 +17,9 @@ resource "gcore_cdn_resource" "cdn_example_com" {
   secondary_hostnames = ["cdn2.example.com"]
 
   options {
+    edge_cache_settings {
+      default = "8d"
+    }
     browser_cache_settings {
       value = "1d"
     }

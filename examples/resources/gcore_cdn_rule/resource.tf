@@ -17,13 +17,28 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_1" {
 
   options {
     edge_cache_settings {
-      default = "4d"
+      default = "14d"
+    }
+    browser_cache_settings {
+      value = "14d"
     }
     redirect_http_to_https {
       value = true
     }
     gzip_on {
       value = true
+    }
+    cors {
+      value = [
+        "*"
+      ]
+    }
+    rewrite {
+      body = "/(.*) /$1"
+    }
+    webp {
+      jpg_quality = 55
+      png_quality = 66
     }
   }
 }
