@@ -9,10 +9,12 @@ terraform {
 }
 
 provider gcore {
-  user_name = "test"
-  password = "test"
-  ignore_creds_auth_error  = true
   permanent_api_token = "251$d3361.............1b35f26d8"
+
+  # user_name = "test"
+  # password = "test"
+  ignore_creds_auth_error  = true
+
   gcore_api           = "https://api.cloud.gcorelabs.com"
   gcore_dns_api       = "https://dnsapi.gcorelabs.com"
   gcore_platform      = "https://api.gcdn.co"
