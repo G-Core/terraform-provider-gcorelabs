@@ -16,6 +16,9 @@ import (
 
 func resourceCDNOriginGroup() *schema.Resource {
 	return &schema.Resource{
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
