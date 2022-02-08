@@ -13,6 +13,228 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var (
+	optionsSchema = &schema.Schema{
+		Type:        schema.TypeList,
+		MaxItems:    1,
+		Optional:    true,
+		Computed:    true,
+		Description: "Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"edge_cache_settings": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Computed:    true,
+					Description: "The cache expiration time for CDN servers.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Caching time for a response with codes 200, 206, 301, 302. Responses with codes 4xx, 5xx will not be cached. Use '0s' disable to caching. Use custom_values field to specify a custom caching time for a response with specific codes.",
+							},
+							"default": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Content will be cached according to origin cache settings. The value applies for a response with codes 200, 201, 204, 206, 301, 302, 303, 304, 307, 308 if an origin server does not have caching HTTP headers. Responses with other codes will not be cached.",
+							},
+							"custom_values": {
+								Type:        schema.TypeMap,
+								Optional:    true,
+								Elem:        schema.TypeString,
+								Description: "Caching time for a response with specific codes. These settings have a higher priority than the value field. Response code ('304', '404' for example). Use 'any' to specify caching time for all response codes. Caching time in seconds ('0s', '600s' for example). Use '0s' to disable caching for a specific response code.",
+							},
+						},
+					},
+				},
+				"browser_cache_settings": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Computed:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "",
+							},
+						},
+					},
+				},
+				"host_header": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "Specify the Host header that CDN servers use when request content from an origin server. Your server must be able to process requests with the chosen header. If the option is in NULL state Host Header value is taken from the CNAME field.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeString,
+								Required: true,
+							},
+						},
+					},
+				},
+				"redirect_http_to_https": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "Sets redirect from HTTP protocol to HTTPS for all resource requests.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeBool,
+								Required: true,
+							},
+						},
+					},
+				},
+				"gzip_on": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeBool,
+								Required: true,
+							},
+						},
+					},
+				},
+				"cors": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeSet,
+								Elem:     &schema.Schema{Type: schema.TypeString},
+								Required: true,
+							},
+						},
+					},
+				},
+				"rewrite": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"body": {
+								Type:     schema.TypeString,
+								Required: true,
+							},
+							"flag": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Default:  "break",
+							},
+						},
+					},
+				},
+				"webp": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"jpg_quality": {
+								Type:     schema.TypeInt,
+								Required: true,
+							},
+							"png_quality": {
+								Type:     schema.TypeInt,
+								Required: true,
+							},
+							"png_lossless": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  false,
+							},
+						},
+					},
+				},
+				"sni": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Computed:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"sni_type": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Available values 'dynamic' or 'custom'",
+							},
+							"custom_hostname": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Required to set custom hostname in case sni-type='custom'",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+)
+
 func resourceCDNResource() *schema.Resource {
 	return &schema.Resource{
 		Importer: &schema.ResourceImporter{
@@ -72,199 +294,7 @@ func resourceCDNResource() *schema.Resource {
 				RequiredWith: []string{"ssl_enabled"},
 				Description:  "Specify the SSL Certificate ID which should be used for the CDN Resource.",
 			},
-			"options": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"edge_cache_settings": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Computed:    true,
-							Description: "The cache expiration time for CDN servers.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Caching time for a response with codes 200, 206, 301, 302. Responses with codes 4xx, 5xx will not be cached. Use '0s' disable to caching. Use custom_values field to specify a custom caching time for a response with specific codes.",
-									},
-									"default": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Content will be cached according to origin cache settings. The value applies for a response with codes 200, 201, 204, 206, 301, 302, 303, 304, 307, 308 if an origin server does not have caching HTTP headers. Responses with other codes will not be cached.",
-									},
-									"custom_values": {
-										Type:        schema.TypeMap,
-										Optional:    true,
-										Elem:        schema.TypeString,
-										Description: "Caching time for a response with specific codes. These settings have a higher priority than the value field. Response code ('304', '404' for example). Use 'any' to specify caching time for all response codes. Caching time in seconds ('0s', '600s' for example). Use '0s' to disable caching for a specific response code.",
-									},
-								},
-							},
-						},
-						"browser_cache_settings": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Computed:    true,
-							Description: "",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "",
-									},
-								},
-							},
-						},
-						"host_header": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Specify the Host header that CDN servers use when request content from an origin server. Your server must be able to process requests with the chosen header. If the option is in NULL state Host Header value is taken from the CNAME field.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"value": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-								},
-							},
-						},
-						"redirect_http_to_https": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Sets redirect from HTTP protocol to HTTPS for all resource requests.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"value": {
-										Type:     schema.TypeBool,
-										Required: true,
-									},
-								},
-							},
-						},
-						"gzip_on": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"value": {
-										Type:     schema.TypeBool,
-										Required: true,
-									},
-								},
-							},
-						},
-						"cors": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"value": {
-										Type:     schema.TypeSet,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-										Required: true,
-									},
-								},
-							},
-						},
-						"rewrite": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"body": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"flag": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Default:  "break",
-									},
-								},
-							},
-						},
-						"webp": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
-									},
-									"jpg_quality": {
-										Type:     schema.TypeInt,
-										Required: true,
-									},
-									"png_quality": {
-										Type:     schema.TypeInt,
-										Required: true,
-									},
-									"png_lossless": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  false,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			"options": optionsSchema,
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -494,6 +524,17 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			PNGLossless: opt["png_lossless"].(bool),
 		}
 	}
+	if opt, ok := getOptByName(fields, "sni"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.SNI = &gcdn.SNIOption{
+			Enabled:        enabled,
+			SNIType:        opt["sni_type"].(string),
+			CustomHostname: opt["custom_hostname"].(string),
+		}
+	}
 	return &opts
 }
 
@@ -552,6 +593,10 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.Webp != nil {
 		m := structToMap(options.Webp)
 		result["webp"] = []interface{}{m}
+	}
+	if options.SNI != nil {
+		m := structToMap(options.SNI)
+		result["sni"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }

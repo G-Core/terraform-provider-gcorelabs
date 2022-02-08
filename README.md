@@ -1,11 +1,10 @@
 Terraform G-Core Labs Provider
 ------------------------------
-- Website: https://gcorelabs.com 
+- Terraform provider page: https://registry.terraform.io/providers/G-Core/gcorelabs 
 
 <img src="https://gcorelabs.com/img/logo.svg" data-src="https://gcorelabs.com/img/logo.svg" alt="G-Core Labs" width="500px" width="500px"> 
 ====================================================================================
 
-- Website: https://www.terraform.io
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
