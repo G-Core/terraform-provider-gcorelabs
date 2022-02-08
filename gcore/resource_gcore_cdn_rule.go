@@ -36,6 +36,12 @@ func resourceCDNRule() *schema.Resource {
 				Required:    true,
 				Description: "Type of rule. The rule is applied if the requested URI matches the rule pattern. It has two possible values: Type 0 — RegEx. Must start with '^/' or '/'. Type 1 — RegEx. Legacy type. Note that for this rule type we automatically add / to each rule pattern before your regular expression. Please use Type 0.",
 			},
+			"origin_protocol": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, we will use HTTP to connect to an origin server. Possible values are: HTTPS, HTTP, MATCH.",
+			},
 			"options": optionsSchema,
 		},
 		CreateContext: resourceCDNRuleCreate,
@@ -55,6 +61,7 @@ func resourceCDNRuleCreate(ctx context.Context, d *schema.ResourceData, m interf
 	req.Name = d.Get("name").(string)
 	req.Rule = d.Get("rule").(string)
 	req.RuleType = d.Get("rule_type").(int)
+	req.OverrideOriginProtocol = d.Get("origin_protocol").(string)
 
 	resourceID := d.Get("resource_id").(int)
 
@@ -93,6 +100,7 @@ func resourceCDNRuleRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("name", result.Name)
 	d.Set("rule", result.Pattern)
 	d.Set("rule_type", result.Type)
+	d.Set("origin_protocol", result.OriginProtocol)
 	if err := d.Set("options", optionsToList(result.Options)); err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,6 +124,8 @@ func resourceCDNRuleUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	req.Name = d.Get("name").(string)
 	req.Rule = d.Get("rule").(string)
 	req.RuleType = d.Get("rule_type").(int)
+	req.OverrideOriginProtocol = d.Get("origin_protocol").(string)
+
 	req.Options = listToOptions(d.Get("options").([]interface{}))
 
 	resourceID := d.Get("resource_id").(int)
