@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/G-Core/g-dns-sdk-go v0.1.2
 	github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9
-	github.com/G-Core/gcorelabscdn-go v0.1.6
+	github.com/G-Core/gcorelabscdn-go v0.1.8
 	github.com/G-Core/gcorelabscloud-go v0.4.42
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-exec v0.15.0 // indirect
