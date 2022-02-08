@@ -13,6 +13,9 @@ import (
 
 func resourceCDNRule() *schema.Resource {
 	return &schema.Resource{
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"resource_id": {
 				Type:     schema.TypeInt,
@@ -51,7 +54,8 @@ func resourceCDNRule() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"enabled": {
 										Type:     schema.TypeBool,
-										Required: true,
+										Optional: true,
+										Default:  true,
 									},
 									"value": {
 										Type:        schema.TypeString,
