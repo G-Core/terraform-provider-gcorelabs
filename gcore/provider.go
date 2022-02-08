@@ -42,7 +42,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				Description: "A permanent API-token. Implemented for Storage and Cloud Terraform Resources only. https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens",
+				Description: "A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", ""),
 			},
 			ProviderOptSkipCredsAuthErr: {
