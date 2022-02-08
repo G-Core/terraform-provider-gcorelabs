@@ -76,6 +76,27 @@ func resourceCDNRule() *schema.Resource {
 								},
 							},
 						},
+						"browser_cache_settings": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "",
+									},
+								},
+							},
+						},
 						"host_header": {
 							Type:        schema.TypeList,
 							MaxItems:    1,
@@ -128,6 +149,78 @@ func resourceCDNRule() *schema.Resource {
 									"value": {
 										Type:     schema.TypeBool,
 										Required: true,
+									},
+								},
+							},
+						},
+						"cors": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"value": {
+										Type:     schema.TypeSet,
+										Elem:     &schema.Schema{Type: schema.TypeString},
+										Required: true,
+									},
+								},
+							},
+						},
+						"rewrite": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"body": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"flag": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  "break",
+									},
+								},
+							},
+						},
+						"webp": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"jpg_quality": {
+										Type:     schema.TypeInt,
+										Required: true,
+									},
+									"png_quality": {
+										Type:     schema.TypeInt,
+										Required: true,
+									},
+									"png_lossless": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
 									},
 								},
 							},
