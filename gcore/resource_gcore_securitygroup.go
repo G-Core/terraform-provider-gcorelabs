@@ -141,6 +141,7 @@ func resourceSecurityGroup() *schema.Resource {
 						"description": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "",
 						},
 						"remote_ip_prefix": &schema.Schema{
 							Type:     schema.TypeString,
@@ -266,6 +267,7 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 
 	newSgRules := make([]interface{}, len(sg.SecurityGroupRules))
 	for i, sgr := range sg.SecurityGroupRules {
+		log.Printf("rules: %+v", sgr)
 		r := make(map[string]interface{})
 		r["id"] = sgr.ID
 		r["direction"] = sgr.Direction.String()
@@ -274,10 +276,9 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 			r["ethertype"] = sgr.EtherType.String()
 		}
 
+		r["protocol"] = types.ProtocolAny
 		if sgr.Protocol != nil {
 			r["protocol"] = sgr.Protocol.String()
-		} else {
-			r["protocol"] = types.ProtocolAny
 		}
 
 		r["port_range_max"] = 0
@@ -296,7 +297,7 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 
 		r["remote_ip_prefix"] = ""
 		if sgr.RemoteIPPrefix != nil {
-			r["remote_ip_prefix"] = strings.TrimSuffix(*sgr.RemoteIPPrefix, "/32")
+			r["remote_ip_prefix"] = *sgr.RemoteIPPrefix
 		}
 
 		r["updated_at"] = sgr.UpdatedAt.String()

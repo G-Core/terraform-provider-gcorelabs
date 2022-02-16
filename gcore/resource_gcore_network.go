@@ -91,7 +91,6 @@ func resourceNetwork() *schema.Resource {
 			"create_router": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    true,
 				Default:     true,
 				Description: "Create external router to the network, default true",
 			},
