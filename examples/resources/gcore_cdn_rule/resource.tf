@@ -48,6 +48,7 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_2" {
   name = "All JS scripts"
   rule = "/folder/images/*.js"
   rule_type = 0
+  origin_protocol = "HTTP"
 
   options {
     redirect_http_to_https {

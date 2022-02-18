@@ -56,7 +56,7 @@ func Provider() *schema.Provider {
 			"gcore_platform": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Platform url is used for generate jwt",
+				Description: "Platform URL is used for generate JWT",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM", "https://api.gcdn.co"),
 			},
 			"gcore_api": {

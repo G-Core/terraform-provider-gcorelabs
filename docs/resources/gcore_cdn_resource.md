@@ -94,6 +94,9 @@ Optional:
 - **edge_cache_settings** (Block List, Max: 1) The cache expiration time for CDN servers. (see [below for nested schema](#nestedblock--options--edge_cache_settings))
 - **gzip_on** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--gzip_on))
 - **host_header** (Block List, Max: 1) Specify the Host header that CDN servers use when request content from an origin server. Your server must be able to process requests with the chosen header. If the option is in NULL state Host Header value is taken from the CNAME field. (see [below for nested schema](#nestedblock--options--host_header))
+- **ignore_query_string** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--ignore_query_string))
+- **query_params_blacklist** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--query_params_blacklist))
+- **query_params_whitelist** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--query_params_whitelist))
 - **redirect_http_to_https** (Block List, Max: 1) Sets redirect from HTTP protocol to HTTPS for all resource requests. (see [below for nested schema](#nestedblock--options--redirect_http_to_https))
 - **rewrite** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--rewrite))
 - **sni** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--sni))
@@ -149,6 +152,42 @@ Optional:
 Required:
 
 - **value** (String)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--ignore_query_string"></a>
+### Nested Schema for `options.ignore_query_string`
+
+Required:
+
+- **value** (Boolean)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--query_params_blacklist"></a>
+### Nested Schema for `options.query_params_blacklist`
+
+Required:
+
+- **value** (Set of String)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--query_params_whitelist"></a>
+### Nested Schema for `options.query_params_whitelist`
+
+Required:
+
+- **value** (Set of String)
 
 Optional:
 
