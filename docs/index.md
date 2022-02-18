@@ -254,7 +254,7 @@ resource "gcore_lbmember" "lbm2" {
 - **gcore_cdn_api** (String) CDN API
 - **gcore_client_id** (String) Client id
 - **gcore_dns_api** (String) DNS API
-- **gcore_platform** (String) Platform ulr is used for generate jwt
+- **gcore_platform** (String) Platform url is used for generate jwt
 - **gcore_storage_api** (String) Storage API
 - **ignore_creds_auth_error** (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
 - **password** (String)

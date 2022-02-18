@@ -63,6 +63,7 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_2" {
   name = "All JS scripts"
   rule = "/folder/images/*.js"
   rule_type = 0
+  origin_protocol = "HTTP"
 
   options {
     redirect_http_to_https {
@@ -107,6 +108,7 @@ resource "gcore_cdn_resource" "cdn_example_com" {
 
 - **id** (String) The ID of this resource.
 - **options** (Block List, Max: 1) Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value. (see [below for nested schema](#nestedblock--options))
+- **origin_protocol** (String) This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, we will use HTTP to connect to an origin server. Possible values are: HTTPS, HTTP, MATCH.
 
 <a id="nestedblock--options"></a>
 ### Nested Schema for `options`
@@ -118,6 +120,9 @@ Optional:
 - **edge_cache_settings** (Block List, Max: 1) The cache expiration time for CDN servers. (see [below for nested schema](#nestedblock--options--edge_cache_settings))
 - **gzip_on** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--gzip_on))
 - **host_header** (Block List, Max: 1) Specify the Host header that CDN servers use when request content from an origin server. Your server must be able to process requests with the chosen header. If the option is in NULL state Host Header value is taken from the CNAME field. (see [below for nested schema](#nestedblock--options--host_header))
+- **ignore_query_string** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--ignore_query_string))
+- **query_params_blacklist** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--query_params_blacklist))
+- **query_params_whitelist** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--query_params_whitelist))
 - **redirect_http_to_https** (Block List, Max: 1) Sets redirect from HTTP protocol to HTTPS for all resource requests. (see [below for nested schema](#nestedblock--options--redirect_http_to_https))
 - **rewrite** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--rewrite))
 - **sni** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--sni))
@@ -173,6 +178,42 @@ Optional:
 Required:
 
 - **value** (String)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--ignore_query_string"></a>
+### Nested Schema for `options.ignore_query_string`
+
+Required:
+
+- **value** (Boolean)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--query_params_blacklist"></a>
+### Nested Schema for `options.query_params_blacklist`
+
+Required:
+
+- **value** (Set of String)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--query_params_whitelist"></a>
+### Nested Schema for `options.query_params_whitelist`
+
+Required:
+
+- **value** (Set of String)
 
 Optional:
 
