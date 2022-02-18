@@ -234,6 +234,65 @@ var (
 						},
 					},
 				},
+				"ignore_query_string": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeBool,
+								Required: true,
+							},
+						},
+					},
+				},
+				"query_params_whitelist": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeSet,
+								Elem:     &schema.Schema{Type: schema.TypeString},
+								Required: true,
+							},
+						},
+					},
+				},
+				"query_params_blacklist": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeSet,
+								Elem:     &schema.Schema{Type: schema.TypeString},
+								Required: true,
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -544,6 +603,40 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			CustomHostname: opt["custom_hostname"].(string),
 		}
 	}
+	if opt, ok := getOptByName(fields, "ignore_query_string"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.IgnoreQueryString = &gcdn.IgnoreQueryString{
+			Enabled: enabled,
+			Value:   opt["value"].(bool),
+		}
+	}
+	if opt, ok := getOptByName(fields, "query_params_whitelist"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.QueryParamsWhitelist = &gcdn.QueryParamsWhitelist{
+			Enabled: enabled,
+		}
+		for _, v := range opt["value"].(*schema.Set).List() {
+			opts.QueryParamsWhitelist.Value = append(opts.QueryParamsWhitelist.Value, v.(string))
+		}
+	}
+	if opt, ok := getOptByName(fields, "query_params_blacklist"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.QueryParamsBlacklist = &gcdn.QueryParamsBlacklist{
+			Enabled: enabled,
+		}
+		for _, v := range opt["value"].(*schema.Set).List() {
+			opts.QueryParamsBlacklist.Value = append(opts.QueryParamsBlacklist.Value, v.(string))
+		}
+	}
 	return &opts
 }
 
@@ -606,6 +699,18 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.SNI != nil {
 		m := structToMap(options.SNI)
 		result["sni"] = []interface{}{m}
+	}
+	if options.IgnoreQueryString != nil {
+		m := structToMap(options.IgnoreQueryString)
+		result["ignore_query_string"] = []interface{}{m}
+	}
+	if options.QueryParamsWhitelist != nil {
+		m := structToMap(options.QueryParamsWhitelist)
+		result["query_params_whitelist"] = []interface{}{m}
+	}
+	if options.QueryParamsBlacklist != nil {
+		m := structToMap(options.QueryParamsBlacklist)
+		result["query_params_blacklist"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }
