@@ -97,7 +97,6 @@ func resourceSubnet() *schema.Resource {
 				Description: "True if the network's router should get a gateway in this subnet. Must be explicitly 'false' when gateway_ip is null. Default true.",
 				Optional:    true,
 				Default:     true,
-				ForceNew:    true,
 			},
 			"dns_nameservers": &schema.Schema{
 				Type:     schema.TypeList,

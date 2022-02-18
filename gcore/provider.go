@@ -49,12 +49,14 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Should be set to true when you are gonna to use storage resource with permanent API-token only.",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", false),
+				DefaultFunc: func() (interface{}, error) {
+					return os.Getenv("GCORE_PERMANENT_TOKEN") != "", nil
+				},
 			},
 			"gcore_platform": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Platform ulr is used for generate jwt",
+				Description: "Platform url is used for generate jwt",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM", "https://api.gcdn.co"),
 			},
 			"gcore_api": {
