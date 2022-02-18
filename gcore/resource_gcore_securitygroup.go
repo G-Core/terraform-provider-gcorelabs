@@ -131,11 +131,13 @@ func resourceSecurityGroup() *schema.Resource {
 						"port_range_min": &schema.Schema{
 							Type:             schema.TypeInt,
 							Optional:         true,
+							Default:          0,
 							ValidateDiagFunc: validatePortRange,
 						},
 						"port_range_max": &schema.Schema{
 							Type:             schema.TypeInt,
 							Optional:         true,
+							Default:          0,
 							ValidateDiagFunc: validatePortRange,
 						},
 						"description": &schema.Schema{
@@ -146,6 +148,7 @@ func resourceSecurityGroup() *schema.Resource {
 						"remote_ip_prefix": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "",
 						},
 						"updated_at": &schema.Schema{
 							Type:     schema.TypeString,
