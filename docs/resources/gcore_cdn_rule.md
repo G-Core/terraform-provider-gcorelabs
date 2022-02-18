@@ -108,7 +108,7 @@ resource "gcore_cdn_resource" "cdn_example_com" {
 
 - **id** (String) The ID of this resource.
 - **options** (Block List, Max: 1) Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value. (see [below for nested schema](#nestedblock--options))
-- **origin_protocol** (String) This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, we will use HTTP to connect to an origin server. Possible values are: HTTPS, HTTP, MATCH.
+- **origin_protocol** (String) This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, it will be inherit from resource. Possible values are: HTTPS, HTTP, MATCH.
 
 <a id="nestedblock--options"></a>
 ### Nested Schema for `options`

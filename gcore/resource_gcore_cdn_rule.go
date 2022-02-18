@@ -40,7 +40,7 @@ func resourceCDNRule() *schema.Resource {
 			"origin_protocol": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, we will use HTTP to connect to an origin server. Possible values are: HTTPS, HTTP, MATCH.",
+				Description: "This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, it will be inherit from resource. Possible values are: HTTPS, HTTP, MATCH.",
 			},
 			"options": optionsSchema,
 		},
