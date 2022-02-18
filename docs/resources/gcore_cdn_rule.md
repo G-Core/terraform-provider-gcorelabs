@@ -55,6 +55,9 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_1" {
       jpg_quality = 55
       png_quality = 66
     }
+    ignore_query_string {
+      value = true
+    }
   }
 }
 
@@ -73,6 +76,11 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_2" {
     gzip_on {
       enabled = false
       value = true
+    }
+    query_params_whitelist {
+      value = [
+        "abc",
+      ]
     }
   }
 }
