@@ -32,6 +32,8 @@ cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RX
 cloud.google.com/go/storage v1.10.0 h1:STgFzyU5/8miMl0//zKh2aQeTyeaUH3WN9bSUiJ09bA=
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
+github.com/AlekSi/pointer v1.2.0 h1:glcy/gc4h8HnG2Z3ZECSzZ1IX1x2JxRVuDzaJwQE0+w=
+github.com/AlekSi/pointer v1.2.0/go.mod h1:gZGfd3dpW4vEc/UlyfKKi1roIqcCgwOIvb0tSNSBle0=
 github.com/Azure/go-autorest/autorest v0.9.0/go.mod h1:xyHB1BMZT0cuDHU7I0+g046+BFDTQ8rEZB0s4Yfa6bI=
 github.com/Azure/go-autorest/autorest/adal v0.5.0/go.mod h1:8Z9fGy2MpX0PvDjB1pEgQTmVqjGhiHBW7RJJEciWzS0=
 github.com/Azure/go-autorest/autorest/date v0.1.0/go.mod h1:plvfp3oPSKwf2DNjlBjWF/7vwR+cUD/ELuzDCXwHUVA=
@@ -47,6 +49,12 @@ github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9 h1:6uyKbknI8Q2pIJApPBf6JA0CN5O
 github.com/G-Core/gcorelabs-storage-sdk-go v0.0.9/go.mod h1:BZef79y4G28n8ic3x6iQWbW+mtpHPSUyJRfIRSkeAJw=
 github.com/G-Core/gcorelabscdn-go v0.1.9 h1:ysx/MPSVlfsPvWMorxVxZW7Ow7uM6WNkA3voHw5Sd54=
 github.com/G-Core/gcorelabscdn-go v0.1.9/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.1.10 h1:FEl6mQK++P8fr17hmVg0fSMOfR67f9g/gP4ptxeBzZY=
+github.com/G-Core/gcorelabscdn-go v0.1.10/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.1.11 h1:xta0D7QYBvo9PzZiHbn0n33rxIghs56UkWByi+Rf/3M=
+github.com/G-Core/gcorelabscdn-go v0.1.11/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.1.12 h1:+iDaJfhbZAX/OnveTqtFlcE3gbt5CftgDl8sxjxxh2E=
+github.com/G-Core/gcorelabscdn-go v0.1.12/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
 github.com/G-Core/gcorelabscloud-go v0.4.42 h1:LBH4GnH82eQ5L/Lfnzm8KJovbIHPzt2KMitVN1V9kDQ=
 github.com/G-Core/gcorelabscloud-go v0.4.42/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
