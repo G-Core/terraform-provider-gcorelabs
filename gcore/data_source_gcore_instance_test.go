@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
+	"github.com/G-Core/gcorelabscloud-go/gcore/image/v1/images"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
@@ -13,10 +14,9 @@ import (
 )
 
 const (
-	flavorID = "g1-standard-1-2"
-	//todo need to get actual image id
-	imageID          = "44e136a7-15c1-4b5f-a086-20b7b3237d40"
+	flavorID         = "g1-standard-1-2"
 	instanceTestName = "test-vm"
+	testOsDistro     = "ubuntu"
 )
 
 func TestAccInstanceDataSource(t *testing.T) {
@@ -30,12 +30,33 @@ func TestAccInstanceDataSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	clientImage, err := CreateTestClient(cfg.Provider, imagesPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	imgs, err := images.ListAll(clientImage, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var img images.Image
+	for _, i := range imgs {
+		if i.OsDistro == testOsDistro {
+			img = i
+			break
+		}
+	}
+	if img.ID == "" {
+		t.Fatalf("images with os_distro='%s' does not exist", testOsDistro)
+	}
+
 	optsV := volumes.CreateOpts{
 		Name:     volumeTestName,
 		Size:     volumeTestSize * 5,
 		Source:   volumes.Image,
 		TypeName: volumes.Standard,
-		ImageID:  imageID,
+		ImageID:  img.ID,
 	}
 	volumeID, err := createTestVolume(clientVolume, optsV)
 	if err != nil {
