@@ -5,11 +5,50 @@ import (
 	"testing"
 
 	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/lbpools"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/listeners"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/loadbalancers"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccLBPool(t *testing.T) {
+	cfg, err := createTestConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := CreateTestClient(cfg.Provider, LoadBalancersPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientListener, err := CreateTestClient(cfg.Provider, LBListenersPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	opts := loadbalancers.CreateOpts{
+		Name: lbTestName,
+		Listeners: []loadbalancers.CreateListenerOpts{{
+			Name:         lbListenerTestName,
+			ProtocolPort: 80,
+			Protocol:     types.ProtocolTypeHTTP,
+		}},
+	}
+
+	lbID, err := createTestLoadBalancerWithListener(client, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer loadbalancers.Delete(client, lbID)
+
+	ls, err := listeners.ListAll(clientListener, listeners.ListOpts{LoadBalancerID: &lbID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	listener := ls[0]
+
 	type Params struct {
 		Name        string
 		LBAlgorithm string
@@ -32,11 +71,11 @@ func TestAccLBPool(t *testing.T) {
 			  loadbalancer_id = "%s"
 			  listener_id = "%s"
 			}
-		`, projectInfo(), regionInfo(), params.Name, params.LBAlgorithm, GCORE_LB_ID, GCORE_LBLISTENER_ID)
+		`, projectInfo(), regionInfo(), params.Name, params.LBAlgorithm, lbID, listener.ID)
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLBPool(t) },
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccLBPoolDestroy,
 		Steps: []resource.TestStep{

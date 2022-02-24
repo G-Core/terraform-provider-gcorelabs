@@ -6,11 +6,69 @@ import (
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/lbpools"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/listeners"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/loadbalancers"
+	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/types"
+	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+const (
+	lbPoolTestName = "test-lb-pool"
+)
+
 func TestAccLBMember(t *testing.T) {
+	cfg, err := createTestConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := CreateTestClient(cfg.Provider, LoadBalancersPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientListener, err := CreateTestClient(cfg.Provider, LBListenersPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientPool, err := CreateTestClient(cfg.Provider, LBPoolsPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	opts := loadbalancers.CreateOpts{
+		Name: lbTestName,
+		Listeners: []loadbalancers.CreateListenerOpts{{
+			Name:         lbListenerTestName,
+			ProtocolPort: 80,
+			Protocol:     types.ProtocolTypeHTTP,
+		}},
+	}
+
+	lbID, err := createTestLoadBalancerWithListener(client, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer loadbalancers.Delete(client, lbID)
+
+	ls, err := listeners.ListAll(clientListener, listeners.ListOpts{LoadBalancerID: &lbID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	listener := ls[0]
+
+	poolsOpts := lbpools.CreateOpts{
+		Name:            lbPoolTestName,
+		Protocol:        types.ProtocolTypeHTTP,
+		LBPoolAlgorithm: types.LoadBalancerAlgorithmRoundRobin,
+		LoadBalancerID:  lbID,
+		ListenerID:      listener.ID,
+	}
+	poolID, err := createTestLBPool(clientPool, poolsOpts)
+
 	type Params struct {
 		Address string
 		Port    string
@@ -33,11 +91,11 @@ func TestAccLBMember(t *testing.T) {
 			  protocol_port = %s
 			  weight = %s
 			}
-		`, projectInfo(), regionInfo(), GCORE_LBPOOL_ID, params.Address, params.Port, params.Weight)
+		`, projectInfo(), regionInfo(), poolID, params.Address, params.Port, params.Weight)
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckLBMember(t) },
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccLBMemberDestroy,
 		Steps: []resource.TestStep{
@@ -92,4 +150,28 @@ func testAccLBMemberDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func createTestLBPool(client *gcorecloud.ServiceClient, opts lbpools.CreateOpts) (string, error) {
+	res, err := lbpools.Create(client, opts).Extract()
+	if err != nil {
+		return "", err
+	}
+
+	taskID := res.Tasks[0]
+	poolID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, LBPoolsCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
+		taskInfo, err := tasks.Get(client, string(task)).Extract()
+		if err != nil {
+			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+		}
+		poolID, err := lbpools.ExtractPoolIDFromTask(taskInfo)
+		if err != nil {
+			return nil, fmt.Errorf("cannot retrieve lb pool ID from task info: %w", err)
+		}
+		return poolID, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	return poolID.(string), nil
 }
