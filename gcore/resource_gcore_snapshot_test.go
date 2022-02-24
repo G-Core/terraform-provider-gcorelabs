@@ -6,12 +6,36 @@ import (
 	"testing"
 
 	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
+	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccSnapshot(t *testing.T) {
+	cfg, err := createTestConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := CreateTestClient(cfg.Provider, volumesPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	opts := volumes.CreateOpts{
+		Name:     volumeTestName,
+		Size:     volumeTestSize,
+		Source:   volumes.NewVolume,
+		TypeName: volumes.Standard,
+	}
+
+	volumeID, err := createTestVolume(client, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer volumes.Delete(client, volumeID, volumes.DeleteOpts{})
 
 	type Params struct {
 		Name        string
@@ -23,12 +47,12 @@ func TestAccSnapshot(t *testing.T) {
 
 	create := Params{
 		Name:     "test",
-		VolumeID: GCORE_VOLUME_ID,
+		VolumeID: volumeID,
 	}
 
 	update := Params{
 		Name:     "test",
-		VolumeID: GCORE_VOLUME_ID,
+		VolumeID: volumeID,
 	}
 
 	fullName := "gcore_snapshot.acctest"
@@ -49,7 +73,7 @@ func TestAccSnapshot(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckSnapshot(t) },
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccSnapshotDestroy,
 		Steps: []resource.TestStep{

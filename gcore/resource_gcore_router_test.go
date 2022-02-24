@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/router/v1/routers"
 	"github.com/G-Core/gcorelabscloud-go/gcore/subnet/v1/subnets"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -53,12 +54,59 @@ func checkRouterAttrs(resourceName string, opts *routers.CreateOpts) resource.Te
 }
 
 func TestAccRouter(t *testing.T) {
+	cfg, err := createTestConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientNet, err := CreateTestClient(cfg.Provider, networksPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientSubnet, err := CreateTestClient(cfg.Provider, subnetPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	opts := networks.CreateOpts{
+		Name:         networkTestName,
+		CreateRouter: false,
+	}
+
+	networkID, err := createTestNetwork(clientNet, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer networks.Delete(clientNet, networkID)
+
+	gw := net.ParseIP("")
+	optsSubnet := subnets.CreateOpts{
+		Name:                   subnetTestName,
+		NetworkID:              networkID,
+		ConnectToNetworkRouter: false,
+		GatewayIP:              &gw,
+	}
+
+	var gccidr gcorecloud.CIDR
+	_, netIPNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gccidr.IP = netIPNet.IP
+	gccidr.Mask = netIPNet.Mask
+	optsSubnet.CIDR = gccidr
+
+	subnetID, err := CreateTestSubnet(clientSubnet, optsSubnet)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var dst1 gcorecloud.CIDR
 	snat1 := true
-	snat2 := false
 
-	_, netIPNet, _ := net.ParseCIDR("192.168.101.0/24")
+	_, netIPNet, _ = net.ParseCIDR(cidr)
 	dst1.IP = netIPNet.IP
 	dst1.Mask = netIPNet.Mask
 
@@ -71,26 +119,15 @@ func TestAccRouter(t *testing.T) {
 		Interfaces: []routers.Interface{
 			{
 				Type:     "subnet",
-				SubnetID: GCORE_PRIV_SUBNET,
+				SubnetID: subnetID,
 			},
 		},
 		Routes: []subnets.HostRoute{
 			{
 				Destination: dst1,
-				NextHop:     net.ParseIP("192.168.100.2"),
+				NextHop:     net.ParseIP("192.168.42.2"),
 			},
 		},
-	}
-
-	updateFixt := routers.CreateOpts{
-		Name: "update_router",
-		ExternalGatewayInfo: routers.GatewayInfo{
-			Type:       "manual",
-			EnableSNat: &snat2,
-			NetworkID:  GCORE_EXT_NET,
-		},
-		Routes:     make([]subnets.HostRoute, 0),
-		Interfaces: make([]routers.Interface, 0),
 	}
 
 	type Params struct {
@@ -103,22 +140,15 @@ func TestAccRouter(t *testing.T) {
 	create := Params{
 		Name:           "create_router",
 		ExtGatewayInfo: []map[string]string{{"type": "default", "enable_snat": "true", "network_id": ""}},
-		Interfaces:     []map[string]string{{"type": "subnet", "subnet_id": GCORE_PRIV_SUBNET}},
-		Routes:         []map[string]string{{"destination": "192.168.101.0/24", "nexthop": "192.168.100.2"}},
-	}
-
-	update := Params{
-		Name:           "update_router",
-		ExtGatewayInfo: []map[string]string{{"type": "manual", "enable_snat": "false", "network_id": GCORE_EXT_NET}},
-		Routes:         make([]map[string]string, 0),
-		Interfaces:     make([]map[string]string, 0),
+		Interfaces:     []map[string]string{{"type": "subnet", "subnet_id": subnetID}},
+		Routes:         []map[string]string{{"destination": "192.168.42.0/24", "nexthop": "192.168.42.2"}},
 	}
 
 	RouterTemplate := func(params *Params) string {
 		template := `
 		locals {
             external_gateway_info = [`
-		for i, _ := range params.ExtGatewayInfo {
+		for i := range params.ExtGatewayInfo {
 			template += fmt.Sprintf(`
 			{
 				type = "%s"
@@ -129,7 +159,7 @@ func TestAccRouter(t *testing.T) {
 
 		template += fmt.Sprintf(`]
 			interfaces = [`)
-		for i, _ := range params.Interfaces {
+		for i := range params.Interfaces {
 			template += fmt.Sprintf(`
 			{
 				type = "%s"
@@ -139,7 +169,7 @@ func TestAccRouter(t *testing.T) {
 
 		template += fmt.Sprintf(`]
 			routes = [`)
-		for i, _ := range params.Routes {
+		for i := range params.Routes {
 			template += fmt.Sprintf(`
 			{
 				destination = "%s"
@@ -190,7 +220,7 @@ func TestAccRouter(t *testing.T) {
 	fullName := "gcore_router.acctest"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckRouter(t) },
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccRouterDestroy,
 		Steps: []resource.TestStep{
@@ -199,13 +229,6 @@ func TestAccRouter(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					checkRouterAttrs(fullName, &createFixt),
-				),
-			},
-			{
-				Config: RouterTemplate(&update),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResourceExists(fullName),
-					checkRouterAttrs(fullName, &updateFixt),
 				),
 			},
 		},
@@ -225,7 +248,7 @@ func testAccRouterDestroy(s *terraform.State) error {
 
 		_, err := routers.Get(client, rs.Primary.ID).Extract()
 		if err == nil {
-			return fmt.Errorf("Router still exists")
+			return fmt.Errorf("router still exists")
 		}
 	}
 

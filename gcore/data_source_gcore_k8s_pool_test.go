@@ -92,6 +92,9 @@ func TestAccK8sPoolDataSource(t *testing.T) {
 		ProjectID: pid,
 	}
 	keyPair, err := keypairs.Create(kpClient, kpOpts).Extract()
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer keypairs.Delete(kpClient, keyPair.ID)
 
 	k8sOpts := clusters.CreateOpts{

@@ -135,19 +135,6 @@ func testAccPreCheck(t *testing.T) {
 	checkNameAndID("REGION", t)
 }
 
-func testAccPreCheckLBListener(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME": GCORE_USERNAME,
-		"GCORE_PASSWORD": GCORE_PASSWORD,
-		"GCORE_LB_ID":    GCORE_LB_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
 func testAccPreCheckK8s(t *testing.T) {
 	vars := map[string]interface{}{
 		"GCORE_USERNAME":   GCORE_USERNAME,
@@ -167,99 +154,6 @@ func testAccPreCheckK8sPool(t *testing.T) {
 		"GCORE_USERNAME":   GCORE_USERNAME,
 		"GCORE_PASSWORD":   GCORE_PASSWORD,
 		"GCORE_CLUSTER_ID": GCORE_CLUSTER_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckK8sDataSource(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME":   GCORE_USERNAME,
-		"GCORE_PASSWORD":   GCORE_PASSWORD,
-		"GCORE_CLUSTER_ID": GCORE_CLUSTER_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckK8sPoolDataSource(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME":        GCORE_USERNAME,
-		"GCORE_PASSWORD":        GCORE_PASSWORD,
-		"GCORE_CLUSTER_ID":      GCORE_CLUSTER_ID,
-		"GCORE_CLUSTER_POOL_ID": GCORE_CLUSTER_POOL_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckLBPool(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME":      GCORE_USERNAME,
-		"GCORE_PASSWORD":      GCORE_PASSWORD,
-		"GCORE_LB_ID":         GCORE_LB_ID,
-		"GCORE_LBLISTENER_ID": GCORE_LBLISTENER_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckLBMember(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME":  GCORE_USERNAME,
-		"GCORE_PASSWORD":  GCORE_PASSWORD,
-		"GCORE_LBPOOL_ID": GCORE_LBPOOL_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckSnapshot(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME":  GCORE_USERNAME,
-		"GCORE_PASSWORD":  GCORE_PASSWORD,
-		"GCORE_VOLUME_ID": GCORE_VOLUME_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckRouter(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_EXT_NET":     GCORE_EXT_NET,
-		"GCORE_PRIV_SUBNET": GCORE_PRIV_SUBNET,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckInstance(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_IMAGE":       GCORE_IMAGE,
-		"GCORE_SECGROUP":    GCORE_SECGROUP,
-		"GCORE_PRIV_NET":    GCORE_PRIV_NET,
-		"GCORE_PRIV_SUBNET": GCORE_PRIV_SUBNET,
 	}
 	for k, v := range vars {
 		if v == "" {
