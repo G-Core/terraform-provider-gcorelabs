@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -49,7 +52,7 @@ func TestAccK8sPoolDataSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer networks.Delete(netClient, networkID)
+	defer deleteTestNetwork(netClient, networkID)
 
 	gw := net.ParseIP("")
 	subnetOpts := subnets.CreateOpts{
@@ -73,7 +76,6 @@ func TestAccK8sPoolDataSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer subnets.Delete(subnetClient, subnetID)
 
 	// update our new network router so that the k8s nodes will have access to the Nexus
 	// registry to download images
@@ -114,11 +116,11 @@ func TestAccK8sPoolDataSource(t *testing.T) {
 			MaxNodeCount:     testMaxNodeCount,
 		}},
 	}
-	clusterID, err := CreateTestCluster(k8sClient, k8sOpts)
+	clusterID, err := createTestCluster(k8sClient, k8sOpts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer clusters.Delete(k8sClient, clusterID)
+	defer deleteTestCluster(k8sClient, clusterID)
 
 	cluster, err := clusters.Get(k8sClient, clusterID).Extract()
 	if err != nil {

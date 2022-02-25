@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -42,7 +45,7 @@ func TestAccSubnetDataSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer networks.Delete(clientNet, networkID)
+	defer deleteTestNetwork(clientNet, networkID)
 
 	optsSubnet := subnets.CreateOpts{
 		Name:      subnetTestName,
@@ -112,4 +115,25 @@ func CreateTestSubnet(client *gcorecloud.ServiceClient, opts subnets.CreateOpts)
 	)
 
 	return subnetID.(string), err
+}
+
+func deleteTestSubnet(client *gcorecloud.ServiceClient, subnetID string) error {
+	results, err := subnets.Delete(client, subnetID).Extract()
+	if err != nil {
+		return err
+	}
+	taskID := results.Tasks[0]
+	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, SubnetDeleting, func(task tasks.TaskID) (interface{}, error) {
+		_, err := subnets.Get(client, subnetID).Extract()
+		if err == nil {
+			return nil, fmt.Errorf("cannot delete subnet with ID: %s", subnetID)
+		}
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	})
+	return err
 }

@@ -1,12 +1,16 @@
+//go:build !cloud
+// +build !cloud
+
 package gcore
 
 import (
 	"context"
 	"fmt"
-	key2 "github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/key"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"testing"
 	"time"
+
+	key2 "github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/key"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestStorageSFTPKeyDataSource(t *testing.T) {

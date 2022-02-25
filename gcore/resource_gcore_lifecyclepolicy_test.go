@@ -1,15 +1,19 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/lifecyclepolicy/v1/lifecyclepolicy"
-	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/G-Core/gcorelabscloud-go/gcore/lifecyclepolicy/v1/lifecyclepolicy"
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccLifecyclePolicy(t *testing.T) {

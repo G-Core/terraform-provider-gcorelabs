@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -71,7 +74,7 @@ func TestAccK8sDataSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer networks.Delete(netClient, networkID)
+	defer deleteTestNetwork(netClient, networkID)
 
 	gw := net.ParseIP("")
 	subnetOpts := subnets.CreateOpts{
@@ -95,7 +98,6 @@ func TestAccK8sDataSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer subnets.Delete(subnetClient, subnetID)
 
 	// update our new network router so that the k8s nodes will have access to the Nexus
 	// registry to download images
@@ -136,11 +138,11 @@ func TestAccK8sDataSource(t *testing.T) {
 			MaxNodeCount:     testMaxNodeCount,
 		}},
 	}
-	clusterID, err := CreateTestCluster(k8sClient, k8sOpts)
+	clusterID, err := createTestCluster(k8sClient, k8sOpts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer clusters.Delete(k8sClient, clusterID)
+	defer deleteTestCluster(k8sClient, clusterID)
 
 	ipTemplate := fmt.Sprintf(`
 			data "gcore_k8s" "acctest" {
@@ -210,7 +212,7 @@ func patchRouterForK8S(provider *gcorecloud.ProviderClient, networkID string) er
 	return nil
 }
 
-func CreateTestCluster(client *gcorecloud.ServiceClient, opts clusters.CreateOpts) (string, error) {
+func createTestCluster(client *gcorecloud.ServiceClient, opts clusters.CreateOpts) (string, error) {
 	res, err := clusters.Create(client, opts).Extract()
 	if err != nil {
 		return "", err
@@ -234,4 +236,26 @@ func CreateTestCluster(client *gcorecloud.ServiceClient, opts clusters.CreateOpt
 	}
 
 	return clusterID.(string), nil
+}
+
+func deleteTestCluster(client *gcorecloud.ServiceClient, clusterID string) error {
+	results, err := clusters.Delete(client, clusterID).Extract()
+	if err != nil {
+		return err
+	}
+
+	taskID := results.Tasks[0]
+	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, K8sCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
+		_, err := clusters.Get(client, clusterID).Extract()
+		if err == nil {
+			return nil, fmt.Errorf("cannot delete k8s cluster with ID: %s", clusterID)
+		}
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	})
+	return err
 }

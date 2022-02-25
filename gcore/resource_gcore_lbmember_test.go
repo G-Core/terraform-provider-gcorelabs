@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -68,6 +71,9 @@ func TestAccLBMember(t *testing.T) {
 		ListenerID:      listener.ID,
 	}
 	poolID, err := createTestLBPool(clientPool, poolsOpts)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	type Params struct {
 		Address string

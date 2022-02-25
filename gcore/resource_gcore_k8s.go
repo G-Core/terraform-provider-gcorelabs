@@ -462,7 +462,20 @@ func resourceK8sUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 				MinNodeCount: pool["min_node_count"].(int),
 				MaxNodeCount: pool["max_node_count"].(int),
 			}
-			if _, err := pools.Update(client, clusterID, poolID, updateOpts).Extract(); err != nil {
+			results, err := pools.Update(client, clusterID, poolID, updateOpts).Extract()
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			taskID := results.Tasks[0]
+			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, K8sCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
+				_, err := pools.Get(client, clusterID, poolID).Extract()
+				if err != nil {
+					return nil, fmt.Errorf("cannot get pool with ID: %s. Error: %w", poolID, err)
+				}
+				return nil, nil
+			})
+			if err != nil {
 				return diag.FromErr(err)
 			}
 		}

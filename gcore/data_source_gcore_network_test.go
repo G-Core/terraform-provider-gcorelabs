@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -34,7 +37,7 @@ func TestAccNetworkDataSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer networks.Delete(client, networkID)
+	defer deleteTestNetwork(client, networkID)
 
 	fullName := "data.gcore_network.acctest"
 	tpl := func(name string) string {
@@ -86,4 +89,25 @@ func createTestNetwork(client *gcorecloud.ServiceClient, opts networks.CreateOpt
 		return "", err
 	}
 	return networkID.(string), nil
+}
+
+func deleteTestNetwork(client *gcorecloud.ServiceClient, networkID string) error {
+	results, err := networks.Delete(client, networkID).Extract()
+	if err != nil {
+		return err
+	}
+	taskID := results.Tasks[0]
+	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, networkDeleting, func(task tasks.TaskID) (interface{}, error) {
+		_, err := networks.Get(client, networkID).Extract()
+		if err == nil {
+			return nil, fmt.Errorf("cannot delete network with ID: %s", networkID)
+		}
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	})
+	return err
 }

@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -157,7 +160,7 @@ func TestAccRouter(t *testing.T) {
 			},`, params.ExtGatewayInfo[i]["type"], params.ExtGatewayInfo[i]["enable_snat"], params.ExtGatewayInfo[i]["network_id"])
 		}
 
-		template += fmt.Sprintf(`]
+		template += fmt.Sprint(`]
 			interfaces = [`)
 		for i := range params.Interfaces {
 			template += fmt.Sprintf(`
@@ -167,7 +170,7 @@ func TestAccRouter(t *testing.T) {
 			},`, params.Interfaces[i]["type"], params.Interfaces[i]["subnet_id"])
 		}
 
-		template += fmt.Sprintf(`]
+		template += fmt.Sprint(`]
 			routes = [`)
 		for i := range params.Routes {
 			template += fmt.Sprintf(`

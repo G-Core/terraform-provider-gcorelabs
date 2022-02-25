@@ -135,33 +135,6 @@ func testAccPreCheck(t *testing.T) {
 	checkNameAndID("REGION", t)
 }
 
-func testAccPreCheckK8s(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME":   GCORE_USERNAME,
-		"GCORE_PASSWORD":   GCORE_PASSWORD,
-		"GCORE_NETWORK_ID": GCORE_NETWORK_ID,
-		"GCORE_SUBNET_ID":  GCORE_SUBNET_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
-func testAccPreCheckK8sPool(t *testing.T) {
-	vars := map[string]interface{}{
-		"GCORE_USERNAME":   GCORE_USERNAME,
-		"GCORE_PASSWORD":   GCORE_PASSWORD,
-		"GCORE_CLUSTER_ID": GCORE_CLUSTER_ID,
-	}
-	for k, v := range vars {
-		if v == "" {
-			t.Fatalf("'%s' must be set for acceptance test", k)
-		}
-	}
-}
-
 func checkNameAndID(resourceType string, t *testing.T) {
 	// resourceType is a word in capital letters
 	keyID := fmt.Sprintf("TEST_%s_ID", resourceType)
@@ -286,7 +259,7 @@ func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
 		// retrieve the resource by name from state
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
+			return fmt.Errorf("not found: %s", resourceName)
 		}
 
 		if rs.Primary.ID == "" {

@@ -1,11 +1,15 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"

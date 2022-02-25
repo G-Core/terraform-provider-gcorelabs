@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -118,14 +121,14 @@ func TestAccSubnet(t *testing.T) {
 		locals {
 	    	dns_nameservers = [`
 
-		for i, _ := range params.DNS {
+		for i := range params.DNS {
 			template += fmt.Sprintf(`"%s",`, params.DNS[i])
 		}
 
-		template += fmt.Sprintf(`]
+		template += fmt.Sprint(`]
 			host_routes = [`)
 
-		for i, _ := range params.HRoutes {
+		for i := range params.HRoutes {
 			template += fmt.Sprintf(`
 			{
               destination = "%s"
@@ -140,6 +143,7 @@ func TestAccSubnet(t *testing.T) {
 			name = "create_network"
   			mtu = 1450
   			type = "vxlan"
+			create_router = false
 			%[1]s
 			%[2]s
 		}
@@ -149,6 +153,7 @@ func TestAccSubnet(t *testing.T) {
   			cidr = "%s"
   			network_id = gcore_network.acctest.id
 			dns_nameservers = local.dns_nameservers
+			connect_to_network_router = false
             dynamic host_routes {
 				iterator = hr
 				for_each = local.host_routes

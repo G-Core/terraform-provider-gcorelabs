@@ -1,13 +1,17 @@
+//go:build !cloud
+// +build !cloud
+
 package gcore
 
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/storage"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"testing"
-	"time"
 )
 
 func TestStorageS3DataSource(t *testing.T) {

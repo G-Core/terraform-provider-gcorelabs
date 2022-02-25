@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -45,7 +48,7 @@ func TestAccK8s(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer networks.Delete(netClient, networkID)
+	defer deleteTestNetwork(netClient, networkID)
 
 	gw := net.ParseIP("")
 	subnetOpts := subnets.CreateOpts{
@@ -69,7 +72,6 @@ func TestAccK8s(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer subnets.Delete(subnetClient, subnetID)
 
 	// update our new network router so that the k8s nodes will have access to the Nexus
 	// registry to download images

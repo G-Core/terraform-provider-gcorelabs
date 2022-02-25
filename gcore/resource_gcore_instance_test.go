@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -171,7 +174,7 @@ func TestAccInstance(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	secgroups := []gcorecloud.ItemID{{sgs[0].ID}}
+	secgroups := []gcorecloud.ItemID{{ID: sgs[0].ID}}
 	update_sg := []gcorecloud.ItemID{
 		{
 			ID: "someid",
@@ -269,9 +272,9 @@ func TestAccInstance(t *testing.T) {
 			names = "%s"
             volumes_ids = [gcore_volume.first_volume.id, gcore_volume.second_volume.id]`, params.Name[0])
 
-		template += fmt.Sprintf(`
+		template += fmt.Sprint(`
 			interfaces = [`)
-		for i, _ := range params.Interfaces {
+		for i := range params.Interfaces {
 			template += fmt.Sprintf(`
 			{
 				type = "%s"
@@ -285,27 +288,27 @@ func TestAccInstance(t *testing.T) {
 			},`, params.Interfaces[i]["type"], params.Interfaces[i]["network_id"], params.Interfaces[i]["subnet_id"])
 
 		}
-		template += fmt.Sprintf(`]
+		template += fmt.Sprint(`]
 			security_groups = [`)
-		for i, _ := range params.SecurityGroups {
+		for i := range params.SecurityGroups {
 			template += fmt.Sprintf(`
 			{
 				id = "%s"
 				name = "%s"
 			},`, params.SecurityGroups[i]["id"], params.SecurityGroups[i]["name"])
 		}
-		template += fmt.Sprintf(`]
+		template += fmt.Sprint(`]
 			metadata = [`)
-		for i, _ := range params.MetaData {
+		for i := range params.MetaData {
 			template += fmt.Sprintf(`
 			{
 				key = "%s"
 				value = "%s"
 			},`, params.MetaData[i]["key"], params.MetaData[i]["value"])
 		}
-		template += fmt.Sprintf(`]
+		template += fmt.Sprint(`]
 			configuration = [`)
-		for i, _ := range params.Configuration {
+		for i := range params.Configuration {
 			template += fmt.Sprintf(`
 			{
 				key = "%s"
