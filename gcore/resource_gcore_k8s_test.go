@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"testing"
 
-	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/k8s/v1/clusters"
 	"github.com/G-Core/gcorelabscloud-go/gcore/keypair/v2/keypairs"
 	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
@@ -58,15 +57,6 @@ func TestAccK8s(t *testing.T) {
 		EnableDHCP:             true,
 		GatewayIP:              &gw,
 	}
-
-	var gccidr gcorecloud.CIDR
-	_, netIPNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gccidr.IP = netIPNet.IP
-	gccidr.Mask = netIPNet.Mask
-	subnetOpts.CIDR = gccidr
 
 	subnetID, err := CreateTestSubnet(subnetClient, subnetOpts)
 	if err != nil {

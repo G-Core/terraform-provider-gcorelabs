@@ -82,7 +82,7 @@ func TestAccRouter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer networks.Delete(clientNet, networkID)
+	defer deleteTestNetwork(clientNet, networkID)
 
 	gw := net.ParseIP("")
 	optsSubnet := subnets.CreateOpts{
@@ -92,15 +92,6 @@ func TestAccRouter(t *testing.T) {
 		GatewayIP:              &gw,
 	}
 
-	var gccidr gcorecloud.CIDR
-	_, netIPNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gccidr.IP = netIPNet.IP
-	gccidr.Mask = netIPNet.Mask
-	optsSubnet.CIDR = gccidr
-
 	subnetID, err := CreateTestSubnet(clientSubnet, optsSubnet)
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +100,7 @@ func TestAccRouter(t *testing.T) {
 	var dst1 gcorecloud.CIDR
 	snat1 := true
 
-	_, netIPNet, _ = net.ParseCIDR(cidr)
+	_, netIPNet, _ := net.ParseCIDR(cidr)
 	dst1.IP = netIPNet.IP
 	dst1.Mask = netIPNet.Mask
 

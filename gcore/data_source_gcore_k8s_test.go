@@ -85,15 +85,6 @@ func TestAccK8sDataSource(t *testing.T) {
 		GatewayIP:              &gw,
 	}
 
-	var gccidr gcorecloud.CIDR
-	_, netIPNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gccidr.IP = netIPNet.IP
-	gccidr.Mask = netIPNet.Mask
-	subnetOpts.CIDR = gccidr
-
 	subnetID, err := CreateTestSubnet(subnetClient, subnetOpts)
 	if err != nil {
 		t.Fatal(err)

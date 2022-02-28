@@ -52,15 +52,6 @@ func TestAccSubnetDataSource(t *testing.T) {
 		NetworkID: networkID,
 	}
 
-	var gccidr gcorecloud.CIDR
-	_, netIPNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gccidr.IP = netIPNet.IP
-	gccidr.Mask = netIPNet.Mask
-	optsSubnet.CIDR = gccidr
-
 	subnetID, err := CreateTestSubnet(clientSubnet, optsSubnet)
 	if err != nil {
 		t.Fatal(err)
@@ -95,6 +86,15 @@ func TestAccSubnetDataSource(t *testing.T) {
 }
 
 func CreateTestSubnet(client *gcorecloud.ServiceClient, opts subnets.CreateOpts) (string, error) {
+	var gccidr gcorecloud.CIDR
+	_, netIPNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", err
+	}
+	gccidr.IP = netIPNet.IP
+	gccidr.Mask = netIPNet.Mask
+	opts.CIDR = gccidr
+
 	res, err := subnets.Create(client, opts).Extract()
 	if err != nil {
 		return "", err

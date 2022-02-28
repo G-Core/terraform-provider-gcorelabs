@@ -5,7 +5,6 @@ package gcore
 
 import (
 	"fmt"
-	"net"
 	"regexp"
 	"testing"
 
@@ -34,27 +33,6 @@ func checkInstanceAttrs(resourceName string, opts *instances.CreateOpts) resourc
 		}
 
 		// todo add check for interfaces/volumes/secgroups
-		//for i, volume := range opts.Volumes {
-		//	checksStore = append(checksStore,
-		//		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.source`, i), volume.Source.String()),
-		//		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`volumes.%d.boot_index`, i), strconv.Itoa(volume.BootIndex)),
-		//	)
-		//}
-		//
-		//for i, iface := range opts.Interfaces {
-		//	checksStore = append(checksStore,
-		//		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`interfaces.%d.type`, i), iface.Type.String()),
-		//		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`interfaces.%d.network_id`, i), iface.NetworkID),
-		//		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`interfaces.%d.subnet_id`, i), iface.SubnetID),
-		//	)
-		//}
-		//
-		//for i, secgroup := range opts.SecurityGroups {
-		//	checksStore = append(checksStore,
-		//		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`security_groups.%d.id`, i), secgroup.ID),
-		//	)
-		//}
-
 		for i, md := range opts.Metadata.Metadata {
 			checksStore = append(checksStore,
 				resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(`metadata.%d.key`, i), md.Key),
@@ -130,15 +108,6 @@ func TestAccInstance(t *testing.T) {
 		Name:      subnetTestName,
 		NetworkID: networkID,
 	}
-
-	var gccidr gcorecloud.CIDR
-	_, netIPNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gccidr.IP = netIPNet.IP
-	gccidr.Mask = netIPNet.Mask
-	optsSubnet.CIDR = gccidr
 
 	subnetID, err := CreateTestSubnet(clientSubnet, optsSubnet)
 	if err != nil {
