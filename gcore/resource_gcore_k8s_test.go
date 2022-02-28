@@ -1,15 +1,90 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
 	"fmt"
+	"net"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/G-Core/gcorelabscloud-go/gcore/k8s/v1/clusters"
+	"github.com/G-Core/gcorelabscloud-go/gcore/keypair/v2/keypairs"
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
+	"github.com/G-Core/gcorelabscloud-go/gcore/subnet/v1/subnets"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccK8s(t *testing.T) {
+	cfg, err := createTestConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	netClient, err := CreateTestClient(cfg.Provider, networksPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	subnetClient, err := CreateTestClient(cfg.Provider, subnetPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	kpClient, err := CreateTestClient(cfg.Provider, keypairsPoint, versionPointV2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	netOpts := networks.CreateOpts{
+		Name:         networkTestName,
+		CreateRouter: true,
+	}
+	networkID, err := createTestNetwork(netClient, netOpts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteTestNetwork(netClient, networkID)
+
+	gw := net.ParseIP("")
+	subnetOpts := subnets.CreateOpts{
+		Name:                   subnetTestName,
+		NetworkID:              networkID,
+		ConnectToNetworkRouter: true,
+		EnableDHCP:             true,
+		GatewayIP:              &gw,
+	}
+
+	subnetID, err := CreateTestSubnet(subnetClient, subnetOpts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// update our new network router so that the k8s nodes will have access to the Nexus
+	// registry to download images
+	if err := patchRouterForK8S(cfg.Provider, networkID); err != nil {
+		t.Fatal(err)
+	}
+
+	pid, err := strconv.Atoi(os.Getenv("TEST_PROJECT_ID"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	kpOpts := keypairs.CreateOpts{
+		Name:      kpName,
+		PublicKey: pkTest,
+		ProjectID: pid,
+	}
+	keyPair, err := keypairs.Create(kpClient, kpOpts).Extract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer keypairs.Delete(kpClient, keyPair.ID)
+
 	fullName := "gcore_k8s.acctest"
 
 	ipTemplate := fmt.Sprintf(`
@@ -19,6 +94,7 @@ func TestAccK8s(t *testing.T) {
               name = "tf-k8s"
 			  fixed_network = "%s"
 			  fixed_subnet = "%s"
+              keypair = "%s"
 			  pool {
 				name = "tf-pool1"
 				flavor_id = "g1-standard-1-2"
@@ -29,10 +105,10 @@ func TestAccK8s(t *testing.T) {
 			  }
 
 			}
-		`, projectInfo(), regionInfo(), GCORE_NETWORK_ID, GCORE_SUBNET_ID)
+		`, projectInfo(), regionInfo(), networkID, subnetID, keyPair.ID)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckK8s(t) },
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccK8sDestroy,
 		Steps: []resource.TestStep{

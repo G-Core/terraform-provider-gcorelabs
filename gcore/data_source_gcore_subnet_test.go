@@ -1,3 +1,6 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
@@ -42,40 +45,14 @@ func TestAccSubnetDataSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer networks.Delete(clientNet, networkID)
+	defer deleteTestNetwork(clientNet, networkID)
 
 	optsSubnet := subnets.CreateOpts{
 		Name:      subnetTestName,
 		NetworkID: networkID,
 	}
 
-	var gccidr gcorecloud.CIDR
-	_, netIPNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gccidr.IP = netIPNet.IP
-	gccidr.Mask = netIPNet.Mask
-	optsSubnet.CIDR = gccidr
-
-	res, err := subnets.Create(clientSubnet, optsSubnet).Extract()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	taskID := res.Tasks[0]
-	subnetID, err := tasks.WaitTaskAndReturnResult(clientSubnet, taskID, true, SubnetCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
-		taskInfo, err := tasks.Get(clientSubnet, string(task)).Extract()
-		if err != nil {
-			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
-		}
-		Subnet, err := subnets.ExtractSubnetIDFromTask(taskInfo)
-		if err != nil {
-			return nil, fmt.Errorf("cannot retrieve Subnet ID from task info: %w", err)
-		}
-		return Subnet, nil
-	},
-	)
+	subnetID, err := CreateTestSubnet(clientSubnet, optsSubnet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,10 +77,63 @@ func TestAccSubnetDataSource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", optsSubnet.Name),
-					resource.TestCheckResourceAttr(fullName, "id", subnetID.(string)),
+					resource.TestCheckResourceAttr(fullName, "id", subnetID),
 					resource.TestCheckResourceAttr(fullName, "network_id", networkID),
 				),
 			},
 		},
 	})
+}
+
+func CreateTestSubnet(client *gcorecloud.ServiceClient, opts subnets.CreateOpts) (string, error) {
+	var gccidr gcorecloud.CIDR
+	_, netIPNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", err
+	}
+	gccidr.IP = netIPNet.IP
+	gccidr.Mask = netIPNet.Mask
+	opts.CIDR = gccidr
+
+	res, err := subnets.Create(client, opts).Extract()
+	if err != nil {
+		return "", err
+	}
+
+	taskID := res.Tasks[0]
+	subnetID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, SubnetCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+		taskInfo, err := tasks.Get(client, string(task)).Extract()
+		if err != nil {
+			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
+		}
+		Subnet, err := subnets.ExtractSubnetIDFromTask(taskInfo)
+		if err != nil {
+			return nil, fmt.Errorf("cannot retrieve Subnet ID from task info: %w", err)
+		}
+		return Subnet, nil
+	},
+	)
+
+	return subnetID.(string), err
+}
+
+func deleteTestSubnet(client *gcorecloud.ServiceClient, subnetID string) error {
+	results, err := subnets.Delete(client, subnetID).Extract()
+	if err != nil {
+		return err
+	}
+	taskID := results.Tasks[0]
+	_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, SubnetDeleting, func(task tasks.TaskID) (interface{}, error) {
+		_, err := subnets.Get(client, subnetID).Extract()
+		if err == nil {
+			return nil, fmt.Errorf("cannot delete subnet with ID: %s", subnetID)
+		}
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	})
+	return err
 }

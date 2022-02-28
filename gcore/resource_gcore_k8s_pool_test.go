@@ -1,18 +1,122 @@
+//go:build cloud
+// +build cloud
+
 package gcore
 
 import (
 	"fmt"
+	"net"
+	"os"
 	"strconv"
 	"testing"
+	"time"
 
+	"github.com/G-Core/gcorelabscloud-go/gcore/k8s/v1/clusters"
 	"github.com/G-Core/gcorelabscloud-go/gcore/k8s/v1/pools"
+	"github.com/G-Core/gcorelabscloud-go/gcore/keypair/v2/keypairs"
+	"github.com/G-Core/gcorelabscloud-go/gcore/network/v1/networks"
+	"github.com/G-Core/gcorelabscloud-go/gcore/subnet/v1/subnets"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccK8sPool(t *testing.T) {
-	fullName := "gcore_k8s_pool.acctest"
+	cfg, err := createTestConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	k8sClient, err := CreateTestClient(cfg.Provider, K8sPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	netClient, err := CreateTestClient(cfg.Provider, networksPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	subnetClient, err := CreateTestClient(cfg.Provider, subnetPoint, versionPointV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	kpClient, err := CreateTestClient(cfg.Provider, keypairsPoint, versionPointV2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	netOpts := networks.CreateOpts{
+		Name:         networkTestName,
+		CreateRouter: true,
+	}
+	networkID, err := createTestNetwork(netClient, netOpts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteTestNetwork(netClient, networkID)
+
+	gw := net.ParseIP("")
+	subnetOpts := subnets.CreateOpts{
+		Name:                   subnetTestName,
+		NetworkID:              networkID,
+		ConnectToNetworkRouter: true,
+		EnableDHCP:             true,
+		GatewayIP:              &gw,
+	}
+
+	subnetID, err := CreateTestSubnet(subnetClient, subnetOpts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// update our new network router so that the k8s nodes will have access to the Nexus
+	// registry to download images
+	if err := patchRouterForK8S(cfg.Provider, networkID); err != nil {
+		t.Fatal(err)
+	}
+
+	pid, err := strconv.Atoi(os.Getenv("TEST_PROJECT_ID"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	kpOpts := keypairs.CreateOpts{
+		Name:      kpName,
+		PublicKey: pkTest,
+		ProjectID: pid,
+	}
+	keyPair, err := keypairs.Create(kpClient, kpOpts).Extract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer keypairs.Delete(kpClient, keyPair.ID)
+
+	k8sOpts := clusters.CreateOpts{
+		Name:               testClusterName,
+		FixedNetwork:       networkID,
+		FixedSubnet:        subnetID,
+		AutoHealingEnabled: true,
+		KeyPair:            keyPair.ID,
+		Version:            testClusterVersion,
+		Pools: []pools.CreateOpts{{
+			Name:             testClusterPoolName,
+			FlavorID:         testPoolFlavor,
+			NodeCount:        testNodeCount,
+			DockerVolumeSize: testDockerVolumeSize,
+			DockerVolumeType: testDockerVolumeType,
+			MinNodeCount:     testMinNodeCount,
+			MaxNodeCount:     testMaxNodeCount,
+		}},
+	}
+	clusterID, err := createTestCluster(k8sClient, k8sOpts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteTestCluster(k8sClient, clusterID)
+	//we need to wait until upgrade will e finished
+	time.Sleep(time.Second * 30)
+
+	fullName := "gcore_k8s_pool.acctest"
 	type Params struct {
 		Name             string
 		Flavor           string
@@ -53,13 +157,13 @@ func TestAccK8sPool(t *testing.T) {
 			  node_count = %d
 			  docker_volume_size = %d
 			}
-		`, projectInfo(), regionInfo(), GCORE_CLUSTER_ID,
+		`, projectInfo(), regionInfo(), clusterID,
 			p.Name, p.Flavor, p.MinNodeCount, p.MaxNodeCount,
 			p.NodeCount, p.DockerVolumeSize)
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheckK8sPool(t) },
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccK8sPoolDestroy,
 		Steps: []resource.TestStep{
