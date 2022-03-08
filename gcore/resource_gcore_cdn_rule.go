@@ -37,6 +37,11 @@ func resourceCDNRule() *schema.Resource {
 				Required:    true,
 				Description: "Type of rule. The rule is applied if the requested URI matches the rule pattern. It has two possible values: Type 0 — RegEx. Must start with '^/' or '/'. Type 1 — RegEx. Legacy type. Note that for this rule type we automatically add / to each rule pattern before your regular expression. Please use Type 0.",
 			},
+			"origin_group": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "ID of the Origins Group. Use one of your Origins Group or create a new one. You can use either 'origin' parameter or 'originGroup' in the resource definition.",
+			},
 			"origin_protocol": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -61,6 +66,10 @@ func resourceCDNRuleCreate(ctx context.Context, d *schema.ResourceData, m interf
 	req.Name = d.Get("name").(string)
 	req.Rule = d.Get("rule").(string)
 	req.RuleType = d.Get("rule_type").(int)
+
+	if d.Get("origin_group") != nil && d.Get("origin_group") != 0 {
+		req.OriginGroup = pointer.ToInt(d.Get("origin_group").(int))
+	}
 
 	if d.Get("origin_protocol") != nil && d.Get("origin_protocol") != "" {
 		req.OverrideOriginProtocol = pointer.ToString(d.Get("origin_protocol").(string))
@@ -103,6 +112,7 @@ func resourceCDNRuleRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("name", result.Name)
 	d.Set("rule", result.Pattern)
 	d.Set("rule_type", result.Type)
+	d.Set("origin_group", result.OriginGroup)
 	d.Set("origin_protocol", result.OriginProtocol)
 	if err := d.Set("options", optionsToList(result.Options)); err != nil {
 		return diag.FromErr(err)
@@ -127,6 +137,10 @@ func resourceCDNRuleUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	req.Name = d.Get("name").(string)
 	req.Rule = d.Get("rule").(string)
 	req.RuleType = d.Get("rule_type").(int)
+
+	if d.Get("origin_group") != nil && d.Get("origin_group").(int) > 0 {
+		req.OriginGroup = pointer.ToInt(d.Get("origin_group").(int))
+	}
 
 	if d.Get("origin_protocol") != nil && d.Get("origin_protocol") != "" {
 		req.OverrideOriginProtocol = pointer.ToString(d.Get("origin_protocol").(string))
