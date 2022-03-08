@@ -67,7 +67,7 @@ func resourceCDNRuleCreate(ctx context.Context, d *schema.ResourceData, m interf
 	req.Rule = d.Get("rule").(string)
 	req.RuleType = d.Get("rule_type").(int)
 
-	if d.Get("origin_group") != nil && d.Get("origin_group") != 0 {
+	if d.Get("origin_group") != nil && d.Get("origin_group").(int) > 0 {
 		req.OriginGroup = pointer.ToInt(d.Get("origin_group").(int))
 	}
 
