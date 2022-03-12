@@ -293,6 +293,46 @@ var (
 						},
 					},
 				},
+				"static_request_headers": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeMap,
+								Elem:     &schema.Schema{Type: schema.TypeString},
+								Required: true,
+							},
+						},
+					},
+				},
+				"static_headers": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeMap,
+								Elem:     &schema.Schema{Type: schema.TypeString},
+								Required: true,
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -361,7 +401,6 @@ func resourceCDNResource() *schema.Resource {
 				RequiredWith: []string{"ssl_enabled"},
 				Description:  "Specify the SSL Certificate ID which should be used for the CDN Resource.",
 			},
-			"options": optionsSchema,
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -373,6 +412,7 @@ func resourceCDNResource() *schema.Resource {
 				Computed:    true,
 				Description: "Status of a CDN resource content availability. Possible values are: Active, Suspended, Processed.",
 			},
+			"options": optionsSchema,
 		},
 		CreateContext: resourceCDNResourceCreate,
 		ReadContext:   resourceCDNResourceRead,
@@ -637,6 +677,32 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			opts.QueryParamsBlacklist.Value = append(opts.QueryParamsBlacklist.Value, v.(string))
 		}
 	}
+	if opt, ok := getOptByName(fields, "static_request_headers"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.StaticRequestHeaders = &gcdn.StaticRequestHeaders{
+			Enabled: enabled,
+			Value:   map[string]string{},
+		}
+		for k, v := range opt["value"].(map[string]interface{}) {
+			opts.StaticRequestHeaders.Value[k] = v.(string)
+		}
+	}
+	if opt, ok := getOptByName(fields, "static_headers"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.StaticHeaders = &gcdn.StaticHeaders{
+			Enabled: enabled,
+			Value:   map[string]string{},
+		}
+		for k, v := range opt["value"].(map[string]interface{}) {
+			opts.StaticHeaders.Value[k] = v.(string)
+		}
+	}
 	return &opts
 }
 
@@ -711,6 +777,14 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.QueryParamsBlacklist != nil {
 		m := structToMap(options.QueryParamsBlacklist)
 		result["query_params_blacklist"] = []interface{}{m}
+	}
+	if options.StaticRequestHeaders != nil {
+		m := structToMap(options.StaticRequestHeaders)
+		result["static_request_headers"] = []interface{}{m}
+	}
+	if options.StaticHeaders != nil {
+		m := structToMap(options.StaticHeaders)
+		result["static_headers"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }
