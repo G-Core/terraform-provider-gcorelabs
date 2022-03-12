@@ -53,6 +53,10 @@ github.com/G-Core/gcorelabscdn-go v0.1.15 h1:3T8xbxKr3773RR7oE06W9T3BjEOw5Zekfls
 github.com/G-Core/gcorelabscdn-go v0.1.15/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
 github.com/G-Core/gcorelabscdn-go v0.1.16 h1:AwO7ixX9bEEFespAR4ZcCOSDBgylGRqhglzoYeuRJ6g=
 github.com/G-Core/gcorelabscdn-go v0.1.16/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.1.17 h1:N/zud06Ixnr2a70dfAw7ixjPFnasQ0UlsyYMTdGmICg=
+github.com/G-Core/gcorelabscdn-go v0.1.17/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
+github.com/G-Core/gcorelabscdn-go v0.1.18 h1:ISDvMA0EFw6PJnQKTnJ5lAJ5mm1MVRbjMZoZkClA42I=
+github.com/G-Core/gcorelabscdn-go v0.1.18/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
 github.com/G-Core/gcorelabscloud-go v0.4.43 h1:e4D1iJSoPKye3YyOXS7vER2ZYitu51cpAK68n1c3sGM=
 github.com/G-Core/gcorelabscloud-go v0.4.43/go.mod h1:Z1MF80mWagEUrxygtYkvW/MJEYNmIUPsIEYBB3cKjOM=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
