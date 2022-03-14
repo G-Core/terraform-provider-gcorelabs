@@ -116,6 +116,7 @@ resource "gcore_cdn_resource" "cdn_example_com" {
 
 - **id** (String) The ID of this resource.
 - **options** (Block List, Max: 1) Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value. (see [below for nested schema](#nestedblock--options))
+- **origin_group** (Number) ID of the Origins Group. Use one of your Origins Group or create a new one. You can use either 'origin' parameter or 'originGroup' in the resource definition.
 - **origin_protocol** (String) This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, it will be inherit from resource. Possible values are: HTTPS, HTTP, MATCH.
 
 <a id="nestedblock--options"></a>
@@ -134,6 +135,8 @@ Optional:
 - **redirect_http_to_https** (Block List, Max: 1) Sets redirect from HTTP protocol to HTTPS for all resource requests. (see [below for nested schema](#nestedblock--options--redirect_http_to_https))
 - **rewrite** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--rewrite))
 - **sni** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--sni))
+- **static_headers** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--static_headers))
+- **static_request_headers** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--static_request_headers))
 - **webp** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--webp))
 
 <a id="nestedblock--options--browser_cache_settings"></a>
@@ -261,6 +264,30 @@ Optional:
 - **custom_hostname** (String) Required to set custom hostname in case sni-type='custom'
 - **enabled** (Boolean)
 - **sni_type** (String) Available values 'dynamic' or 'custom'
+
+
+<a id="nestedblock--options--static_headers"></a>
+### Nested Schema for `options.static_headers`
+
+Required:
+
+- **value** (Map of String)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--static_request_headers"></a>
+### Nested Schema for `options.static_request_headers`
+
+Required:
+
+- **value** (Map of String)
+
+Optional:
+
+- **enabled** (Boolean)
 
 
 <a id="nestedblock--options--webp"></a>

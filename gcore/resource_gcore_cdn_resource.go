@@ -347,7 +347,8 @@ func resourceCDNResource() *schema.Resource {
 			"cname": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "A CNAME that will be used to deliver content though a CDN",
+				ForceNew:    true,
+				Description: "A CNAME that will be used to deliver content though a CDN. If you update this field new resource will be created.",
 			},
 			"description": {
 				Type:        schema.TypeString,

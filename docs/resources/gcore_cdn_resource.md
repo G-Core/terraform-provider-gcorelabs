@@ -65,7 +65,7 @@ resource "gcore_cdn_resource" "cdn_example_com" {
 
 ### Required
 
-- **cname** (String) A CNAME that will be used to deliver content though a CDN
+- **cname** (String) A CNAME that will be used to deliver content though a CDN. If you update this field new resource will be created.
 
 ### Optional
 
@@ -100,6 +100,8 @@ Optional:
 - **redirect_http_to_https** (Block List, Max: 1) Sets redirect from HTTP protocol to HTTPS for all resource requests. (see [below for nested schema](#nestedblock--options--redirect_http_to_https))
 - **rewrite** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--rewrite))
 - **sni** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--sni))
+- **static_headers** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--static_headers))
+- **static_request_headers** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--static_request_headers))
 - **webp** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--webp))
 
 <a id="nestedblock--options--browser_cache_settings"></a>
@@ -227,6 +229,30 @@ Optional:
 - **custom_hostname** (String) Required to set custom hostname in case sni-type='custom'
 - **enabled** (Boolean)
 - **sni_type** (String) Available values 'dynamic' or 'custom'
+
+
+<a id="nestedblock--options--static_headers"></a>
+### Nested Schema for `options.static_headers`
+
+Required:
+
+- **value** (Map of String)
+
+Optional:
+
+- **enabled** (Boolean)
+
+
+<a id="nestedblock--options--static_request_headers"></a>
+### Nested Schema for `options.static_request_headers`
+
+Required:
+
+- **value** (Map of String)
+
+Optional:
+
+- **enabled** (Boolean)
 
 
 <a id="nestedblock--options--webp"></a>
