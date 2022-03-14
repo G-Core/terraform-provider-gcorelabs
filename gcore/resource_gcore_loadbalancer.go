@@ -23,11 +23,12 @@ const (
 
 func resourceLoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLoadBalancerCreate,
-		ReadContext:   resourceLoadBalancerRead,
-		UpdateContext: resourceLoadBalancerUpdate,
-		DeleteContext: resourceLoadBalancerDelete,
-		Description:   "Represent load balancer",
+		DeprecationMessage: "!> **WARNING:** This resource is deprecated and will be removed in the next major version. Use gcore_loadbalancerv2 resource instead",
+		CreateContext:      resourceLoadBalancerCreate,
+		ReadContext:        resourceLoadBalancerRead,
+		UpdateContext:      resourceLoadBalancerUpdate,
+		DeleteContext:      resourceLoadBalancerDelete,
+		Description:        "Represent load balancer",
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -201,81 +202,7 @@ func resourceLoadBalancer() *schema.Resource {
 }
 
 func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	log.Println("[DEBUG] Start LoadBalancer creating")
-	var diags diag.Diagnostics
-	config := m.(*Config)
-	provider := config.Provider
-
-	client, err := CreateClient(provider, d, LoadBalancersPoint, versionPointV1)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	Listeners := d.Get("listener").([]interface{})
-	listenersOpts := make([]loadbalancers.CreateListenerOpts, len(Listeners))
-	for i, ls := range Listeners {
-		l := ls.(map[string]interface{})
-		opts := loadbalancers.CreateListenerOpts{
-			Name:             l["name"].(string),
-			ProtocolPort:     l["protocol_port"].(int),
-			Protocol:         types.ProtocolType(l["protocol"].(string)),
-			Certificate:      l["certificate"].(string),
-			CertificateChain: l["certificate_chain"].(string),
-			PrivateKey:       l["private_key"].(string),
-			InsertXForwarded: l["insert_x_forwarded"].(bool),
-			SecretID:         l["secret_id"].(string),
-		}
-		sniSecretIDRaw := l["sni_secret_id"].([]interface{})
-		if len(sniSecretIDRaw) != 0 {
-			sniSecretID := make([]string, len(sniSecretIDRaw))
-			for i, s := range sniSecretIDRaw {
-				sniSecretID[i] = s.(string)
-			}
-			opts.SNISecretID = sniSecretID
-		}
-
-		listenersOpts[i] = opts
-	}
-
-	opts := loadbalancers.CreateOpts{
-		Name:         d.Get("name").(string),
-		Listeners:    listenersOpts,
-		VipNetworkID: d.Get("vip_network_id").(string),
-		VipSubnetID:  d.Get("vip_subnet_id").(string),
-	}
-
-	lbFlavor := d.Get("flavor").(string)
-	if len(lbFlavor) != 0 {
-		opts.Flavor = &lbFlavor
-	}
-
-	results, err := loadbalancers.Create(client, opts).Extract()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	taskID := results.Tasks[0]
-	lbID, err := tasks.WaitTaskAndReturnResult(client, taskID, true, LoadBalancerCreateTimeout, func(task tasks.TaskID) (interface{}, error) {
-		taskInfo, err := tasks.Get(client, string(task)).Extract()
-		if err != nil {
-			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
-		}
-		lbID, err := loadbalancers.ExtractLoadBalancerIDFromTask(taskInfo)
-		if err != nil {
-			return nil, fmt.Errorf("cannot retrieve LoadBalancer ID from task info: %w", err)
-		}
-		return lbID, nil
-	})
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(lbID.(string))
-	resourceLoadBalancerRead(ctx, d, m)
-
-	log.Printf("[DEBUG] Finish LoadBalancer creating (%s)", lbID)
-	return diags
+	return diag.FromErr(fmt.Errorf("use gcore_loadbalancerv2 resource instead"))
 }
 
 func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
