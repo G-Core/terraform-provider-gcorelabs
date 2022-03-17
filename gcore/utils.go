@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	dnssdk "github.com/G-Core/g-dns-sdk-go"
-	storageSDK "github.com/G-Core/gcorelabs-storage-sdk-go"
+	storageSDK "github.com/G-Core/gcore-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"

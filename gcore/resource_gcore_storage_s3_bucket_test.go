@@ -14,18 +14,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccStorageS3(t *testing.T) {
+func TestAccStorageS3Bucket(t *testing.T) {
 
 	random := time.Now().Nanosecond()
-	resourceName := fmt.Sprintf("gcore_storage_s3.terraform_test_%d_s3", random)
+	storageResourceName := fmt.Sprintf("gcore_storage_s3.terraform_test_%d_s3", random)
+	bucketResourceName := fmt.Sprintf("gcore_storage_s3_bucket.terraform_test_%d_s3_bucket", random)
+	name := fmt.Sprintf("terraform_test_%d", random)
 
-	templateCreate := func() string {
+	templateCreateBucket := func() string {
 		return fmt.Sprintf(`
 resource "gcore_storage_s3" "terraform_test_%d_s3" {
   name = "terraform_test_%d"
   location = "s-ed1"
 }
-		`, random, random)
+
+resource "gcore_storage_s3_bucket" "terraform_test_%d_s3_bucket" {
+  name = "terraform_test_%d"
+  storage_id = %s.id
+}
+		`, random, random, random, random, storageResourceName)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -61,10 +68,10 @@ resource "gcore_storage_s3" "terraform_test_%d_s3" {
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: templateCreate(),
+				Config: templateCreateBucket(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResourceExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, StorageSchemaLocation, "s-ed1"),
+					testAccCheckResourceExists(bucketResourceName),
+					resource.TestCheckResourceAttr(bucketResourceName, StorageS3BucketSchemaName, name),
 				),
 			},
 		},

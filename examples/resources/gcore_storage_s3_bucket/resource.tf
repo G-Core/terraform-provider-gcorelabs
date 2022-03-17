@@ -7,7 +7,7 @@ provider gcore {
   gcore_storage_api = "https://api.gcorelabs.com/storage"
 }
 
-resource "gcore_storage_s3" "example_s3" {
-  name = "example"
-  location = "s-ed1"
+resource "gcore_storage_s3_bucket" "example_s3_bucket" {
+  name = "example1bucket2name"
+  storage_id = 1
 }

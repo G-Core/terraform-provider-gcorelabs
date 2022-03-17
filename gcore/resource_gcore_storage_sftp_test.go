@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/storage"
+	"github.com/G-Core/gcore-storage-sdk-go/swagger/client/storage"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
