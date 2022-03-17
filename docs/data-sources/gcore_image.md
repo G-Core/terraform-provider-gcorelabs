@@ -49,6 +49,7 @@ output "view" {
 ### Optional
 
 - **id** (String) The ID of this resource.
+- **is_baremetal** (Boolean) set to true if need to get baremetal image
 - **project_id** (Number)
 - **project_name** (String)
 - **region_id** (Number)

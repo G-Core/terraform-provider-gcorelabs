@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	imagesPoint = "images"
+	imagesPoint   = "images"
+	bmImagesPoint = "bmimages"
 )
 
 func dataSourceImage() *schema.Resource {
@@ -56,6 +57,11 @@ func dataSourceImage() *schema.Resource {
 				Description: "use 'os-version', for example 'ubuntu-20.04'",
 				Required:    true,
 			},
+			"is_baremetal": &schema.Schema{
+				Type:        schema.TypeBool,
+				Description: "set to true if need to get baremetal image",
+				Optional:    true,
+			},
 			"min_disk": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -76,11 +82,6 @@ func dataSourceImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			//todo: uncomment after patching gcorelabscloud-go
-			//"is_baremetal": &schema.Schema{
-			//	Type: schema.TypeString,
-			//	Required: true,
-			//},
 		},
 	}
 }
@@ -92,7 +93,11 @@ func dataSourceImageRead(ctx context.Context, d *schema.ResourceData, m interfac
 	config := m.(*Config)
 	provider := config.Provider
 
-	client, err := CreateClient(provider, d, imagesPoint, versionPointV1)
+	point := imagesPoint
+	if isBm, _ := d.Get("is_baremetal").(bool); isBm {
+		point = bmImagesPoint
+	}
+	client, err := CreateClient(provider, d, point, versionPointV1)
 	if err != nil {
 		return diag.FromErr(err)
 	}
