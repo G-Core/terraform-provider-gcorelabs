@@ -3,14 +3,15 @@ package gcore
 import (
 	"context"
 	"fmt"
-	gstorage "github.com/G-Core/gcorelabs-storage-sdk-go"
-	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/key"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/G-Core/gcorelabs-storage-sdk-go/swagger/client/storage"
+	gstorage "github.com/G-Core/gcore-storage-sdk-go"
+	"github.com/G-Core/gcore-storage-sdk-go/swagger/client/key"
+
+	"github.com/G-Core/gcore-storage-sdk-go/swagger/client/storage"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
