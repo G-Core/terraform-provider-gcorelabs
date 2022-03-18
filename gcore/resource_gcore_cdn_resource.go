@@ -333,6 +333,25 @@ var (
 						},
 					},
 				},
+				"websockets": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeBool,
+								Required: true,
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -704,6 +723,16 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			opts.StaticHeaders.Value[k] = v.(string)
 		}
 	}
+	if opt, ok := getOptByName(fields, "websockets"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.WebSockets = &gcdn.WebSockets{
+			Enabled: enabled,
+			Value:   opt["value"].(bool),
+		}
+	}
 	return &opts
 }
 
@@ -786,6 +815,10 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.StaticHeaders != nil {
 		m := structToMap(options.StaticHeaders)
 		result["static_headers"] = []interface{}{m}
+	}
+	if options.WebSockets != nil {
+		m := structToMap(options.WebSockets)
+		result["websockets"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }
