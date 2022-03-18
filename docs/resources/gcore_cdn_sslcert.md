@@ -46,17 +46,17 @@ resource "gcore_cdn_sslcert" "cdnopt_cert" {
 
 ### Required
 
-- **cert** (String, Sensitive) The public part of the SSL certificate. All chain of the SSL certificate should be added.
-- **name** (String) Name of the SSL certificate. Must be unique.
-- **private_key** (String, Sensitive) The private key of the SSL certificate.
+- `cert` (String, Sensitive) The public part of the SSL certificate. All chain of the SSL certificate should be added.
+- `name` (String) Name of the SSL certificate. Must be unique.
+- `private_key` (String, Sensitive) The private key of the SSL certificate.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **automated** (Boolean) The way SSL certificate was issued.
-- **has_related_resources** (Boolean) It shows if the SSL certificate is used by a CDN resource.
+- `automated` (Boolean) The way SSL certificate was issued.
+- `has_related_resources` (Boolean) It shows if the SSL certificate is used by a CDN resource.
 
 

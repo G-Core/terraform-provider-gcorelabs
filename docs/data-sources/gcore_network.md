@@ -44,21 +44,21 @@ output "view" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **external** (Boolean)
-- **mtu** (Number)
-- **shared** (Boolean)
-- **type** (String) 'vlan' or 'vxlan' network type is allowed. Default value is 'vxlan'
+- `external` (Boolean)
+- `mtu` (Number)
+- `shared` (Boolean)
+- `type` (String) 'vlan' or 'vxlan' network type is allowed. Default value is 'vxlan'
 
 

@@ -44,27 +44,27 @@ output "view" {
 
 ### Required
 
-- **name** (String) Displayed server group name
+- `name` (String) Displayed server group name
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **instances** (List of Object) Instances in this server group (see [below for nested schema](#nestedatt--instances))
-- **policy** (String) Server group policy. Available value is 'affinity', 'anti-affinity'
+- `instances` (List of Object) Instances in this server group (see [below for nested schema](#nestedatt--instances))
+- `policy` (String) Server group policy. Available value is 'affinity', 'anti-affinity'
 
 <a id="nestedatt--instances"></a>
 ### Nested Schema for `instances`
 
 Read-Only:
 
-- **instance_id** (String)
-- **instance_name** (String)
+- `instance_id` (String)
+- `instance_name` (String)
 
 

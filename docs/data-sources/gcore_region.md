@@ -30,10 +30,10 @@ data "gcore_region" "rg" {
 
 ### Required
 
-- **name** (String) Displayed region name
+- `name` (String) Displayed region name
 
 ### Optional
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 

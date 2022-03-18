@@ -32,11 +32,11 @@ resource "gcore_dns_zone" "example_zone" {
 
 ### Required
 
-- **name** (String) A name of DNS Zone resource.
+- `name` (String) A name of DNS Zone resource.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 ## Import
 

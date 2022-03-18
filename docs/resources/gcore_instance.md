@@ -172,48 +172,48 @@ resource "gcore_instance" "v" {
 
 ### Required
 
-- **flavor_id** (String)
-- **interface** (Block List, Min: 1) (see [below for nested schema](#nestedblock--interface))
-- **volume** (Block Set, Min: 1) (see [below for nested schema](#nestedblock--volume))
+- `flavor_id` (String)
+- `interface` (Block List, Min: 1) (see [below for nested schema](#nestedblock--interface))
+- `volume` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--volume))
 
 ### Optional
 
-- **addresses** (Block List) (see [below for nested schema](#nestedblock--addresses))
-- **allow_app_ports** (Boolean)
-- **configuration** (Block List) (see [below for nested schema](#nestedblock--configuration))
-- **flavor** (Map of String)
-- **id** (String) The ID of this resource.
-- **keypair_name** (String)
-- **last_updated** (String)
-- **metadata** (Block List, Deprecated) (see [below for nested schema](#nestedblock--metadata))
-- **metadata_map** (Map of String)
-- **name** (String)
-- **name_templates** (List of String)
-- **password** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
-- **security_group** (Block List) Firewalls list (see [below for nested schema](#nestedblock--security_group))
-- **server_group** (String)
-- **status** (String)
-- **userdata** (String)
-- **username** (String)
-- **vm_state** (String) Current vm state, use stopped to stop vm and active to start
+- `addresses` (Block List) (see [below for nested schema](#nestedblock--addresses))
+- `allow_app_ports` (Boolean)
+- `configuration` (Block List) (see [below for nested schema](#nestedblock--configuration))
+- `flavor` (Map of String)
+- `id` (String) The ID of this resource.
+- `keypair_name` (String)
+- `last_updated` (String)
+- `metadata` (Block List, Deprecated) (see [below for nested schema](#nestedblock--metadata))
+- `metadata_map` (Map of String)
+- `name` (String)
+- `name_templates` (List of String)
+- `password` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
+- `security_group` (Block List) Firewalls list (see [below for nested schema](#nestedblock--security_group))
+- `server_group` (String)
+- `status` (String)
+- `userdata` (String)
+- `username` (String)
+- `vm_state` (String) Current vm state, use stopped to stop vm and active to start
 
 <a id="nestedblock--interface"></a>
 ### Nested Schema for `interface`
 
 Optional:
 
-- **existing_fip_id** (String)
-- **fip_source** (String)
-- **ip_address** (String)
-- **network_id** (String) required if type is 'subnet' or 'any_subnet'
-- **order** (Number) Order of attaching interface
-- **port_id** (String) required if type is  'reserved_fixed_ip'
-- **subnet_id** (String) required if type is 'subnet'
-- **type** (String) Avalilable value is 'subnet', 'any_subnet', 'external', 'reserved_fixed_ip'
+- `existing_fip_id` (String)
+- `fip_source` (String)
+- `ip_address` (String)
+- `network_id` (String) required if type is 'subnet' or 'any_subnet'
+- `order` (Number) Order of attaching interface
+- `port_id` (String) required if type is  'reserved_fixed_ip'
+- `subnet_id` (String) required if type is 'subnet'
+- `type` (String) Available value is 'subnet', 'any_subnet', 'external', 'reserved_fixed_ip'
 
 
 <a id="nestedblock--volume"></a>
@@ -221,19 +221,19 @@ Optional:
 
 Required:
 
-- **source** (String) Currently available only 'existing-volume' value
+- `source` (String) Currently available only 'existing-volume' value
 
 Optional:
 
-- **attachment_tag** (String)
-- **boot_index** (Number) If boot_index==0 volumes can not detached
-- **delete_on_termination** (Boolean)
-- **id** (String) The ID of this resource.
-- **image_id** (String)
-- **name** (String)
-- **size** (Number)
-- **type_name** (String)
-- **volume_id** (String)
+- `attachment_tag` (String)
+- `boot_index` (Number) If boot_index==0 volumes can not detached
+- `delete_on_termination` (Boolean)
+- `id` (String) The ID of this resource.
+- `image_id` (String)
+- `name` (String)
+- `size` (Number)
+- `type_name` (String)
+- `volume_id` (String)
 
 
 <a id="nestedblock--addresses"></a>
@@ -241,15 +241,15 @@ Optional:
 
 Required:
 
-- **net** (Block List, Min: 1) (see [below for nested schema](#nestedblock--addresses--net))
+- `net` (Block List, Min: 1) (see [below for nested schema](#nestedblock--addresses--net))
 
 <a id="nestedblock--addresses--net"></a>
 ### Nested Schema for `addresses.net`
 
 Required:
 
-- **addr** (String)
-- **type** (String)
+- `addr` (String)
+- `type` (String)
 
 
 
@@ -258,8 +258,8 @@ Required:
 
 Required:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 
 <a id="nestedblock--metadata"></a>
@@ -267,8 +267,8 @@ Required:
 
 Required:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 
 <a id="nestedblock--security_group"></a>
@@ -276,8 +276,8 @@ Required:
 
 Required:
 
-- **id** (String) Firewall unique id
-- **name** (String)
+- `id` (String) Firewall unique id
+- `name` (String)
 
 ## Import
 

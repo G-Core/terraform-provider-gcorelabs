@@ -33,22 +33,22 @@ resource "gcore_floatingip" "floating_ip" {
 
 ### Optional
 
-- **fixed_ip_address** (String)
-- **id** (String) The ID of this resource.
-- **last_updated** (String)
-- **port_id** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `fixed_ip_address` (String)
+- `id` (String) The ID of this resource.
+- `last_updated` (String)
+- `port_id` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **created_at** (String)
-- **floating_ip_address** (String)
-- **router_id** (String)
-- **status** (String)
-- **updated_at** (String)
+- `created_at` (String)
+- `floating_ip_address` (String)
+- `router_id` (String)
+- `status` (String)
+- `updated_at` (String)
 
 ## Import
 

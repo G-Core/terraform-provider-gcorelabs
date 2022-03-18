@@ -58,41 +58,41 @@ resource "gcore_lbpool" "pl" {
 
 ### Required
 
-- **lb_algorithm** (String) Available values is 'ROUND_ROBIN', 'LEAST_CONNECTIONS', 'SOURCE_IP', 'SOURCE_IP_PORT'
-- **name** (String)
-- **protocol** (String) Available values is 'HTTP' (currently work, other do not work on ed-8), 'HTTPS', 'TCP', 'UDP'
+- `lb_algorithm` (String) Available values is 'ROUND_ROBIN', 'LEAST_CONNECTIONS', 'SOURCE_IP', 'SOURCE_IP_PORT'
+- `name` (String)
+- `protocol` (String) Available values is 'HTTP' (currently work, other do not work on ed-8), 'HTTPS', 'TCP', 'UDP'
 
 ### Optional
 
-- **health_monitor** (Block List, Max: 1) (see [below for nested schema](#nestedblock--health_monitor))
-- **id** (String) The ID of this resource.
-- **last_updated** (String)
-- **listener_id** (String)
-- **loadbalancer_id** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
-- **session_persistence** (Block List, Max: 1) (see [below for nested schema](#nestedblock--session_persistence))
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `health_monitor` (Block List, Max: 1) (see [below for nested schema](#nestedblock--health_monitor))
+- `id` (String) The ID of this resource.
+- `last_updated` (String)
+- `listener_id` (String)
+- `loadbalancer_id` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
+- `session_persistence` (Block List, Max: 1) (see [below for nested schema](#nestedblock--session_persistence))
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 <a id="nestedblock--health_monitor"></a>
 ### Nested Schema for `health_monitor`
 
 Required:
 
-- **delay** (Number)
-- **max_retries** (Number)
-- **timeout** (Number)
-- **type** (String) Available values is 'HTTP', 'HTTPS', 'PING', 'TCP', 'TLS-HELLO', 'UDP-CONNECT
+- `delay` (Number)
+- `max_retries` (Number)
+- `timeout` (Number)
+- `type` (String) Available values is 'HTTP', 'HTTPS', 'PING', 'TCP', 'TLS-HELLO', 'UDP-CONNECT
 
 Optional:
 
-- **expected_codes** (String)
-- **http_method** (String)
-- **id** (String) The ID of this resource.
-- **max_retries_down** (Number)
-- **url_path** (String)
+- `expected_codes` (String)
+- `http_method` (String)
+- `id` (String) The ID of this resource.
+- `max_retries_down` (Number)
+- `url_path` (String)
 
 
 <a id="nestedblock--session_persistence"></a>
@@ -100,13 +100,13 @@ Optional:
 
 Required:
 
-- **type** (String)
+- `type` (String)
 
 Optional:
 
-- **cookie_name** (String)
-- **persistence_granularity** (String)
-- **persistence_timeout** (Number)
+- `cookie_name` (String)
+- `persistence_granularity` (String)
+- `persistence_timeout` (Number)
 
 
 <a id="nestedblock--timeouts"></a>
@@ -114,8 +114,8 @@ Optional:
 
 Optional:
 
-- **create** (String)
-- **delete** (String)
+- `create` (String)
+- `delete` (String)
 
 ## Import
 

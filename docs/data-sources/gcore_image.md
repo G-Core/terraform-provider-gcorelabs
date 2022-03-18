@@ -44,23 +44,23 @@ output "view" {
 
 ### Required
 
-- **name** (String) use 'os-version', for example 'ubuntu-20.04'
+- `name` (String) use 'os-version', for example 'ubuntu-20.04'
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **is_baremetal** (Boolean) set to true if need to get baremetal image
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `is_baremetal` (Boolean) set to true if need to get baremetal image
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **description** (String)
-- **min_disk** (Number)
-- **min_ram** (Number)
-- **os_distro** (String)
-- **os_version** (String)
+- `description` (String)
+- `min_disk` (Number)
+- `min_ram` (Number)
+- `os_distro` (String)
+- `os_version` (String)
 
 

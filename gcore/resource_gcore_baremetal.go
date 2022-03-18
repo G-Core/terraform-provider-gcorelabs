@@ -129,7 +129,7 @@ func resourceBmInstance() *schema.Resource {
 						"type": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: fmt.Sprintf("Avalilable value is '%s', '%s'", types.SubnetInterfaceType, types.ExternalInterfaceType),
+							Description: fmt.Sprintf("Available value is '%s', '%s', '%s', '%s'", types.SubnetInterfaceType, types.AnySubnetInterfaceType, types.ExternalInterfaceType, types.ReservedFixedIpType),
 						},
 						"is_parent": {
 							Type:        schema.TypeBool,
@@ -155,8 +155,10 @@ func resourceBmInstance() *schema.Resource {
 							Computed:    true,
 						},
 						"port_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "required if type is  'reserved_fixed_ip'",
+							Optional:    true,
 						},
 						//nested map is not supported, in this case, you do not need to use the list for the map
 						"fip_source": {
@@ -170,6 +172,7 @@ func resourceBmInstance() *schema.Resource {
 						"ip_address": {
 							Type:     schema.TypeString,
 							Computed: true,
+							Optional: true,
 						},
 					},
 				},
@@ -286,6 +289,7 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 			Type:      types.InterfaceType(raw["type"].(string)),
 			NetworkID: raw["network_id"].(string),
 			SubnetID:  raw["subnet_id"].(string),
+			PortID:    raw["port_id"].(string),
 		}
 
 		fipSource := raw["fip_source"].(string)

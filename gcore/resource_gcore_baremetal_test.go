@@ -5,6 +5,7 @@ package gcore
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
@@ -13,6 +14,10 @@ import (
 )
 
 func TestAccBaremetal(t *testing.T) {
+	if os.Getenv("LOCAL_TEST") != "" {
+		t.Skip("skip test in ci")
+	}
+
 	fullName := "gcore_baremetal.acctest"
 
 	ipTemplate := fmt.Sprintf(`

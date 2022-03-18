@@ -44,19 +44,19 @@ output "view" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **size** (Number)
-- **type_name** (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard
+- `size` (Number)
+- `type_name` (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard
 
 

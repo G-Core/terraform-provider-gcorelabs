@@ -44,21 +44,21 @@ output "view" {
 
 ### Required
 
-- **floating_ip_address** (String)
+- `floating_ip_address` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **port_id** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `port_id` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **fixed_ip_address** (String)
-- **router_id** (String)
-- **status** (String)
+- `fixed_ip_address` (String)
+- `router_id` (String)
+- `status` (String)
 
 

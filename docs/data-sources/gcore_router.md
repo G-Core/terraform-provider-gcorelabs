@@ -44,39 +44,39 @@ output "view" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **external_gateway_info** (List of Object) (see [below for nested schema](#nestedatt--external_gateway_info))
-- **interfaces** (List of Object) (see [below for nested schema](#nestedatt--interfaces))
-- **routes** (List of Object) (see [below for nested schema](#nestedatt--routes))
-- **status** (String)
+- `external_gateway_info` (List of Object) (see [below for nested schema](#nestedatt--external_gateway_info))
+- `interfaces` (List of Object) (see [below for nested schema](#nestedatt--interfaces))
+- `routes` (List of Object) (see [below for nested schema](#nestedatt--routes))
+- `status` (String)
 
 <a id="nestedatt--external_gateway_info"></a>
 ### Nested Schema for `external_gateway_info`
 
 Read-Only:
 
-- **enable_snat** (Boolean)
-- **external_fixed_ips** (List of Object) (see [below for nested schema](#nestedobjatt--external_gateway_info--external_fixed_ips))
-- **network_id** (String)
+- `enable_snat` (Boolean)
+- `external_fixed_ips` (List of Object) (see [below for nested schema](#nestedobjatt--external_gateway_info--external_fixed_ips))
+- `network_id` (String)
 
 <a id="nestedobjatt--external_gateway_info--external_fixed_ips"></a>
 ### Nested Schema for `external_gateway_info.external_fixed_ips`
 
 Read-Only:
 
-- **ip_address** (String)
-- **subnet_id** (String)
+- `ip_address` (String)
+- `subnet_id` (String)
 
 
 
@@ -85,8 +85,8 @@ Read-Only:
 
 Read-Only:
 
-- **subnet_id** (String)
-- **type** (String)
+- `subnet_id` (String)
+- `type` (String)
 
 
 <a id="nestedatt--routes"></a>
@@ -94,7 +94,7 @@ Read-Only:
 
 Read-Only:
 
-- **destination** (String)
-- **nexthop** (String)
+- `destination` (String)
+- `nexthop` (String)
 
 

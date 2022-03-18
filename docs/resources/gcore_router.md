@@ -61,40 +61,40 @@ resource "gcore_router" "router" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **external_gateway_info** (Block List, Max: 1) (see [below for nested schema](#nestedblock--external_gateway_info))
-- **id** (String) The ID of this resource.
-- **interfaces** (Block Set) (see [below for nested schema](#nestedblock--interfaces))
-- **last_updated** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
-- **routes** (Block List) (see [below for nested schema](#nestedblock--routes))
+- `external_gateway_info` (Block List, Max: 1) (see [below for nested schema](#nestedblock--external_gateway_info))
+- `id` (String) The ID of this resource.
+- `interfaces` (Block Set) (see [below for nested schema](#nestedblock--interfaces))
+- `last_updated` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
+- `routes` (Block List) (see [below for nested schema](#nestedblock--routes))
 
 <a id="nestedblock--external_gateway_info"></a>
 ### Nested Schema for `external_gateway_info`
 
 Optional:
 
-- **enable_snat** (Boolean)
-- **network_id** (String) Id of the external network
-- **type** (String) Must be 'manual' or 'default'
+- `enable_snat` (Boolean)
+- `network_id` (String) Id of the external network
+- `type` (String) Must be 'manual' or 'default'
 
 Read-Only:
 
-- **external_fixed_ips** (List of Object) (see [below for nested schema](#nestedatt--external_gateway_info--external_fixed_ips))
+- `external_fixed_ips` (List of Object) (see [below for nested schema](#nestedatt--external_gateway_info--external_fixed_ips))
 
 <a id="nestedatt--external_gateway_info--external_fixed_ips"></a>
 ### Nested Schema for `external_gateway_info.external_fixed_ips`
 
 Read-Only:
 
-- **ip_address** (String)
-- **subnet_id** (String)
+- `ip_address` (String)
+- `subnet_id` (String)
 
 
 
@@ -103,8 +103,8 @@ Read-Only:
 
 Required:
 
-- **subnet_id** (String) Subnet for router interface must have a gateway IP
-- **type** (String) must be 'subnet'
+- `subnet_id` (String) Subnet for router interface must have a gateway IP
+- `type` (String) must be 'subnet'
 
 
 <a id="nestedblock--routes"></a>
@@ -112,8 +112,8 @@ Required:
 
 Required:
 
-- **destination** (String)
-- **nexthop** (String) IPv4 address to forward traffic to if it's destination IP matches 'destination' CIDR
+- `destination` (String)
+- `nexthop` (String) IPv4 address to forward traffic to if it's destination IP matches 'destination' CIDR
 
 ## Import
 

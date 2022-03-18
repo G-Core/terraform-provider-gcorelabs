@@ -45,23 +45,23 @@ output "view" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **loadbalancer_id** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `loadbalancer_id` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **operating_status** (String)
-- **pool_count** (Number)
-- **protocol** (String) Available values is 'HTTP', 'HTTPS', 'TCP', 'UDP'
-- **protocol_port** (Number)
-- **provisioning_status** (String)
+- `operating_status` (String)
+- `pool_count` (Number)
+- `protocol` (String) Available values is 'HTTP', 'HTTPS', 'TCP', 'UDP'
+- `protocol_port` (Number)
+- `provisioning_status` (String)
 
 

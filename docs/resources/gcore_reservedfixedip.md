@@ -33,34 +33,34 @@ resource "gcore_reservedfixedip" "fixed_ip" {
 
 ### Required
 
-- **is_vip** (Boolean)
-- **type** (String) Available values is 'external', 'subnet', 'any_subnet', 'ip_address'
+- `is_vip` (Boolean)
+- `type` (String) Available values is 'external', 'subnet', 'any_subnet', 'ip_address'
 
 ### Optional
 
-- **fixed_ip_address** (String)
-- **id** (String) The ID of this resource.
-- **last_updated** (String)
-- **network_id** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
-- **subnet_id** (String)
+- `fixed_ip_address` (String)
+- `id` (String) The ID of this resource.
+- `last_updated` (String)
+- `network_id` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
+- `subnet_id` (String)
 
 ### Read-Only
 
-- **allowed_address_pairs** (List of Object) Group of IP addresses that share the current IP as VIP (see [below for nested schema](#nestedatt--allowed_address_pairs))
-- **port_id** (String) ID of the port_id underlying the reserved fixed IP
-- **status** (String)
+- `allowed_address_pairs` (List of Object) Group of IP addresses that share the current IP as VIP (see [below for nested schema](#nestedatt--allowed_address_pairs))
+- `port_id` (String) ID of the port_id underlying the reserved fixed IP
+- `status` (String)
 
 <a id="nestedatt--allowed_address_pairs"></a>
 ### Nested Schema for `allowed_address_pairs`
 
 Read-Only:
 
-- **ip_address** (String)
-- **mac_address** (String)
+- `ip_address` (String)
+- `mac_address` (String)
 
 ## Import
 

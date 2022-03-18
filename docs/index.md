@@ -18,7 +18,7 @@ terraform {
   required_providers {
     gcore = {
       source  = "G-Core/gcorelabs"
-      version = "0.2.39"
+      version = "0.3.17"
     }
   }
 }
@@ -250,13 +250,13 @@ resource "gcore_lbmember" "lbm2" {
 
 ### Optional
 
-- **gcore_api** (String) Region API
-- **gcore_cdn_api** (String) CDN API
-- **gcore_client_id** (String) Client id
-- **gcore_dns_api** (String) DNS API
-- **gcore_platform** (String) Platform URL is used for generate JWT
-- **gcore_storage_api** (String) Storage API
-- **ignore_creds_auth_error** (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
-- **password** (String)
-- **permanent_api_token** (String, Sensitive) A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)
-- **user_name** (String)
+- `gcore_api` (String) Region API
+- `gcore_cdn_api` (String) CDN API
+- `gcore_client_id` (String) Client id
+- `gcore_dns_api` (String) DNS API
+- `gcore_platform` (String) Platform URL is used for generate JWT
+- `gcore_storage_api` (String) Storage API
+- `ignore_creds_auth_error` (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
+- `password` (String)
+- `permanent_api_token` (String, Sensitive) A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)
+- `user_name` (String)

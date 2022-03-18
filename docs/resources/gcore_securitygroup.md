@@ -54,40 +54,40 @@ resource "gcore_securitygroup" "sg" {
 
 ### Required
 
-- **name** (String)
-- **security_group_rules** (Block Set, Min: 1) Firewall rules control what inbound(ingress) and outbound(egress) traffic is allowed to enter or leave a Instance. At least one 'egress' rule should be set (see [below for nested schema](#nestedblock--security_group_rules))
+- `name` (String)
+- `security_group_rules` (Block Set, Min: 1) Firewall rules control what inbound(ingress) and outbound(egress) traffic is allowed to enter or leave a Instance. At least one 'egress' rule should be set (see [below for nested schema](#nestedblock--security_group_rules))
 
 ### Optional
 
-- **description** (String)
-- **id** (String) The ID of this resource.
-- **last_updated** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `description` (String)
+- `id` (String) The ID of this resource.
+- `last_updated` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 <a id="nestedblock--security_group_rules"></a>
 ### Nested Schema for `security_group_rules`
 
 Required:
 
-- **direction** (String) Available value is 'ingress', 'egress'
-- **ethertype** (String) Available value is 'IPv4', 'IPv6'
-- **protocol** (String) Available value is udp,tcp,any,icmp,ah,dccp,egp,esp,gre,igmp,ospf,pgm,rsvp,sctp,udplite,vrrp,51,50,112,0,4
+- `direction` (String) Available value is 'ingress', 'egress'
+- `ethertype` (String) Available value is 'IPv4', 'IPv6'
+- `protocol` (String) Available value is udp,tcp,any,icmp,ah,dccp,egp,esp,gre,igmp,ospf,pgm,rsvp,sctp,udplite,vrrp,51,50,112,0,4
 
 Optional:
 
-- **description** (String)
-- **port_range_max** (Number)
-- **port_range_min** (Number)
-- **remote_ip_prefix** (String)
+- `description` (String)
+- `port_range_max` (Number)
+- `port_range_min` (Number)
+- `remote_ip_prefix` (String)
 
 Read-Only:
 
-- **created_at** (String)
-- **id** (String) The ID of this resource.
-- **updated_at** (String)
+- `created_at` (String)
+- `id` (String) The ID of this resource.
+- `updated_at` (String)
 
 ## Import
 

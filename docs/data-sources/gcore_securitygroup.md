@@ -44,35 +44,35 @@ output "view" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **description** (String)
-- **security_group_rules** (Set of Object) Firewall rules control what inbound(ingress) and outbound(egress) traffic is allowed to enter or leave a Instance. At least one 'egress' rule should be set (see [below for nested schema](#nestedatt--security_group_rules))
+- `description` (String)
+- `security_group_rules` (Set of Object) Firewall rules control what inbound(ingress) and outbound(egress) traffic is allowed to enter or leave a Instance. At least one 'egress' rule should be set (see [below for nested schema](#nestedatt--security_group_rules))
 
 <a id="nestedatt--security_group_rules"></a>
 ### Nested Schema for `security_group_rules`
 
 Read-Only:
 
-- **created_at** (String)
-- **description** (String)
-- **direction** (String)
-- **ethertype** (String)
-- **id** (String)
-- **port_range_max** (Number)
-- **port_range_min** (Number)
-- **protocol** (String)
-- **remote_ip_prefix** (String)
-- **updated_at** (String)
+- `created_at` (String)
+- `description` (String)
+- `direction` (String)
+- `ethertype` (String)
+- `id` (String)
+- `port_range_max` (Number)
+- `port_range_min` (Number)
+- `protocol` (String)
+- `remote_ip_prefix` (String)
+- `updated_at` (String)
 
 

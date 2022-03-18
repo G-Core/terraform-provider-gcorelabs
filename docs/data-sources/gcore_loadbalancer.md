@@ -44,30 +44,30 @@ output "view" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **listener** (List of Object) (see [below for nested schema](#nestedatt--listener))
-- **vip_address** (String)
-- **vip_port_id** (String)
+- `listener` (List of Object) (see [below for nested schema](#nestedatt--listener))
+- `vip_address` (String)
+- `vip_port_id` (String)
 
 <a id="nestedatt--listener"></a>
 ### Nested Schema for `listener`
 
 Read-Only:
 
-- **id** (String)
-- **name** (String)
-- **protocol** (String)
-- **protocol_port** (Number)
+- `id` (String)
+- `name` (String)
+- `protocol` (String)
+- `protocol_port` (Number)
 
 

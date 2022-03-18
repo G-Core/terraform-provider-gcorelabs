@@ -168,7 +168,7 @@ func resourceInstance() *schema.Resource {
 						"type": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: fmt.Sprintf("Avalilable value is '%s', '%s', '%s', '%s'", types.SubnetInterfaceType, types.AnySubnetInterfaceType, types.ExternalInterfaceType, types.ReservedFixedIpType),
+							Description: fmt.Sprintf("Available value is '%s', '%s', '%s', '%s'", types.SubnetInterfaceType, types.AnySubnetInterfaceType, types.ExternalInterfaceType, types.ReservedFixedIpType),
 						},
 						"order": {
 							Type:        schema.TypeInt,

@@ -34,20 +34,20 @@ resource "gcore_volume" "volume" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **image_id** (String) Mandatory if volume is created from image
-- **last_updated** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
-- **size** (Number)
-- **snapshot_id** (String) Mandatory if volume is created from a snapshot
-- **type_name** (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard
+- `id` (String) The ID of this resource.
+- `image_id` (String) Mandatory if volume is created from image
+- `last_updated` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
+- `size` (Number)
+- `snapshot_id` (String) Mandatory if volume is created from a snapshot
+- `type_name` (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard
 
 ## Import
 

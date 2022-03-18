@@ -44,32 +44,32 @@ output "view" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **network_id** (String)
-- **project_id** (Number)
-- **project_name** (String)
-- **region_id** (Number)
-- **region_name** (String)
+- `id` (String) The ID of this resource.
+- `network_id` (String)
+- `project_id` (Number)
+- `project_name` (String)
+- `region_id` (Number)
+- `region_name` (String)
 
 ### Read-Only
 
-- **cidr** (String)
-- **connect_to_network_router** (Boolean)
-- **dns_nameservers** (List of String)
-- **enable_dhcp** (Boolean)
-- **gateway_ip** (String)
-- **host_routes** (List of Object) (see [below for nested schema](#nestedatt--host_routes))
+- `cidr` (String)
+- `connect_to_network_router` (Boolean)
+- `dns_nameservers` (List of String)
+- `enable_dhcp` (Boolean)
+- `gateway_ip` (String)
+- `host_routes` (List of Object) (see [below for nested schema](#nestedatt--host_routes))
 
 <a id="nestedatt--host_routes"></a>
 ### Nested Schema for `host_routes`
 
 Read-Only:
 
-- **destination** (String)
-- **nexthop** (String)
+- `destination` (String)
+- `nexthop` (String)
 
 

@@ -98,7 +98,7 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	network, found := findNetworkByName(name, nets)
 	if !found {
 		//trying to find among shared networks
-		nets, err := availablenetworks.ListAll(clientShared)
+		nets, err := availablenetworks.ListAll(clientShared, nil)
 		if err != nil {
 			return diag.FromErr(err)
 		}
