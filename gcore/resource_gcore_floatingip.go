@@ -182,7 +182,14 @@ func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	floatingIP, err := floatingips.Get(client, d.Id()).Extract()
 	if err != nil {
-		return diag.FromErr(err)
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			log.Printf("[WARN] Removing floating ip %s because resource doesn't exist anymore", d.Id())
+			d.SetId("")
+			return nil
+		default:
+			return diag.FromErr(err)
+		}
 	}
 
 	if floatingIP.FixedIPAddress != nil {
