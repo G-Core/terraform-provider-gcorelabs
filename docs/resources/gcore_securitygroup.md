@@ -74,7 +74,7 @@ Required:
 
 - `direction` (String) Available value is 'ingress', 'egress'
 - `ethertype` (String) Available value is 'IPv4', 'IPv6'
-- `protocol` (String) Available value is udp,tcp,any,icmp,ah,dccp,egp,esp,gre,igmp,ospf,pgm,rsvp,sctp,udplite,vrrp,51,50,112,0,4
+- `protocol` (String) Available value is udp,tcp,any,icmp,ah,dccp,egp,esp,gre,igmp,ospf,pgm,rsvp,sctp,udplite,vrrp,51,50,112,0,4,ipip
 
 Optional:
 

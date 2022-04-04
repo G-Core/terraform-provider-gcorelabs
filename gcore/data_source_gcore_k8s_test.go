@@ -169,7 +169,7 @@ func patchRouterForK8S(provider *gcorecloud.ProviderClient, networkID string) er
 		return err
 	}
 
-	availableNetworks, err := availablenetworks.ListAll(aNetClient)
+	availableNetworks, err := availablenetworks.ListAll(aNetClient, nil)
 	if err != nil {
 		return err
 	}

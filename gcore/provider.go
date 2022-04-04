@@ -110,6 +110,7 @@ func Provider() *schema.Provider {
 			"gcore_servergroup":       resourceServerGroup(),
 			"gcore_k8s":               resourceK8s(),
 			"gcore_k8s_pool":          resourceK8sPool(),
+			"gcore_secret":            resourceSecret(),
 			"gcore_storage_s3":        resourceStorageS3(),
 			"gcore_storage_s3_bucket": resourceStorageS3Bucket(),
 			DNSZoneResource:           resourceDNSZone(),
@@ -145,6 +146,7 @@ func Provider() *schema.Provider {
 			"gcore_servergroup":       dataSourceServerGroup(),
 			"gcore_k8s":               dataSourceK8s(),
 			"gcore_k8s_pool":          dataSourceK8sPool(),
+			"gcore_secret":            dataSourceSecret(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
