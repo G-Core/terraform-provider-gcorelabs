@@ -36,6 +36,20 @@ func resourceVolume() *schema.Resource {
 				d.Set("region_id", regionID)
 				d.SetId(volumeID)
 
+				config := meta.(*Config)
+				provider := config.Provider
+
+				client, err := CreateClient(provider, d, volumesPoint, versionPointV1)
+				if err != nil {
+					return nil, err
+				}
+
+				volume, err := volumes.Get(client, volumeID).Extract()
+				if err != nil {
+					return nil, fmt.Errorf("cannot get volume with ID: %s. Error: %s", volumeID, err)
+				}
+				d.Set("image_id", volume.VolumeImageMetadata.ImageID)
+
 				return []*schema.ResourceData{d}, nil
 			},
 		},
