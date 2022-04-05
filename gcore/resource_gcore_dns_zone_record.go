@@ -8,7 +8,7 @@ import (
 	"net"
 	"strings"
 
-	dnssdk "github.com/G-Core/g-dns-sdk-go"
+	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -140,7 +140,7 @@ func resourceDNSZoneRecord() *schema.Resource {
 						DNSZoneRecordSchemaContent: {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "A content of DNS Zone Record resource.",
+							Description: `A content of DNS Zone Record resource. (TXT: 'anyString', MX: '50 mail.company.io.', CAA: '0 issue "company.org; account=12345"')`,
 						},
 						DNSZoneRecordSchemaEnabled: {
 							Type:        schema.TypeBool,

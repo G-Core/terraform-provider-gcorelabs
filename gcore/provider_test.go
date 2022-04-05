@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	dnssdk "github.com/G-Core/g-dns-sdk-go"
+	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 	storageSDK "github.com/G-Core/gcore-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcdnProvider "github.com/G-Core/gcorelabscdn-go/gcore/provider"

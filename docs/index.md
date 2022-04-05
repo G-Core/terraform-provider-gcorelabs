@@ -250,11 +250,14 @@ resource "gcore_lbmember" "lbm2" {
 
 ### Optional
 
-- `gcore_api` (String) Region API
+- `api_endpoint` (String) A single API endpoint for all products. Will be used when specific product API url is not defined.
+- `gcore_api` (String, Deprecated) Region API
 - `gcore_cdn_api` (String) CDN API
 - `gcore_client_id` (String) Client id
+- `gcore_cloud_api` (String) Region API
 - `gcore_dns_api` (String) DNS API
-- `gcore_platform` (String) Platform URL is used for generate JWT
+- `gcore_platform` (String, Deprecated) Platform URL is used for generate JWT
+- `gcore_platform_api` (String) Platform URL is used for generate JWT
 - `gcore_storage_api` (String) Storage API
 - `ignore_creds_auth_error` (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
 - `password` (String)
