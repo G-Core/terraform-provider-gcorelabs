@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/G-Core/g-dns-sdk-go v0.1.2
+	github.com/G-Core/gcore-dns-sdk-go v0.2.1
 	github.com/G-Core/gcore-storage-sdk-go v0.1.2
 	github.com/G-Core/gcorelabscdn-go v0.1.19
 	github.com/G-Core/gcorelabscloud-go v0.4.49

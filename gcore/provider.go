@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"os"
 
-	dnssdk "github.com/G-Core/g-dns-sdk-go"
+	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 	storageSDK "github.com/G-Core/gcore-storage-sdk-go"
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcdnProvider "github.com/G-Core/gcorelabscdn-go/gcore/provider"
@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	ProviderOptPermanentToken   = "permanent_api_token"
-	ProviderOptSkipCredsAuthErr = "ignore_creds_auth_error"
+	ProviderOptPermanentToken    = "permanent_api_token"
+	ProviderOptSkipCredsAuthErr  = "ignore_creds_auth_error"
+	ProviderOptSingleApiEndpoint = "api_endpoint"
 
 	lifecyclePolicyResource = "gcore_lifecyclepolicy"
 )
@@ -45,6 +46,12 @@ func Provider() *schema.Provider {
 				Description: "A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", ""),
 			},
+			ProviderOptSingleApiEndpoint: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A single API endpoint for all products. Will be used when specific product API url is not defined.",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_API_ENDPOINT", "https://api.gcorelabs.com"),
+			},
 			ProviderOptSkipCredsAuthErr: {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -56,32 +63,46 @@ func Provider() *schema.Provider {
 			"gcore_platform": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "Use gcore_platform_api instead",
 				Description: "Platform URL is used for generate JWT",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM", "https://api.gcdn.co"),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM", ""),
+			},
+			"gcore_platform_api": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Platform URL is used for generate JWT",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM_API", ""),
 			},
 			"gcore_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "Use gcore_cloud_api instead",
 				Description: "Region API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_API", "https://api.cloud.gcorelabs.com"),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_API", ""),
+			},
+			"gcore_cloud_api": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Region API",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_CLOUD_API", ""),
 			},
 			"gcore_cdn_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "CDN API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", "https://api.gcdn.co"),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", ""),
 			},
 			"gcore_storage_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Storage API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_STORAGE_API", "https://api.gcorelabs.com/storage"),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_STORAGE_API", ""),
 			},
 			"gcore_dns_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "DNS API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_DNS_API", "https://dnsapi.gcorelabs.com"),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_DNS_API", ""),
 			},
 			"gcore_client_id": {
 				Type:        schema.TypeString,
@@ -156,11 +177,39 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 	username := d.Get("user_name").(string)
 	password := d.Get("password").(string)
 	permanentToken := d.Get(ProviderOptPermanentToken).(string)
-	api := d.Get("gcore_api").(string)
+	apiEndpoint := d.Get(ProviderOptSingleApiEndpoint).(string)
+
+	cloudApi := d.Get("gcore_cloud_api").(string)
+	if cloudApi == "" {
+		cloudApi = d.Get("gcore_api").(string)
+	}
+	if cloudApi == "" {
+		cloudApi = apiEndpoint + "/cloud"
+	}
+
 	cdnAPI := d.Get("gcore_cdn_api").(string)
+	if cdnAPI == "" {
+		cdnAPI = apiEndpoint
+	}
+
 	storageAPI := d.Get("gcore_storage_api").(string)
+	if storageAPI == "" {
+		storageAPI = apiEndpoint + "/storage"
+	}
+
 	dnsAPI := d.Get("gcore_dns_api").(string)
-	platform := d.Get("gcore_platform").(string)
+	if dnsAPI == "" {
+		dnsAPI = apiEndpoint + "/dns"
+	}
+
+	platform := d.Get("gcore_platform_api").(string)
+	if platform == "" {
+		platform = d.Get("gcore_platform").(string)
+	}
+	if platform == "" {
+		platform = apiEndpoint
+	}
+
 	clientID := d.Get("gcore_client_id").(string)
 
 	var diags diag.Diagnostics
@@ -169,12 +218,12 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 	var provider *gcorecloud.ProviderClient
 	if permanentToken != "" {
 		provider, err = gc.APITokenClient(gcorecloud.APITokenOptions{
-			APIURL:   api,
+			APIURL:   cloudApi,
 			APIToken: permanentToken,
 		})
 	} else {
 		provider, err = gc.AuthenticatedClient(gcorecloud.AuthOptions{
-			APIURL:      api,
+			APIURL:      cloudApi,
 			AuthURL:     platform,
 			Username:    username,
 			Password:    password,
