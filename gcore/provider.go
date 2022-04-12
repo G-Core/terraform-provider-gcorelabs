@@ -72,7 +72,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Platform URL is used for generate JWT",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM_API", ""),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM_API", nil),
 			},
 			"gcore_api": {
 				Type:          schema.TypeString,
@@ -86,7 +86,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Region API",
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_CLOUD_API", ""),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_CLOUD_API", nil),
 			},
 			"gcore_cdn_api": {
 				Type:        schema.TypeString,
