@@ -25,15 +25,9 @@ terraform {
 
 provider gcore {
   permanent_api_token = "251$d3361.............1b35f26d8"
-
   # user_name = "test"
   # password = "test"
   ignore_creds_auth_error  = true
-
-  gcore_cloud_api           = "https://api.gcorelabs.com/cloud"
-  gcore_dns_api       = "https://api.gcorelabs.com/dns"
-  gcore_platform_api      = "https://api.gcorelabs.com"
-  gcore_storage_api   = "https://storage.gcorelabs.com/api"
 }
 
 resource "gcore_keypair" "kp" {
@@ -252,13 +246,13 @@ resource "gcore_lbmember" "lbm2" {
 
 - `api_endpoint` (String) A single API endpoint for all products. Will be used when specific product API url is not defined.
 - `gcore_api` (String, Deprecated) Region API
-- `gcore_cdn_api` (String) CDN API
+- `gcore_cdn_api` (String) CDN API (define only if you want to override CDN API endpoint)
 - `gcore_client_id` (String) Client id
-- `gcore_cloud_api` (String) Region API
-- `gcore_dns_api` (String) DNS API
+- `gcore_cloud_api` (String) Region API (define only if you want to override Region API endpoint)
+- `gcore_dns_api` (String) DNS API (define only if you want to override DNS API endpoint)
 - `gcore_platform` (String, Deprecated) Platform URL is used for generate JWT
-- `gcore_platform_api` (String) Platform URL is used for generate JWT
-- `gcore_storage_api` (String) Storage API
+- `gcore_platform_api` (String) Platform URL is used for generate JWT (define only if you want to override Platform API endpoint)
+- `gcore_storage_api` (String) Storage API (define only if you want to override Storage API endpoint)
 - `ignore_creds_auth_error` (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
 - `password` (String)
 - `permanent_api_token` (String, Sensitive) A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)

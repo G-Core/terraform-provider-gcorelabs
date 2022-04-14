@@ -4,9 +4,6 @@ provider gcore {
 
   # user_name = "test"
   # password = "test"
-
-  gcore_platform_api = "https://api.gcorelabs.com"
-  gcore_cdn_api = "https://api.gcorelabs.com"
 }
 
 resource "gcore_cdn_origingroup" "origin_group_1" {

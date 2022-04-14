@@ -16,8 +16,8 @@ Represent k8s cluster with one default pool.
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform_api = "https://api.gcorelabs.com"
-  gcore_cloud_api = "https://api.gcorelabs.com/cloud"
+
+
 }
 
 resource "gcore_k8s" "v" {

@@ -16,8 +16,8 @@ Represent lifecycle policy. Use to periodically take snapshots
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform_api = "https://api.gcorelabs.com"
-  gcore_cloud_api = "https://api.gcorelabs.com/cloud"
+
+
 }
 
 resource "gcore_lifecyclepolicy" "lp" {

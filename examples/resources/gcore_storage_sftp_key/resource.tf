@@ -1,8 +1,8 @@
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform_api = "https://api.gcorelabs.com"
-  gcore_storage_api = "https://storage.gcorelabs.com/api"
+
+
 }
 
 resource "gcore_storage_sftp_key" "terraform_test_key" {

@@ -16,8 +16,7 @@ Represent k8s cluster's pool.
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform_api = "https://api.gcorelabs.com"
-  gcore_cloud_api = "https://api.gcorelabs.com/cloud"
+
 }
 
 data "gcore_k8s_pool" "v" {

@@ -16,8 +16,8 @@ Represent network. A network is a software-defined network in a cloud computing 
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform_api = "https://api.gcorelabs.com"
-  gcore_cloud_api = "https://api.gcorelabs.com/cloud"
+
+
 }
 
 resource "gcore_network" "network" {

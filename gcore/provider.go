@@ -71,7 +71,7 @@ func Provider() *schema.Provider {
 			"gcore_platform_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Platform URL is used for generate JWT",
+				Description: "Platform URL is used for generate JWT (define only if you want to override Platform API endpoint)",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_PLATFORM_API", nil),
 			},
 			"gcore_api": {
@@ -85,25 +85,25 @@ func Provider() *schema.Provider {
 			"gcore_cloud_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Region API",
+				Description: "Region API (define only if you want to override Region API endpoint)",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_CLOUD_API", nil),
 			},
 			"gcore_cdn_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "CDN API",
+				Description: "CDN API (define only if you want to override CDN API endpoint)",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_CDN_API", ""),
 			},
 			"gcore_storage_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Storage API",
+				Description: "Storage API (define only if you want to override Storage API endpoint)",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_STORAGE_API", ""),
 			},
 			"gcore_dns_api": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "DNS API",
+				Description: "DNS API (define only if you want to override DNS API endpoint)",
 				DefaultFunc: schema.EnvDefaultFunc("GCORE_DNS_API", ""),
 			},
 			"gcore_client_id": {
