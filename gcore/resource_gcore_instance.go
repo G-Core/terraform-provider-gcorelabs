@@ -627,7 +627,19 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		d["net"] = netd
 		addresses = append(addresses, d)
 	}
-	d.Set("addresses", addresses)
+	if err := d.Set("addresses", addresses); err != nil {
+		return diag.FromErr(err)
+	}
+
+	sgs, err := instances.ListPortsAll(client, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	secGroups := prepareSecurityGroups(sgs)
+
+	if err := d.Set("security_group", secGroups); err != nil {
+		return diag.FromErr(err)
+	}
 
 	log.Println("[DEBUG] Finish Instance reading")
 	return diags
@@ -962,4 +974,22 @@ func ServerV2StateRefreshFunc(client *gcorecloud.ServiceClient, instanceID strin
 
 		return s, s.VMState, nil
 	}
+}
+
+func prepareSecurityGroups(ports []instances.InstancePorts) []interface{} {
+	sgs := make(map[string]string)
+	for _, port := range ports {
+		for _, sg := range port.SecurityGroups {
+			sgs[sg.ID] = sg.Name
+		}
+	}
+
+	secGroups := make([]interface{}, 0, len(sgs))
+	for sgID, sgName := range sgs {
+		s := make(map[string]interface{})
+		s["id"] = sgID
+		s["name"] = sgName
+		secGroups = append(secGroups, s)
+	}
+	return secGroups
 }
