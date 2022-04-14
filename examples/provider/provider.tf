@@ -15,9 +15,9 @@ provider gcore {
   # password = "test"
   ignore_creds_auth_error  = true
 
-  gcore_api           = "https://api.cloud.gcorelabs.com"
-  gcore_dns_api       = "https://dnsapi.gcorelabs.com"
-  gcore_platform      = "https://api.gcdn.co"
+  gcore_cloud_api           = "https://api.gcorelabs.com/cloud"
+  gcore_dns_api       = "https://api.gcorelabs.com/dns"
+  gcore_platform_api      = "https://api.gcorelabs.com"
   gcore_storage_api   = "https://storage.gcorelabs.com/api"
 }
 

@@ -16,7 +16,7 @@ Represent storage key resource. https://storage.gcorelabs.com/ssh-key/list
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform = "https://api.gcdn.co"
+  gcore_platform_api = "https://api.gcorelabs.com"
   gcore_storage_api = "https://storage.gcorelabs.com/api"
 }
 

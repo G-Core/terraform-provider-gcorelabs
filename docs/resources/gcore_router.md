@@ -16,8 +16,8 @@ Represent router. Router enables you to dynamically exchange routes between netw
 provider gcore {
   user_name = "test"
   password = "test"
-  gcore_platform = "https://api.gcdn.co"
-  gcore_api = "https://api.cloud.gcorelabs.com"
+  gcore_platform_api = "https://api.gcorelabs.com"
+  gcore_cloud_api = "https://api.gcorelabs.com/cloud"
 }
 
 resource "gcore_router" "router" {
