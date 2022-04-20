@@ -14,17 +14,15 @@ Represent baremetal instance
 
 ```terraform
 provider gcore {
-  user_name = "test"
-  password = "test"
-
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 resource "gcore_baremetal" "bm" {
-  name = "test bm instance"
-  region_id = 1
+  name       = "test bm instance"
+  region_id  = 1
   project_id = 1
-  flavor_id = "bm1-infrastructure-small"
-  image_id = "1ee7ccee-5003-48c9-8ae0-d96063af75b2" // your image id
+  flavor_id  = "bm1-infrastructure-small"
+  image_id   = "1ee7ccee-5003-48c9-8ae0-d96063af75b2" // your image id
 
   //additional interface, available type is 'subnet' or 'external'
   //  interface {

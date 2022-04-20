@@ -25,9 +25,6 @@ terraform {
 
 provider gcore {
   permanent_api_token = "251$d3361.............1b35f26d8"
-  # user_name = "test"
-  # password = "test"
-  ignore_creds_auth_error  = true
 }
 
 resource "gcore_keypair" "kp" {
@@ -253,7 +250,7 @@ resource "gcore_lbmember" "lbm2" {
 - `gcore_platform` (String, Deprecated) Platform URL is used for generate JWT
 - `gcore_platform_api` (String) Platform URL is used for generate JWT (define only if you want to override Platform API endpoint)
 - `gcore_storage_api` (String) Storage API (define only if you want to override Storage API endpoint)
-- `ignore_creds_auth_error` (Boolean) Should be set to true when you are gonna to use storage resource with permanent API-token only.
-- `password` (String)
+- `ignore_creds_auth_error` (Boolean, Deprecated) Should be set to true when you are gonna to use storage resource with permanent API-token only.
+- `password` (String, Deprecated)
 - `permanent_api_token` (String, Sensitive) A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)
-- `user_name` (String)
+- `user_name` (String, Deprecated)

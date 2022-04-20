@@ -1,14 +1,9 @@
 provider gcore {
-  user_name = "test"
-  password = "test"
-  permanent_api_token="123$321" // https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens
-  ignore_creds_auth_error=true // if you want to manage storage resource only and provide permanent_api_token without user_name & password
-
-
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 resource "gcore_storage_sftp" "example_sftp" {
-  name = "example"
-  location = "mia"
+  name       = "example"
+  location   = "mia"
   ssh_key_id = [199]
 }

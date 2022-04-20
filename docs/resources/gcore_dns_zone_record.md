@@ -14,11 +14,7 @@ Represent DNS Zone Record resource. https://dns.gcorelabs.com/zones
 
 ```terraform
 provider gcore {
-  user_name = "test"
-  password = "test"
-  permanent_api_token="123$321" // https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens
-  ignore_creds_auth_error=true // if you want to manage storage or dns resources only and provide permanent_api_token without user_name & password
-
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 //
@@ -34,10 +30,10 @@ resource "gcore_dns_zone" "examplezone0" {
 }
 
 resource "gcore_dns_zone_record" "example_rrset0" {
-  zone = gcore_dns_zone.examplezone0.name
+  zone   = gcore_dns_zone.examplezone0.name
   domain = "${gcore_dns_zone.examplezone0.name}"
-  type = "A"
-  ttl = 100
+  type   = "A"
+  ttl    = 100
 
   resource_record {
     content = "127.0.0.100"
@@ -52,53 +48,53 @@ resource "gcore_dns_zone_record" "example_rrset0" {
 // example1: managing zone outside of TF 
 //
 resource "gcore_dns_zone_record" "subdomain_examplezone" {
-  zone = "examplezone.com"
+  zone   = "examplezone.com"
   domain = "subdomain.examplezone.com"
-  type = "TXT"
-  ttl = 10
+  type   = "TXT"
+  ttl    = 10
 
   filter {
-    type = "geodistance"
-    limit = 1
+    type   = "geodistance"
+    limit  = 1
     strict = true
   }
 
   resource_record {
-    content  = "1234"
+    content = "1234"
     enabled = true
 
     meta {
-      latlong = [52.367,4.9041]
-      asn = [12345]
-      ip = ["1.1.1.1"]
-      notes = ["notes"]
+      latlong    = [52.367, 4.9041]
+      asn        = [12345]
+      ip         = ["1.1.1.1"]
+      notes      = ["notes"]
       continents = ["asia"]
-      countries = ["russia"]
-      default = true
+      countries  = ["russia"]
+      default    = true
     }
   }
 }
 
 resource "gcore_dns_zone_record" "subdomain_examplezone_mx" {
-  zone = "examplezone.com"
+  zone   = "examplezone.com"
   domain = "subdomain.examplezone.com"
-  type = "MX"
-  ttl = 10
+  type   = "MX"
+  ttl    = 10
 
   resource_record {
-    content  = "10 mail.my.com."
+    content = "10 mail.my.com."
     enabled = true
   }
 }
 
 resource "gcore_dns_zone_record" "subdomain_examplezone_caa" {
-  zone = "examplezone.com"
+  zone   = "examplezone.com"
   domain = "subdomain.examplezone.com"
-  type = "CAA"
-  ttl = 10
+  type   = "CAA"
+  ttl    = 10
 
   resource_record {
-    content  = "0 issue \"company.org; account=12345\""
+    content = "0 issue \"company.org; account=12345\""
     enabled = true
   }
 }

@@ -14,10 +14,7 @@ Represent volume. A volume is a file storage which is similar to SSD and HDD har
 
 ```terraform
 provider gcore {
-  user_name = "test"
-  password = "test"
-
-
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 data "gcore_project" "pr" {
@@ -29,8 +26,8 @@ data "gcore_region" "rg" {
 }
 
 data "gcore_volume" "tv" {
-  name = "test-hd"
-  region_id = data.gcore_region.rg.id
+  name       = "test-hd"
+  region_id  = data.gcore_region.rg.id
   project_id = data.gcore_project.pr.id
 }
 

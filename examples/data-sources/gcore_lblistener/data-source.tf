@@ -1,7 +1,5 @@
 provider gcore {
-  user_name = "test"
-  password = "test"
-
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 data "gcore_project" "pr" {
@@ -13,10 +11,10 @@ data "gcore_region" "rg" {
 }
 
 data "gcore_lblistener" "l" {
-  name = "test-listener"
+  name            = "test-listener"
   loadbalancer_id = "59b2eabc-c0a8-4545-8081-979bd963c6ab" //optional
-  region_id = data.gcore_region.rg.id
-  project_id = data.gcore_project.pr.id
+  region_id       = data.gcore_region.rg.id
+  project_id      = data.gcore_project.pr.id
 }
 
 output "view" {

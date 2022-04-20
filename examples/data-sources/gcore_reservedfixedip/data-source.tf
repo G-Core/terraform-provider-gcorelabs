@@ -1,8 +1,5 @@
 provider gcore {
-  user_name = "test"
-  password = "test"
-
-
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 data "gcore_project" "pr" {
@@ -15,8 +12,8 @@ data "gcore_region" "rg" {
 
 data "gcore_reservedfixedip" "ip" {
   fixed_ip_address = "192.168.0.66"
-  region_id = data.gcore_region.rg.id
-  project_id = data.gcore_project.pr.id
+  region_id        = data.gcore_region.rg.id
+  project_id       = data.gcore_project.pr.id
 }
 
 output "view" {

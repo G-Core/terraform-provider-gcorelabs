@@ -14,18 +14,14 @@ Represent CDN resource
 
 ```terraform
 provider gcore {
-  # G-Core dashboard => Profile => API tokens => Create token
-  permanent_api_token = ""
-
-  # user_name = "test"
-  # password = "test"
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 
 resource "gcore_cdn_resource" "cdn_example_com" {
-  cname = "cdn.example.com"
-  origin_group = gcore_cdn_origingroup.origin_group_1.id
-  origin_protocol = "MATCH"
+  cname               = "cdn.example.com"
+  origin_group        = gcore_cdn_origingroup.origin_group_1.id
+  origin_protocol     = "MATCH"
   secondary_hostnames = ["cdn2.example.com"]
 
   options {
