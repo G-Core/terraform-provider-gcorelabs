@@ -32,12 +32,14 @@ func Provider() *schema.Provider {
 			"user_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_USERNAME", ""),
+				Deprecated:  fmt.Sprintf("Use %s instead", ProviderOptPermanentToken),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_USERNAME", nil),
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("GCORE_PASSWORD", ""),
+				Deprecated:  fmt.Sprintf("Use %s instead", ProviderOptPermanentToken),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PASSWORD", nil),
 			},
 			ProviderOptPermanentToken: {
 				Type:        schema.TypeString,
@@ -55,6 +57,7 @@ func Provider() *schema.Provider {
 			ProviderOptSkipCredsAuthErr: {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Deprecated:  "It doesn't make any effect anymore",
 				Description: "Should be set to true when you are gonna to use storage resource with permanent API-token only.",
 				DefaultFunc: func() (interface{}, error) {
 					return os.Getenv("GCORE_PERMANENT_TOKEN") != "", nil
@@ -232,12 +235,6 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 			AllowReauth: true,
 			ClientID:    clientID,
 		})
-	}
-
-	skipAuthErr, ok := d.GetOk(ProviderOptSkipCredsAuthErr)
-	if err != nil && !(ok == true || skipAuthErr.(bool) == true) {
-		return nil, diag.FromErr(fmt.Errorf("init auth client: %w", err))
-
 	}
 	if err != nil {
 		provider = &gcorecloud.ProviderClient{}

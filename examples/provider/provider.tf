@@ -10,9 +10,6 @@ terraform {
 
 provider gcore {
   permanent_api_token = "251$d3361.............1b35f26d8"
-  # user_name = "test"
-  # password = "test"
-  ignore_creds_auth_error  = true
 }
 
 resource "gcore_keypair" "kp" {

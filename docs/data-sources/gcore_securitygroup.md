@@ -14,10 +14,7 @@ Represent SecurityGroups(Firewall)
 
 ```terraform
 provider gcore {
-  user_name = "test"
-  password = "test"
-
-
+  permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
 data "gcore_project" "pr" {
@@ -29,8 +26,8 @@ data "gcore_region" "rg" {
 }
 
 data "gcore_securitygroup" "default" {
-  name = "default"
-  region_id = data.gcore_region.rg.id
+  name       = "default"
+  region_id  = data.gcore_region.rg.id
   project_id = data.gcore_project.pr.id
 }
 
