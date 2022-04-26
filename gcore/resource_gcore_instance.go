@@ -539,7 +539,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	var cleanInterfaces []interface{}
-	for _, iface := range ifs {
+	for ifOrder, iface := range ifs {
 		if len(iface.IPAssignments) == 0 {
 			continue
 		}
@@ -560,20 +560,20 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 				}
 			}
 
+			i := make(map[string]interface{})
 			if !ok {
-				continue
+				orderedIOpts = OrderedInterfaceOpts{Order: ifOrder}
+			} else {
+				i["type"] = iOpts.Type.String()
 			}
 
-			i := make(map[string]interface{})
-
-			i["type"] = iOpts.Type.String()
 			i["network_id"] = iface.NetworkID
 			i["subnet_id"] = subnetID
 			i["port_id"] = iface.PortID
 			i["order"] = orderedIOpts.Order
-			if iOpts.FloatingIP != nil {
-				i["fip_source"] = iOpts.FloatingIP.Source.String()
-				i["existing_fip_id"] = iOpts.FloatingIP.ExistingFloatingID
+			if len(iface.FloatingIPDetails) > 0 {
+				i["fip_source"] = types.ExistingFloatingIP
+				i["existing_fip_id"] = iface.FloatingIPDetails[0].ID
 			}
 			i["ip_address"] = assignment.IPAddress.String()
 

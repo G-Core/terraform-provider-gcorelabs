@@ -17,17 +17,11 @@ provider gcore {
   permanent_api_token = "251$d3361.............1b35f26d8"
 }
 
-resource "gcore_loadbalancer" "lb" {
+resource "gcore_loadbalancerv2" "lb" {
   project_id = 1
   region_id  = 1
   name       = "test"
   flavor     = "lb1-1-2"
-
-  listener {
-    name          = "test3"
-    protocol      = "HTTP"
-    protocol_port = 8080
-  }
 }
 
 resource "gcore_lblistener" "listener" {
@@ -36,7 +30,7 @@ resource "gcore_lblistener" "listener" {
   name            = "test"
   protocol        = "TCP"
   protocol_port   = 36621
-  loadbalancer_id = gcore_loadbalancer.lb.id
+  loadbalancer_id = gcore_loadbalancerv2.lb.id
 }
 ```
 
