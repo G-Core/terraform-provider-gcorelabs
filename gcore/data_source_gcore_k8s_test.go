@@ -26,7 +26,7 @@ import (
 
 const (
 	testClusterName      = "test-cluster"
-	testClusterVersion   = "1.20.6"
+	testClusterVersion   = "1.20.15"
 	testClusterPoolName  = "test-pool"
 	testPoolFlavor       = "g1-standard-1-2"
 	testNodeCount        = 1
@@ -39,6 +39,9 @@ const (
 )
 
 func TestAccK8sDataSource(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	fullName := "data.gcore_k8s.acctest"
 
 	cfg, err := createTestConfig()

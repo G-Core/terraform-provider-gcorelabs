@@ -114,8 +114,7 @@ func resourceInstance() *schema.Resource {
 							Description: "Currently available only 'existing-volume' value",
 							ValidateDiagFunc: func(val interface{}, key cty.Path) diag.Diagnostics {
 								v := val.(string)
-								switch types.VolumeSource(v) {
-								case types.ExistingVolume:
+								if types.VolumeSource(v) == types.ExistingVolume {
 									return diag.Diagnostics{}
 								}
 								return diag.Errorf("wrong source type %s, now available values is '%s'", v, types.ExistingVolume)
@@ -187,7 +186,7 @@ func resourceInstance() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 						},
-						//nested map is not supported, in this case, you do not need to use the list for the map
+						// nested map is not supported, in this case, you do not need to use the list for the map
 						"fip_source": {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -397,7 +396,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	ifs := d.Get("interface").([]interface{})
-	//sort interfaces by 'order' key to attach it in right order
+	// sort interfaces by 'order' key to attach it in right order
 	sort.Sort(instanceInterfaces(ifs))
 	if len(ifs) > 0 {
 		ifaces, err := extractInstanceInterfacesMap(ifs)
@@ -425,10 +424,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			createOpts.Metadata = &md
 		}
 	} else if metadataRaw, ok := d.GetOk("metadata_map"); ok {
-		md, err := extractMetadataMap(metadataRaw.(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		md := extractMetadataMap(metadataRaw.(map[string]interface{}))
 		createOpts.Metadata = &md
 	}
 
@@ -503,20 +499,16 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	flavor["vcpus"] = strconv.Itoa(instance.Flavor.VCPUS)
 	d.Set("flavor", flavor)
 
-	currentVolumes, err := extractVolumesIntoMap(d.Get("volume").(*schema.Set).List())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	currentVolumes := extractVolumesIntoMap(d.Get("volume").(*schema.Set).List())
 
 	extVolumes := make([]interface{}, 0)
 	for _, vol := range instance.Volumes {
 		v, ok := currentVolumes[vol.ID]
-		//todo fix it
+		// todo fix it
 		if !ok {
 			v = make(map[string]interface{})
 			v["volume_id"] = vol.ID
 			v["source"] = types.ExistingVolume.String()
-			//return diag.Errorf("cant find volume %s in state", vol.ID)
 		}
 
 		v["id"] = vol.ID
@@ -547,7 +539,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, assignment := range iface.IPAssignments {
 			subnetID := assignment.SubnetID
 
-			//bad idea, but what to do
+			// bad idea, but what to do
 			var iOpts instances.InterfaceOpts
 			var orderedIOpts OrderedInterfaceOpts
 			var ok bool
@@ -847,19 +839,13 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 
 		oldVolumesRaw, newVolumesRaw := d.GetChange("volume")
-		oldVolumes, err := extractInstanceVolumesMap(oldVolumesRaw.(*schema.Set).List())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		newVolumes, err := extractInstanceVolumesMap(newVolumesRaw.(*schema.Set).List())
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		oldVolumes := extractInstanceVolumesMap(oldVolumesRaw.(*schema.Set).List())
+		newVolumes := extractInstanceVolumesMap(newVolumesRaw.(*schema.Set).List())
 
 		vOpts := volumes.InstanceOperationOpts{InstanceID: d.Id()}
 		for vid := range oldVolumes {
 			if isAttached := newVolumes[vid]; isAttached {
-				//mark as already attached
+				// mark as already attached
 				newVolumes[vid] = false
 				continue
 			}
@@ -868,7 +854,7 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			}
 		}
 
-		//range over not attached volumes
+		// range over not attached volumes
 		for vid, ok := range newVolumes {
 			if ok {
 				if _, err := volumes.Attach(vClient, vid, vOpts).Extract(); err != nil {

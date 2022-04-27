@@ -377,12 +377,12 @@ func resourceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, m 
 			rule := r.(map[string]interface{})
 			rid := rule["id"].(string)
 			if !newRules.Contains(r) && !changedRule[rid] {
-				//todo patch lib, should be task instead of DeleteResult
+				// todo patch lib, should be task instead of DeleteResult
 				err := securitygrouprules.Delete(clientUpdateDelete, rid).ExtractErr()
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				//todo remove after patch lib
+				// todo remove after patch lib
 				time.Sleep(time.Second * 2)
 				continue
 			}

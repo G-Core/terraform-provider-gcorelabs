@@ -320,7 +320,7 @@ func resourceReservedFixedIPDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	//only is_vip == false
+	// only is_vip == false
 	isVip := d.Get("is_vip").(bool)
 	if isVip {
 		return diag.Errorf("could not delete reserved fixed ip with is_vip=true")

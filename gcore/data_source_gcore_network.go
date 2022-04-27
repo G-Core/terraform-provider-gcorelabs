@@ -93,11 +93,11 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	//todo refactor, also refactor inner func
+	// todo refactor, also refactor inner func
 	var rawNetwork map[string]interface{}
 	network, found := findNetworkByName(name, nets)
 	if !found {
-		//trying to find among shared networks
+		// trying to find among shared networks
 		nets, err := availablenetworks.ListAll(clientShared, nil)
 		if err != nil {
 			return diag.FromErr(err)

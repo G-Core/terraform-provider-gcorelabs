@@ -134,7 +134,7 @@ func dataSourceReservedFixedIPRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("reserved fixed ip %s not found", ipAddr)
 	}
 
-	//should we use PortID as id?
+	// should we use PortID as id?
 	d.SetId(reservedFixedIP.PortID)
 	d.Set("project_id", reservedFixedIP.ProjectID)
 	d.Set("region_id", reservedFixedIP.RegionID)

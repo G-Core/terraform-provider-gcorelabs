@@ -127,12 +127,6 @@ func resourceLoadBalancer() *schema.Resource {
 				Description: "Load balancer IP address",
 				Computed:    true,
 			},
-			//todo fix client and enabled vip_port_id
-			//"vip_port_id": &schema.Schema{
-			//	Type: schema.TypeString,
-			//	Optional: true,
-			//  ForceNew: true,
-			//},
 			"listener": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
@@ -302,8 +296,8 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 		listenerID := oldListener["id"].(string)
 		if oldListener["protocol"].(string) != newListener["protocol"].(string) ||
 			oldListener["protocol_port"].(int) != newListener["protocol_port"].(int) {
-			//if protocol or port changed listener need to be recreated
-			//delete at first
+			// if protocol or port changed listener need to be recreated
+			// delete at first
 			results, err := listeners.Delete(client, listenerID).Extract()
 			if err != nil {
 				return diag.FromErr(err)
@@ -326,7 +320,6 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 				return diag.FromErr(err)
 			}
 
-			//create new one
 			opts := listeners.CreateOpts{
 				Name:             newListener["name"].(string),
 				Protocol:         types.ProtocolType(newListener["protocol"].(string)),
@@ -365,7 +358,6 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 				return diag.FromErr(err)
 			}
 		} else {
-			//update
 			opts := listeners.UpdateOpts{
 				Name:     newListener["name"].(string),
 				SecretID: newListener["secret_id"].(string),

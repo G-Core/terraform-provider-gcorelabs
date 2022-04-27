@@ -383,10 +383,6 @@ func resourceLBPoolUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w", task, err)
 		}
-		//lbPoolID, err := lbpools.ExtractPoolIDFromTask(taskInfo)
-		//if err != nil {
-		//	return nil, fmt.Errorf("cannot retrieve LBPool ID from task info: %w", err)
-		//}
 		return nil, nil
 	})
 

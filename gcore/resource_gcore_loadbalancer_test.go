@@ -21,20 +21,15 @@ func TestAccLoadBalancer(t *testing.T) {
 
 	update := Params{"test1"}
 
-	fullName := "gcore_loadbalancer.acctest"
+	fullName := "gcore_loadbalancerv2.acctest"
 
 	ripTemplate := func(params *Params) string {
 		return fmt.Sprintf(`
-			resource "gcore_loadbalancer" "acctest" {
+			resource "gcore_loadbalancerv2" "acctest" {
 			  %s
               %s
 			  name = "%s"
 			  flavor = "lb1-1-2"
-              listener {
-                name = "test"
-                protocol = "HTTP"
-                protocol_port = 80
-              }
 			}
 		`, projectInfo(), regionInfo(), params.Name)
 	}

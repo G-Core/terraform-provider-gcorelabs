@@ -99,12 +99,6 @@ func resourceLoadBalancerV2() *schema.Resource {
 				Description: "Load balancer IP address",
 				Computed:    true,
 			},
-			//todo fix client and enabled vip_port_id
-			//"vip_port_id": &schema.Schema{
-			//	Type: schema.TypeString,
-			//	Optional: true,
-			//  ForceNew: true,
-			//},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,

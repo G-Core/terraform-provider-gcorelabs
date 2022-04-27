@@ -41,6 +41,9 @@ doc-generate:
 fmt:
 	gofmt -w $(GOFMT_FILES)
 
+linters:
+	golangci-lint run ./...
+
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 

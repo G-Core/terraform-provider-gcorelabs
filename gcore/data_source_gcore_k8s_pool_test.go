@@ -19,6 +19,9 @@ import (
 )
 
 func TestAccK8sPoolDataSource(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	cfg, err := createTestConfig()
 	if err != nil {
 		t.Fatal(err)

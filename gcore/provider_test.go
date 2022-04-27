@@ -121,6 +121,7 @@ func TestProvider(t *testing.T) {
 	}
 }
 
+// nolint: deadcode,unused
 func testAccPreCheck(t *testing.T) {
 	vars := map[string]interface{}{
 		"GCORE_USERNAME": GCORE_USERNAME,
@@ -135,6 +136,7 @@ func testAccPreCheck(t *testing.T) {
 	checkNameAndID("REGION", t)
 }
 
+// nolint: unused
 func checkNameAndID(resourceType string, t *testing.T) {
 	// resourceType is a word in capital letters
 	keyID := fmt.Sprintf("TEST_%s_ID", resourceType)
@@ -149,14 +151,17 @@ func checkNameAndID(resourceType string, t *testing.T) {
 	}
 }
 
+// nolint: deadcode,unused
 func regionInfo() string {
 	return objectInfo("REGION")
 }
 
+// nolint: deadcode,unused
 func projectInfo() string {
 	return objectInfo("PROJECT")
 }
 
+// nolint: unused
 func objectInfo(resourceType string) string {
 	// resourceType is a word in capital letters
 	keyID := fmt.Sprintf("TEST_%s_ID", resourceType)

@@ -86,7 +86,7 @@ func (s instanceInterfaces) Less(i, j int) bool {
 	ifLeft := s[i].(map[string]interface{})
 	ifRight := s[j].(map[string]interface{})
 
-	//only bm instance has a parent interface, and it should be attached first
+	// only bm instance has a parent interface, and it should be attached first
 	isTrunkLeft, okLeft := ifLeft["is_parent"]
 	isTrunkRight, okRight := ifRight["is_parent"]
 	if okLeft && okRight {
@@ -201,23 +201,23 @@ func extractVolumesMap(volumes []interface{}) ([]instances.CreateVolumeOpts, err
 	return Volumes, nil
 }
 
-//todo refactoring
-func extractVolumesIntoMap(volumes []interface{}) (map[string]map[string]interface{}, error) {
+// todo refactoring
+func extractVolumesIntoMap(volumes []interface{}) map[string]map[string]interface{} {
 	Volumes := make(map[string]map[string]interface{}, len(volumes))
 	for _, volume := range volumes {
 		vol := volume.(map[string]interface{})
 		Volumes[vol["volume_id"].(string)] = vol
 	}
-	return Volumes, nil
+	return Volumes
 }
 
-func extractInstanceVolumesMap(volumes []interface{}) (map[string]bool, error) {
+func extractInstanceVolumesMap(volumes []interface{}) map[string]bool {
 	result := make(map[string]bool)
 	for _, volume := range volumes {
 		v := volume.(map[string]interface{})
 		result[v["volume_id"].(string)] = true
 	}
-	return result, nil
+	return result
 }
 
 func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.InterfaceOpts, error) {
@@ -251,7 +251,7 @@ type OrderedInterfaceOpts struct {
 	Order int
 }
 
-//todo refactoring
+// todo refactoring
 func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]OrderedInterfaceOpts, error) {
 	Interfaces := make(map[string]OrderedInterfaceOpts)
 	for _, iface := range interfaces {
@@ -318,14 +318,14 @@ func extractKeyValue(metadata []interface{}) (instances.MetadataSetOpts, error) 
 	return MetadataSetOpts, nil
 }
 
-func extractMetadataMap(metadata map[string]interface{}) (instances.MetadataSetOpts, error) {
+func extractMetadataMap(metadata map[string]interface{}) instances.MetadataSetOpts {
 	result := make([]instances.MetadataOpts, 0, len(metadata))
 	var MetadataSetOpts instances.MetadataSetOpts
 	for k, v := range metadata {
 		result = append(result, instances.MetadataOpts{Key: k, Value: v.(string)})
 	}
 	MetadataSetOpts.Metadata = result
-	return MetadataSetOpts, nil
+	return MetadataSetOpts
 }
 
 func findProjectByName(arr []projects.Project, name string) (int, error) {
@@ -337,7 +337,7 @@ func findProjectByName(arr []projects.Project, name string) (int, error) {
 	return 0, fmt.Errorf("project with name %s not found", name)
 }
 
-//GetProject returns valid projectID for a resource
+// GetProject returns valid projectID for a resource
 func GetProject(provider *gcorecloud.ProviderClient, projectID int, projectName string) (int, error) {
 	log.Println("[DEBUG] Try to get project ID")
 	// valid cases
@@ -375,7 +375,7 @@ func findRegionByName(arr []regions.Region, name string) (int, error) {
 	return 0, fmt.Errorf("region with name %s not found", name)
 }
 
-//GetRegion returns valid regionID for a resource
+// GetRegion returns valid regionID for a resource
 func GetRegion(provider *gcorecloud.ProviderClient, regionID int, regionName string) (int, error) {
 	// valid cases
 	if regionID != 0 {
@@ -477,13 +477,13 @@ func revertState(d *schema.ResourceData, fields *[]string) {
 		for _, field := range *fields {
 			if d.HasChange(field) {
 				oldValue, _ := d.GetChange(field)
-				switch oldValue.(type) {
+				switch v := oldValue.(type) {
 				case int:
-					d.Set(field, oldValue.(int))
+					d.Set(field, v)
 				case string:
-					d.Set(field, oldValue.(string))
+					d.Set(field, v)
 				case map[string]interface{}:
-					d.Set(field, oldValue.(map[string]interface{}))
+					d.Set(field, v)
 				}
 			}
 			log.Printf("[DEBUG] Revert (%s) '%s' field", d.Id(), field)
@@ -619,7 +619,7 @@ func extractSecurityGroupRuleMap(r interface{}, gid string) securitygroups.Creat
 	return opts
 }
 
-//technical debt
+// technical debt
 func findNetworkByName(name string, nets []networks.Network) (networks.Network, bool) {
 	var found bool
 	var network networks.Network
@@ -633,7 +633,7 @@ func findNetworkByName(name string, nets []networks.Network) (networks.Network, 
 	return network, found
 }
 
-//technical debt
+// technical debt
 func findSharedNetworkByName(name string, nets []availablenetworks.Network) (availablenetworks.Network, bool) {
 	var found bool
 	var network availablenetworks.Network

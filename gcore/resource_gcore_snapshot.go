@@ -121,10 +121,7 @@ func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	opts, err := getSnapshotData(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	opts := getSnapshotData(d)
 	results, err := snapshots.Create(client, opts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
@@ -256,7 +253,7 @@ func resourceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func getSnapshotData(d *schema.ResourceData) (*snapshots.CreateOpts, error) {
+func getSnapshotData(d *schema.ResourceData) *snapshots.CreateOpts {
 	snapshotData := snapshots.CreateOpts{}
 	snapshotData.Name = d.Get("name").(string)
 	snapshotData.VolumeID = d.Get("volume_id").(string)
@@ -266,7 +263,7 @@ func getSnapshotData(d *schema.ResourceData) (*snapshots.CreateOpts, error) {
 		snapshotData.Metadata = prepareRawMetadata(metadataRaw)
 	}
 
-	return &snapshotData, nil
+	return &snapshotData
 }
 
 func prepareRawMetadata(raw map[string]interface{}) map[string]string {

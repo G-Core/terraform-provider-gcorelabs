@@ -306,8 +306,8 @@ func resourceSubnetUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	updateOpts.EnableDHCP = d.Get("enable_dhcp").(bool)
 
-	//In the structure, the field is mandatory for the ability to transfer the absence of data,
-	//if you do not initialize it with a empty list, marshalling will send null and receive a validation error.
+	// In the structure, the field is mandatory for the ability to transfer the absence of data,
+	// if you do not initialize it with a empty list, marshalling will send null and receive a validation error.
 	dns_nameservers := d.Get("dns_nameservers").([]interface{})
 	updateOpts.DNSNameservers = make([]net.IP, 0)
 	if len(dns_nameservers) > 0 {

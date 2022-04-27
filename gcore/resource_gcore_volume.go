@@ -98,7 +98,7 @@ func resourceVolume() *schema.Resource {
 			"type_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				//todo add validation
+				// todo add validation
 				Description: "Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard",
 			},
 			"image_id": &schema.Schema{

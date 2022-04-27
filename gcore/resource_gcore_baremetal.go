@@ -160,7 +160,7 @@ func resourceBmInstance() *schema.Resource {
 							Description: "required if type is  'reserved_fixed_ip'",
 							Optional:    true,
 						},
-						//nested map is not supported, in this case, you do not need to use the list for the map
+						// nested map is not supported, in this case, you do not need to use the list for the map
 						"fip_source": {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -280,7 +280,7 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	ifs := d.Get("interface").([]interface{})
-	//sort interfaces by 'is_parent' at first and by 'order' key to attach it in right order
+	// sort interfaces by 'is_parent' at first and by 'order' key to attach it in right order
 	sort.Sort(instanceInterfaces(ifs))
 	newInterface := make([]bminstances.InterfaceOpts, len(ifs))
 	for i, iface := range ifs {
@@ -335,10 +335,7 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 			opts.Metadata = &md
 		}
 	} else if metadataRaw, ok := d.GetOk("metadata_map"); ok {
-		md, err := extractMetadataMap(metadataRaw.(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		md := extractMetadataMap(metadataRaw.(map[string]interface{}))
 		opts.Metadata = &md
 	}
 
@@ -422,7 +419,7 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 		for _, assignment := range iface.IPAssignments {
 			subnetID := assignment.SubnetID
 
-			//bad idea, but what to do
+			// bad idea, but what to do
 			var iOpts OrderedInterfaceOpts
 			var orderedIOpts OrderedInterfaceOpts
 			var ok bool
@@ -460,7 +457,7 @@ func resourceBmInstanceRead(ctx context.Context, d *schema.ResourceData, m inter
 			for _, assignment := range iface1.IPAssignments {
 				subnetID := assignment.SubnetID
 
-				//bad idea, but what to do
+				// bad idea, but what to do
 				var iOpts OrderedInterfaceOpts
 				var orderedIOpts OrderedInterfaceOpts
 				var ok bool

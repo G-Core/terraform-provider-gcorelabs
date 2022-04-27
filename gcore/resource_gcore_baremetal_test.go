@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccBaremetal(t *testing.T) {
-	if os.Getenv("LOCAL_TEST") != "" {
+	if os.Getenv("LOCAL_TEST") == "" {
 		t.Skip("skip test in ci")
 	}
 
