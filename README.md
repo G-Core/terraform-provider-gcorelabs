@@ -24,6 +24,43 @@ $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-gcorelabs
 $ make build
 ```
 
+### Override Terraform provider
+
+To override terraform provider for development goals you do next steps: 
+
+create Terraform configuration file
+```shell
+$ touch ~/.terraformrc
+```
+
+point provider to development path
+```shell
+provider_installation { 
+ 
+  dev_overrides { 
+      "local.gcorelabs.com/repo/gcore" = "/<dev-path>/terraform-provider-gcorelabs/bin" 
+  } 
+ 
+  # For all other providers, install them directly from their origin provider 
+  # registries as normal. If you omit this, Terraform will _only_ use 
+  # the dev_overrides block, and so no other providers will be available. 
+  direct {} 
+}
+```
+
+add `local.gcorelabs.com/repo/gcore` to .tf configuration file
+```shell
+terraform {
+  required_version = ">= 0.13.0"
+
+  required_providers {
+    gcore = {
+      source = "local.gcorelabs.com/repo/gcore"
+    }
+  }
+}
+```
+
 Using the provider
 ------------------
 To use the provider, prepare configuration files based on examples

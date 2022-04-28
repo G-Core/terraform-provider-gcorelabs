@@ -16,6 +16,7 @@ default: build
 build: fmtcheck
 	mkdir -p $(PLUGIN_PATH)
 	go build -o $(PLUGIN_PATH)/$(BINARY_NAME)_v$(VERSION)
+	go build -o bin/$(BINARY_NAME)
 
 test: fmtcheck
 	go test -i $(TEST) || exit 1
