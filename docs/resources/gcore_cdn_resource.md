@@ -49,6 +49,13 @@ resource "gcore_cdn_resource" "cdn_example_com" {
       jpg_quality = 55
       png_quality = 66
     }
+
+    tls_versions {
+      enabled = true
+      value = [
+        "TLSv1.2",
+      ]
+    }
   }
 }
 ```
@@ -95,6 +102,7 @@ Optional:
 - `sni` (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--sni))
 - `static_headers` (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--static_headers))
 - `static_request_headers` (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--static_request_headers))
+- `tls_versions` (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--tls_versions))
 - `webp` (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--webp))
 - `websockets` (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--websockets))
 
@@ -243,6 +251,18 @@ Optional:
 Required:
 
 - `value` (Map of String)
+
+Optional:
+
+- `enabled` (Boolean)
+
+
+<a id="nestedblock--options--tls_versions"></a>
+### Nested Schema for `options.tls_versions`
+
+Required:
+
+- `value` (Set of String)
 
 Optional:
 

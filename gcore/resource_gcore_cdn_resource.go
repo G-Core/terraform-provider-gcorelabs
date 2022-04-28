@@ -352,6 +352,26 @@ var (
 						},
 					},
 				},
+				"tls_versions": {
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Optional:    true,
+					Description: "",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:     schema.TypeBool,
+								Optional: true,
+								Default:  true,
+							},
+							"value": {
+								Type:     schema.TypeSet,
+								Elem:     &schema.Schema{Type: schema.TypeString},
+								Required: true,
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -733,6 +753,18 @@ func listToOptions(l []interface{}) *gcdn.Options {
 			Value:   opt["value"].(bool),
 		}
 	}
+	if opt, ok := getOptByName(fields, "tls_versions"); ok {
+		enabled := true
+		if _, ok := opt["enabled"]; ok {
+			enabled = opt["enabled"].(bool)
+		}
+		opts.TLSVersions = &gcdn.TLSVersions{
+			Enabled: enabled,
+		}
+		for _, v := range opt["value"].(*schema.Set).List() {
+			opts.TLSVersions.Value = append(opts.TLSVersions.Value, v.(string))
+		}
+	}
 	return &opts
 }
 
@@ -819,6 +851,10 @@ func optionsToList(options *gcdn.Options) []interface{} {
 	if options.WebSockets != nil {
 		m := structToMap(options.WebSockets)
 		result["websockets"] = []interface{}{m}
+	}
+	if options.TLSVersions != nil {
+		m := structToMap(options.TLSVersions)
+		result["tls_versions"] = []interface{}{m}
 	}
 	return []interface{}{result}
 }

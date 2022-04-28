@@ -34,5 +34,12 @@ resource "gcore_cdn_resource" "cdn_example_com" {
       jpg_quality = 55
       png_quality = 66
     }
+
+    tls_versions {
+      enabled = true
+      value = [
+        "TLSv1.2",
+      ]
+    }
   }
 }
