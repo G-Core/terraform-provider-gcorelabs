@@ -16,6 +16,7 @@ import (
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform/version"
 )
 
 const (
@@ -256,6 +257,7 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		CDNClient: cdnService,
 	}
 
+	userAgent := fmt.Sprintf("terraform/%s", version.Version)
 	if storageAPI != "" {
 		stHost, stPath, err := ExtractHostAndPath(storageAPI)
 		if err != nil {
@@ -266,6 +268,7 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 			stPath,
 			storageSDK.WithBearerAuth(provider.AccessToken),
 			storageSDK.WithPermanentTokenAuth(func() string { return permanentToken }),
+			storageSDK.WithUserAgent(userAgent),
 		)
 	}
 	if dnsAPI != "" {
@@ -277,10 +280,15 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		if permanentToken != "" {
 			authorizer = dnssdk.PermanentAPIKeyAuth(permanentToken)
 		}
-		config.DNSClient = dnssdk.NewClient(authorizer, func(client *dnssdk.Client) {
-			client.BaseURL = baseUrl
-			client.Debug = os.Getenv("TF_LOG") == "DEBUG"
-		})
+		config.DNSClient = dnssdk.NewClient(
+			authorizer,
+			func(client *dnssdk.Client) {
+				client.BaseURL = baseUrl
+				client.Debug = os.Getenv("TF_LOG") == "DEBUG"
+			},
+			func(client *dnssdk.Client) {
+				client.UserAgent = userAgent
+			})
 	}
 
 	return &config, diags
