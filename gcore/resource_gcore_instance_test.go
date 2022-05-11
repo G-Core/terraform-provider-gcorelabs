@@ -5,7 +5,6 @@ package gcore
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
@@ -124,19 +123,19 @@ func TestAccInstance(t *testing.T) {
 			BootIndex: 1,
 		},
 	}
-	interfaces := []instances.InterfaceOpts{
-		{
+	interfaces := []instances.InterfaceInstanceCreateOpts{{
+		InterfaceOpts: instances.InterfaceOpts{
 			Type:      "subnet",
 			NetworkID: networkID,
 			SubnetID:  subnetID,
 		},
-	}
-	update_interfaces := []instances.InterfaceOpts{
-		{
+	}}
+	update_interfaces := []instances.InterfaceInstanceCreateOpts{{
+		InterfaceOpts: instances.InterfaceOpts{
 			Type:     "subnet",
 			SubnetID: subnetID,
 		},
-	}
+	}}
 
 	sgs, err := securitygroups.ListAll(clientSec)
 	if err != nil {
@@ -181,7 +180,6 @@ func TestAccInstance(t *testing.T) {
 	update_interfaceFixt := createFixt
 	update_interfaceFixt.Interfaces = update_interfaces
 
-	update_secgroupsFixt := createFixt
 	update_interfaceFixt.SecurityGroups = update_sg
 
 	updateFixt := createFixt
@@ -225,9 +223,6 @@ func TestAccInstance(t *testing.T) {
 	update_interface := create
 	update_interface.Interfaces = []map[string]string{{"type": "subnet", "subnet_id": subnetID}}
 
-	update_secgroups := create
-	update_secgroups.SecurityGroups = []map[string]string{{"id": "someid", "name": "somegroup"}}
-
 	update := create
 	update.Flavor = "g1-standard-2-8"
 	update.MetaData = []map[string]string{{"key": "newsomekey", "value": "newsomevalue"}}
@@ -256,15 +251,6 @@ func TestAccInstance(t *testing.T) {
 				
 			},`, params.Interfaces[i]["type"], params.Interfaces[i]["network_id"], params.Interfaces[i]["subnet_id"])
 
-		}
-		template += fmt.Sprint(`]
-			security_groups = [`)
-		for i := range params.SecurityGroups {
-			template += fmt.Sprintf(`
-			{
-				id = "%s"
-				name = "%s"
-			},`, params.SecurityGroups[i]["id"], params.SecurityGroups[i]["name"])
 		}
 		template += fmt.Sprint(`]
 			metadata = [`)
@@ -341,15 +327,6 @@ func TestAccInstance(t *testing.T) {
 				}
 			}
 
-			dynamic security_group {
-			iterator = sg
-			for_each = local.security_groups
-			content {	
-				id = sg.value.id
-				name = sg.value.name
-				}
-			}
-
 			dynamic metadata {
 			iterator = md
 			for_each = local.metadata
@@ -395,14 +372,6 @@ func TestAccInstance(t *testing.T) {
 					testAccCheckResourceExists(fullName),
 					checkInstanceAttrs(fullName, &update_interfaceFixt),
 				),
-			},
-			{
-				Config: instanceTemplate(&update_secgroups),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResourceExists(fullName),
-					checkInstanceAttrs(fullName, &update_secgroupsFixt),
-				),
-				ExpectError: regexp.MustCompile("not found"),
 			},
 		},
 	})
