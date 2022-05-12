@@ -33,7 +33,7 @@ func TestAccVolume(t *testing.T) {
 	}
 
 	update := Params{
-		Name: "test",
+		Name: "test2",
 		Size: 2,
 		Type: "ssd_hiiops",
 	}
@@ -73,6 +73,7 @@ func TestAccVolume(t *testing.T) {
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "size", strconv.Itoa(create.Size)),
 					resource.TestCheckResourceAttr(fullName, "type_name", create.Type),
+					resource.TestCheckResourceAttr(fullName, "name", create.Name),
 				),
 			},
 			{
@@ -81,6 +82,7 @@ func TestAccVolume(t *testing.T) {
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "size", strconv.Itoa(update.Size)),
 					resource.TestCheckResourceAttr(fullName, "type_name", update.Type),
+					resource.TestCheckResourceAttr(fullName, "name", update.Name),
 				),
 			},
 			{

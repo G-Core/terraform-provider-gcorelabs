@@ -216,6 +216,14 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		_, err := volumes.Update(client, volumeID, volumes.UpdateOpts{Name: name}).Extract()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChange("size") {
 		newValue := d.Get("size")
 		newSize := newValue.(int)
