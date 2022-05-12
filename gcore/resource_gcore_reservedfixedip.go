@@ -8,6 +8,7 @@ import (
 	"time"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
+	"github.com/G-Core/gcorelabscloud-go/gcore/port/v1/ports"
 	"github.com/G-Core/gcorelabscloud-go/gcore/reservedfixedip/v1/reservedfixedips"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
 	"github.com/hashicorp/go-cty/cty"
@@ -17,6 +18,7 @@ import (
 
 const (
 	reservedFixedIPsPoint        = "reserved_fixed_ips"
+	portsPoint                   = "ports"
 	ReservedFixedIPCreateTimeout = 1200
 )
 
@@ -135,17 +137,17 @@ func resourceReservedFixedIP() *schema.Resource {
 			},
 			"allowed_address_pairs": {
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "Group of IP addresses that share the current IP as VIP",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip_address": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Optional: true,
 						},
 						"mac_address": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Optional: true,
 						},
 					},
 				},
@@ -295,11 +297,33 @@ func resourceReservedFixedIPUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	id := d.Id()
 	if d.HasChange("is_vip") {
-		id := d.Id()
 		opts := reservedfixedips.SwitchVIPOpts{IsVip: d.Get("is_vip").(bool)}
 		_, err := reservedfixedips.SwitchVIP(client, id, opts).Extract()
 		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("allowed_address_pairs") {
+		aap := d.Get("allowed_address_pairs").([]interface{})
+		allowedAddressPairs := make([]reservedfixedips.AllowedAddressPairs, len(aap))
+		for i, p := range aap {
+			pair := p.(map[string]interface{})
+			allowedAddressPairs[i] = reservedfixedips.AllowedAddressPairs{
+				IPAddress:  pair["ip_address"].(string),
+				MacAddress: pair["mac_address"].(string),
+			}
+		}
+
+		clientPort, err := CreateClient(provider, d, portsPoint, versionPointV1)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		opts := ports.AllowAddressPairsOpts{AllowedAddressPairs: allowedAddressPairs}
+		if _, err := ports.AllowAddressPairs(clientPort, id, opts).Extract(); err != nil {
 			return diag.FromErr(err)
 		}
 	}
