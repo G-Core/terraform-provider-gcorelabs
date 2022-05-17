@@ -84,7 +84,7 @@ func TestAccInstanceDataSource(t *testing.T) {
 			BootIndex: 0,
 			VolumeID:  volumeID,
 		}},
-		Interfaces:     []instances.InterfaceOpts{{Type: types.ExternalInterfaceType}},
+		Interfaces:     []instances.InterfaceInstanceCreateOpts{{InterfaceOpts: instances.InterfaceOpts{Type: types.ExternalInterfaceType}}},
 		SecurityGroups: []gcorecloud.ItemID{},
 	}
 

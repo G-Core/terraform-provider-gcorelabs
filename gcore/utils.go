@@ -220,8 +220,8 @@ func extractInstanceVolumesMap(volumes []interface{}) map[string]bool {
 	return result
 }
 
-func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.InterfaceOpts, error) {
-	Interfaces := make([]instances.InterfaceOpts, len(interfaces))
+func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.InterfaceInstanceCreateOpts, error) {
+	Interfaces := make([]instances.InterfaceInstanceCreateOpts, len(interfaces))
 	for i, iface := range interfaces {
 		inter := iface.(map[string]interface{})
 
@@ -241,7 +241,17 @@ func extractInstanceInterfacesMap(interfaces []interface{}) ([]instances.Interfa
 			}
 			I.FloatingIP = &fip
 		}
-		Interfaces[i] = I
+
+		rawSgsID := inter["security_groups"].([]interface{})
+		sgs := make([]gcorecloud.ItemID, len(rawSgsID))
+		for i, sgID := range rawSgsID {
+			sgs[i] = gcorecloud.ItemID{ID: sgID.(string)}
+		}
+
+		Interfaces[i] = instances.InterfaceInstanceCreateOpts{
+			InterfaceOpts:  I,
+			SecurityGroups: sgs,
+		}
 	}
 	return Interfaces, nil
 }
@@ -286,20 +296,6 @@ func extractInstanceInterfaceIntoMap(interfaces []interface{}) (map[string]Order
 		}
 	}
 	return Interfaces, nil
-}
-
-func extractSecurityGroupsMap(secgroups []interface{}) ([]gcorecloud.ItemID, error) {
-	SecGroups := make([]gcorecloud.ItemID, len(secgroups))
-	for i, secgroup := range secgroups {
-		group := secgroup.(map[string]interface{})
-		var SG gcorecloud.ItemID
-		err := MapStructureDecoder(&SG, &group, config)
-		if err != nil {
-			return nil, err
-		}
-		SecGroups[i] = SG
-	}
-	return SecGroups, nil
 }
 
 func extractKeyValue(metadata []interface{}) (instances.MetadataSetOpts, error) {

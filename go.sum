@@ -87,6 +87,8 @@ github.com/G-Core/gcorelabscdn-go v0.1.20 h1:RT/k4olBTPuVyE2LUlu5D9GTvj3hPA9NnBZ
 github.com/G-Core/gcorelabscdn-go v0.1.20/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
 github.com/G-Core/gcorelabscloud-go v0.4.54 h1:KDMRSGj/StmvFyqdIFng5Eb4eZB5W5GgIHZzrysh8VY=
 github.com/G-Core/gcorelabscloud-go v0.4.54/go.mod h1:nuDFy76Eja1EXBrG+q+dqpC2KqrHfID3JS8833LDJG8=
+github.com/G-Core/gcorelabscloud-go v0.5.0 h1:PMnk2a+1VxviGcktHXZS4iIO2K1bvclsele6DMfLAr8=
+github.com/G-Core/gcorelabscloud-go v0.5.0/go.mod h1:nuDFy76Eja1EXBrG+q+dqpC2KqrHfID3JS8833LDJG8=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/Masterminds/sprig v2.22.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuNhlNS5hqE0NB0E6fgfo2Br3o=

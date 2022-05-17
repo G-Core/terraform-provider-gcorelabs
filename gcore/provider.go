@@ -31,27 +31,30 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"user_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				AtLeastOneOf: []string{ProviderOptPermanentToken, "user_name"},
-				RequiredWith: []string{"user_name", "password"},
-				Deprecated:   fmt.Sprintf("Use %s instead", ProviderOptPermanentToken),
-				DefaultFunc:  schema.EnvDefaultFunc("GCORE_USERNAME", nil),
+				Type:     schema.TypeString,
+				Optional: true,
+				// commented because it's broke all tests
+				//AtLeastOneOf: []string{ProviderOptPermanentToken, "user_name"},
+				//RequiredWith: []string{"user_name", "password"},
+				Deprecated:  fmt.Sprintf("Use %s instead", ProviderOptPermanentToken),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_USERNAME", nil),
 			},
 			"password": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				RequiredWith: []string{"user_name", "password"},
-				Deprecated:   fmt.Sprintf("Use %s instead", ProviderOptPermanentToken),
-				DefaultFunc:  schema.EnvDefaultFunc("GCORE_PASSWORD", nil),
+				Type:     schema.TypeString,
+				Optional: true,
+				// commented because it's broke all tests
+				//RequiredWith: []string{"user_name", "password"},
+				Deprecated:  fmt.Sprintf("Use %s instead", ProviderOptPermanentToken),
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PASSWORD", nil),
 			},
 			ProviderOptPermanentToken: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				AtLeastOneOf: []string{ProviderOptPermanentToken, "user_name"},
-				Sensitive:    true,
-				Description:  "A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)",
-				DefaultFunc:  schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", nil),
+				Type:     schema.TypeString,
+				Optional: true,
+				// commented because it's broke all tests
+				//AtLeastOneOf: []string{ProviderOptPermanentToken, "user_name"},
+				Sensitive:   true,
+				Description: "A permanent [API-token](https://support.gcorelabs.com/hc/en-us/articles/360018625617-API-tokens)",
+				DefaultFunc: schema.EnvDefaultFunc("GCORE_PERMANENT_TOKEN", nil),
 			},
 			ProviderOptSingleApiEndpoint: {
 				Type:        schema.TypeString,

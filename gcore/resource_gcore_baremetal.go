@@ -91,18 +91,18 @@ func resourceBmInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-				ExactlyOneOf: []string{
-					"name",
-					"name_templates",
-				},
 			},
 			"name_templates": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				ExactlyOneOf: []string{
-					"name",
-					"name_templates",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				Deprecated:    "Use name_template instead",
+				ConflictsWith: []string{"name_template"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+			},
+			"name_template": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"name_templates"},
 			},
 			"image_id": {
 				Type:     schema.TypeString,

@@ -191,12 +191,15 @@ resource "gcore_instance" "v" {
 - `project_name` (String)
 - `region_id` (Number)
 - `region_name` (String)
-- `security_group` (Block List) Firewalls list (see [below for nested schema](#nestedblock--security_group))
 - `server_group` (String)
 - `status` (String)
 - `userdata` (String)
 - `username` (String)
 - `vm_state` (String) Current vm state, use stopped to stop vm and active to start
+
+### Read-Only
+
+- `security_group` (List of Object) Firewalls list (see [below for nested schema](#nestedatt--security_group))
 
 <a id="nestedblock--interface"></a>
 ### Nested Schema for `interface`
@@ -209,6 +212,7 @@ Optional:
 - `network_id` (String) required if type is 'subnet' or 'any_subnet'
 - `order` (Number) Order of attaching interface
 - `port_id` (String) required if type is  'reserved_fixed_ip'
+- `security_groups` (List of String) list of security group IDs
 - `subnet_id` (String) required if type is 'subnet'
 - `type` (String) Available value is 'subnet', 'any_subnet', 'external', 'reserved_fixed_ip'
 
@@ -268,12 +272,12 @@ Required:
 - `value` (String)
 
 
-<a id="nestedblock--security_group"></a>
+<a id="nestedatt--security_group"></a>
 ### Nested Schema for `security_group`
 
-Required:
+Read-Only:
 
-- `id` (String) Firewall unique id
+- `id` (String)
 - `name` (String)
 
 ## Import

@@ -2,12 +2,14 @@ module github.com/terraform-providers/terraform-provider-gcorelabs
 
 go 1.17
 
+//replace github.com/G-Core/gcorelabscloud-go => /home/ondi/go/src/github.com/G-Core/gcorelabscloud-go
+
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/G-Core/gcore-dns-sdk-go v0.2.3
 	github.com/G-Core/gcore-storage-sdk-go v0.1.3
 	github.com/G-Core/gcorelabscdn-go v0.1.20
-	github.com/G-Core/gcorelabscloud-go v0.4.54
+	github.com/G-Core/gcorelabscloud-go v0.5.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/mitchellh/mapstructure v1.4.3

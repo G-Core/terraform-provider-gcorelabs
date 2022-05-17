@@ -11,6 +11,7 @@ import (
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
+	"github.com/G-Core/gcorelabscloud-go/gcore/securitygroup/v1/securitygroups"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
 	"github.com/hashicorp/go-cty/cty"
@@ -94,9 +95,16 @@ func resourceInstance() *schema.Resource {
 				Computed: true,
 			},
 			"name_templates": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:          schema.TypeList,
+				Optional:      true,
+				Deprecated:    "Use name_template instead",
+				ConflictsWith: []string{"name_template"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+			},
+			"name_template": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"name_templates"},
 			},
 			"volume": &schema.Schema{
 				Type:     schema.TypeSet,
@@ -201,6 +209,13 @@ func resourceInstance() *schema.Resource {
 							Description: "required if type is  'reserved_fixed_ip'",
 							Optional:    true,
 						},
+						"security_groups": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "list of security group IDs",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
 						"ip_address": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -219,7 +234,7 @@ func resourceInstance() *schema.Resource {
 			},
 			"security_group": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "Firewalls list",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -286,8 +301,16 @@ func resourceInstance() *schema.Resource {
 				},
 			},
 			"userdata": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "**Deprecated**",
+				Deprecated:    "Use user_data instead",
+				ConflictsWith: []string{"user_data"},
+			},
+			"user_data": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"userdata"},
 			},
 			"allow_app_ports": &schema.Schema{
 				Type:     schema.TypeBool,
@@ -361,27 +384,36 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	createOpts := instances.CreateOpts{}
+	createOpts := instances.CreateOpts{SecurityGroups: []gcorecloud.ItemID{}}
 
 	createOpts.Flavor = d.Get("flavor_id").(string)
 	createOpts.Password = d.Get("password").(string)
 	createOpts.Username = d.Get("username").(string)
-	createOpts.UserData = d.Get("userdata").(string)
 	createOpts.Keypair = d.Get("keypair_name").(string)
 	createOpts.ServerGroupID = d.Get("server_group").(string)
+
+	if userData, ok := d.GetOk("userdata"); ok {
+		createOpts.UserData = userData.(string)
+	} else if userData, ok := d.GetOk("user_data"); ok {
+		createOpts.UserData = userData.(string)
+	}
 
 	name := d.Get("name").(string)
 	if len(name) > 0 {
 		createOpts.Names = []string{name}
 	}
 
-	name_templates := d.Get("name_templates").([]interface{})
-	if len(name_templates) > 0 {
-		NameTemp := make([]string, len(name_templates))
-		for i, nametemp := range name_templates {
-			NameTemp[i] = nametemp.(string)
+	if nameTemplatesRaw, ok := d.GetOk("name_templates"); ok {
+		nameTemplates := nameTemplatesRaw.([]interface{})
+		if len(nameTemplates) > 0 {
+			NameTemp := make([]string, len(nameTemplates))
+			for i, nametemp := range nameTemplates {
+				NameTemp[i] = nametemp.(string)
+			}
+			createOpts.NameTemplates = NameTemp
 		}
-		createOpts.NameTemplates = NameTemp
+	} else if nameTemplate, ok := d.GetOk("name_template"); ok {
+		createOpts.NameTemplates = []string{nameTemplate.(string)}
 	}
 
 	createOpts.AllowAppPorts = d.Get("allow_app_ports").(bool)
@@ -404,15 +436,6 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 		createOpts.Interfaces = ifaces
-	}
-
-	sgroups := d.Get("security_group")
-	if len(sgroups.([]interface{})) > 0 {
-		groups, err := extractSecurityGroupsMap(sgroups.([]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createOpts.SecurityGroups = groups
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
@@ -484,7 +507,14 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	instance, err := instances.Get(client, instanceID).Extract()
 	if err != nil {
-		return diag.Errorf("cannot get instance with ID: %s. Error: %s", instanceID, err)
+		switch err.(type) {
+		case gcorecloud.ErrDefault404:
+			log.Printf("[WARN] Removing instance %s because resource doesn't exist anymore", d.Id())
+			d.SetId("")
+			return nil
+		default:
+			return diag.FromErr(err)
+		}
 	}
 
 	d.Set("name", instance.Name)
@@ -501,7 +531,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	currentVolumes := extractVolumesIntoMap(d.Get("volume").(*schema.Set).List())
 
-	extVolumes := make([]interface{}, 0)
+	extVolumes := make([]interface{}, 0, len(instance.Volumes))
 	for _, vol := range instance.Volumes {
 		v, ok := currentVolumes[vol.ID]
 		// todo fix it
@@ -517,6 +547,16 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if err := d.Set("volume", schema.NewSet(volumeUniqueID, extVolumes)); err != nil {
+		return diag.FromErr(err)
+	}
+
+	instancePorts, err := instances.ListPortsAll(client, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	secGroups := prepareSecurityGroups(instancePorts)
+
+	if err := d.Set("security_group", secGroups); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -568,6 +608,14 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 				i["existing_fip_id"] = iface.FloatingIPDetails[0].ID
 			}
 			i["ip_address"] = assignment.IPAddress.String()
+
+			if port, err := findInstancePort(iface.PortID, instancePorts); err == nil {
+				sgs := make([]string, len(port.SecurityGroups))
+				for i, sg := range port.SecurityGroups {
+					sgs[i] = sg.ID
+				}
+				i["security_groups"] = sgs
+			}
 
 			cleanInterfaces = append(cleanInterfaces, i)
 		}
@@ -623,16 +671,6 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	sgs, err := instances.ListPortsAll(client, instanceID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	secGroups := prepareSecurityGroups(sgs)
-
-	if err := d.Set("security_group", secGroups); err != nil {
-		return diag.FromErr(err)
-	}
-
 	log.Println("[DEBUG] Finish Instance reading")
 	return diags
 }
@@ -649,8 +687,9 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("name") {
-		nameTemplate := d.Get("name_templates").([]interface{})
-		if len(nameTemplate) == 0 {
+		nameTemplates := d.Get("name_templates").([]interface{})
+		nameTemplate := d.Get("name_template").([]interface{})
+		if len(nameTemplate) == 0 && len(nameTemplates) == 0 {
 			opts := instances.RenameInstanceOpts{
 				Name: d.Get("name").(string),
 			}
@@ -740,32 +779,6 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	if d.HasChange("security_group") {
-		osg, nsg := d.GetChange("security_group")
-		if len(osg.([]interface{})) > 0 {
-			for _, secgr := range osg.([]interface{}) {
-				var delOpts instances.SecurityGroupOpts
-				sg := secgr.(map[string]interface{})
-				delOpts.Name = sg["name"].(string)
-				err := instances.UnAssignSecurityGroup(client, instanceID, delOpts).Err
-				if err != nil {
-					return diag.Errorf("cannot unassign security group: %s. Error: %s", delOpts.Name, err)
-				}
-			}
-		}
-		if len(nsg.([]interface{})) > 0 {
-			for _, secgr := range nsg.([]interface{}) {
-				var createOpts instances.SecurityGroupOpts
-				sg := secgr.(map[string]interface{})
-				createOpts.Name = sg["name"].(string)
-				err := instances.AssignSecurityGroup(client, instanceID, createOpts).Err
-				if err != nil {
-					return diag.Errorf("cannot assign security group: %s. Error: %s", createOpts.Name, err)
-				}
-			}
-		}
-	}
-
 	if d.HasChange("interface") {
 		ifsOldRaw, ifsNewRaw := d.GetChange("interface")
 
@@ -817,17 +830,61 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			if err != nil {
 				return diag.Errorf("cannot attach interface: %s. Error: %s", iType, err)
 			}
+
 			taskID := results.Tasks[0]
-			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+			log.Printf("[DEBUG] attach interface taskID: %s", taskID)
+			portIDRaw, err := tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
 				taskInfo, err := tasks.Get(client, string(task)).Extract()
 				if err != nil {
 					return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w, task: %+v", task, err, taskInfo)
 				}
-				return nil, nil
+				portID, err := instances.ExtractInstancePortIDFromTask(taskInfo)
+				if err != nil {
+					return nil, fmt.Errorf("cannot retrieve instance port ID from task info: %w", err)
+				}
+				return portID, nil
 			},
 			)
+
+			var portID string
 			if err != nil {
-				return diag.FromErr(err)
+				if opts.PortID != "" {
+					portID = opts.PortID
+				} else {
+					return diag.FromErr(err)
+				}
+			} else {
+				portID = portIDRaw.(string)
+			}
+
+			// attach security group to interface
+			sgIDs := iface["security_groups"].([]interface{})
+			if len(sgIDs) > 0 {
+				sgClient, err := CreateClient(provider, d, securityGroupPoint, versionPointV1)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				sgsName := make([]string, len(sgIDs))
+				for i, sgID := range sgIDs {
+					sg, err := securitygroups.Get(sgClient, sgID.(string)).Extract()
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					sgsName[i] = sg.Name
+				}
+
+				attachOpts := instances.SecurityGroupOpts{
+					PortsSecurityGroupNames: []instances.PortSecurityGroupNames{{
+						PortID:             &portID,
+						SecurityGroupNames: sgsName,
+					}},
+				}
+
+				log.Printf("[DEBUG] attach security group opts: %+v", attachOpts)
+				if err := instances.AssignSecurityGroup(client, instanceID, attachOpts).Err; err != nil {
+					return diag.Errorf("cannot assign security group. Error: %s", err.Error())
+				}
 			}
 		}
 	}
@@ -960,6 +1017,16 @@ func ServerV2StateRefreshFunc(client *gcorecloud.ServiceClient, instanceID strin
 
 		return s, s.VMState, nil
 	}
+}
+
+func findInstancePort(portID string, ports []instances.InstancePorts) (instances.InstancePorts, error) {
+	for _, port := range ports {
+		if port.ID == portID {
+			return port, nil
+		}
+	}
+
+	return instances.InstancePorts{}, fmt.Errorf("port not found")
 }
 
 func prepareSecurityGroups(ports []instances.InstancePorts) []interface{} {
