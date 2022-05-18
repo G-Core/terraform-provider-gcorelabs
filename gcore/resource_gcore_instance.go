@@ -11,7 +11,6 @@ import (
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
-	"github.com/G-Core/gcorelabscloud-go/gcore/securitygroup/v1/securitygroups"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
 	"github.com/hashicorp/go-cty/cty"
@@ -212,7 +211,6 @@ func resourceInstance() *schema.Resource {
 						"security_groups": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Computed:    true,
 							Description: "list of security group IDs",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
@@ -815,7 +813,10 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			iface := i.(map[string]interface{})
 
 			iType := types.InterfaceType(iface["type"].(string))
-			opts := instances.InterfaceOpts{Type: iType}
+			opts := instances.InterfaceInstanceCreateOpts{
+				InterfaceOpts: instances.InterfaceOpts{Type: iType},
+			}
+
 			switch iType {
 			case types.SubnetInterfaceType:
 				opts.SubnetID = iface["subnet_id"].(string)
@@ -825,6 +826,13 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 				opts.PortID = iface["port_id"].(string)
 			}
 
+			rawSgsID := iface["security_groups"].([]interface{})
+			sgs := make([]gcorecloud.ItemID, len(rawSgsID))
+			for i, sgID := range rawSgsID {
+				sgs[i] = gcorecloud.ItemID{ID: sgID.(string)}
+			}
+			opts.SecurityGroups = sgs
+
 			log.Printf("[DEBUG] attach interface: %+v", opts)
 			results, err := instances.AttachInterface(client, instanceID, opts).Extract()
 			if err != nil {
@@ -833,7 +841,7 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 			taskID := results.Tasks[0]
 			log.Printf("[DEBUG] attach interface taskID: %s", taskID)
-			portIDRaw, err := tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
+			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
 				taskInfo, err := tasks.Get(client, string(task)).Extract()
 				if err != nil {
 					return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w, task: %+v", task, err, taskInfo)
@@ -846,46 +854,10 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			},
 			)
 
-			var portID string
 			if err != nil {
-				if opts.PortID != "" {
-					portID = opts.PortID
-				} else {
-					return diag.FromErr(err)
-				}
-			} else {
-				portID = portIDRaw.(string)
+				return diag.FromErr(err)
 			}
 
-			// attach security group to interface
-			sgIDs := iface["security_groups"].([]interface{})
-			if len(sgIDs) > 0 {
-				sgClient, err := CreateClient(provider, d, securityGroupPoint, versionPointV1)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-
-				sgsName := make([]string, len(sgIDs))
-				for i, sgID := range sgIDs {
-					sg, err := securitygroups.Get(sgClient, sgID.(string)).Extract()
-					if err != nil {
-						return diag.FromErr(err)
-					}
-					sgsName[i] = sg.Name
-				}
-
-				attachOpts := instances.SecurityGroupOpts{
-					PortsSecurityGroupNames: []instances.PortSecurityGroupNames{{
-						PortID:             &portID,
-						SecurityGroupNames: sgsName,
-					}},
-				}
-
-				log.Printf("[DEBUG] attach security group opts: %+v", attachOpts)
-				if err := instances.AssignSecurityGroup(client, instanceID, attachOpts).Err; err != nil {
-					return diag.Errorf("cannot assign security group. Error: %s", err.Error())
-				}
-			}
 		}
 	}
 
