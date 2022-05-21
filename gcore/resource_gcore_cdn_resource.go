@@ -567,11 +567,7 @@ func resourceCDNResourceDelete(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	var req resources.UpdateRequest
-	req.Active = false
-	req.OriginGroup = d.Get("origin_group").(int)
-
-	if _, err := client.Resources().Update(ctx, id, &req); err != nil {
+	if err := client.Resources().Delete(ctx, id); err != nil {
 		return diag.FromErr(err)
 	}
 
