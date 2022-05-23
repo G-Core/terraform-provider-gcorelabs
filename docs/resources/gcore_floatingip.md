@@ -31,7 +31,6 @@ resource "gcore_floatingip" "floating_ip" {
 ### Optional
 
 - `fixed_ip_address` (String)
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `port_id` (String)
 - `project_id` (Number)
@@ -43,6 +42,7 @@ resource "gcore_floatingip" "floating_ip" {
 
 - `created_at` (String)
 - `floating_ip_address` (String)
+- `id` (String) The ID of this resource.
 - `router_id` (String)
 - `status` (String)
 - `updated_at` (String)

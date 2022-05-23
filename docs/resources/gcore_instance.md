@@ -179,13 +179,13 @@ resource "gcore_instance" "v" {
 - `allow_app_ports` (Boolean)
 - `configuration` (Block List) (see [below for nested schema](#nestedblock--configuration))
 - `flavor` (Map of String)
-- `id` (String) The ID of this resource.
 - `keypair_name` (String)
 - `last_updated` (String)
 - `metadata` (Block List, Deprecated) (see [below for nested schema](#nestedblock--metadata))
 - `metadata_map` (Map of String)
 - `name` (String)
-- `name_templates` (List of String)
+- `name_template` (String)
+- `name_templates` (List of String, Deprecated)
 - `password` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -193,12 +193,14 @@ resource "gcore_instance" "v" {
 - `region_name` (String)
 - `server_group` (String)
 - `status` (String)
-- `userdata` (String)
+- `user_data` (String)
+- `userdata` (String, Deprecated) **Deprecated**
 - `username` (String)
 - `vm_state` (String) Current vm state, use stopped to stop vm and active to start
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `security_group` (List of Object) Firewalls list (see [below for nested schema](#nestedatt--security_group))
 
 <a id="nestedblock--interface"></a>
@@ -229,12 +231,15 @@ Optional:
 - `attachment_tag` (String)
 - `boot_index` (Number) If boot_index==0 volumes can not detached
 - `delete_on_termination` (Boolean)
-- `id` (String) The ID of this resource.
 - `image_id` (String)
 - `name` (String)
 - `size` (Number)
 - `type_name` (String)
 - `volume_id` (String)
+
+Read-Only:
+
+- `id` (String) The ID of this resource.
 
 
 <a id="nestedblock--addresses"></a>

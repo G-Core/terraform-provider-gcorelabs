@@ -70,7 +70,6 @@ resource "gcore_lbmember" "lbm" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `instance_id` (String)
 - `last_updated` (String)
 - `project_id` (Number)
@@ -83,6 +82,7 @@ resource "gcore_lbmember" "lbm" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `operating_status` (String)
 
 <a id="nestedblock--timeouts"></a>

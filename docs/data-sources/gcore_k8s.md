@@ -33,7 +33,6 @@ data "gcore_k8s" "v" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -53,6 +52,7 @@ data "gcore_k8s" "v" {
 - `fixed_subnet` (String)
 - `health_status` (String)
 - `health_status_reason` (Map of String)
+- `id` (String) The ID of this resource.
 - `keypair` (String)
 - `master_addresses` (List of String)
 - `master_flavor_id` (String)

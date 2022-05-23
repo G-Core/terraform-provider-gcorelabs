@@ -52,14 +52,14 @@ resource "gcore_baremetal" "bm" {
 
 - `app_config` (Map of String)
 - `apptemplate_id` (String)
-- `id` (String) The ID of this resource.
 - `image_id` (String)
 - `keypair_name` (String)
 - `last_updated` (String)
 - `metadata` (Block List, Deprecated) (see [below for nested schema](#nestedblock--metadata))
 - `metadata_map` (Map of String)
 - `name` (String)
-- `name_templates` (String)
+- `name_template` (String)
+- `name_templates` (List of String, Deprecated)
 - `password` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -73,6 +73,7 @@ resource "gcore_baremetal" "bm" {
 
 - `addresses` (List of Object) (see [below for nested schema](#nestedatt--addresses))
 - `flavor` (Map of String)
+- `id` (String) The ID of this resource.
 - `status` (String)
 - `vm_state` (String)
 

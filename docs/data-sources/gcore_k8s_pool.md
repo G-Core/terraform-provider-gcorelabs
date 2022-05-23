@@ -35,7 +35,6 @@ data "gcore_k8s_pool" "v" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -47,6 +46,7 @@ data "gcore_k8s_pool" "v" {
 - `docker_volume_size` (Number)
 - `docker_volume_type` (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'.
 - `flavor_id` (String)
+- `id` (String) The ID of this resource.
 - `is_default` (Boolean)
 - `max_node_count` (Number)
 - `min_node_count` (Number)

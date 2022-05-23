@@ -46,7 +46,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `loadbalancer_id` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -55,6 +54,7 @@ output "view" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `operating_status` (String)
 - `pool_count` (Number)
 - `protocol` (String) Available values is 'HTTP', 'HTTPS', 'TCP', 'UDP'

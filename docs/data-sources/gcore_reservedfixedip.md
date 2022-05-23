@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -54,6 +53,7 @@ output "view" {
 ### Read-Only
 
 - `allowed_address_pairs` (List of Object) (see [below for nested schema](#nestedatt--allowed_address_pairs))
+- `id` (String) The ID of this resource.
 - `is_vip` (Boolean)
 - `network_id` (String)
 - `port_id` (String) ID of the port_id underlying the reserved fixed IP

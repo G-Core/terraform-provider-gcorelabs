@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -53,6 +52,7 @@ output "view" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `listener` (List of Object) (see [below for nested schema](#nestedatt--listener))
 - `vip_address` (String)
 - `vip_port_id` (String)

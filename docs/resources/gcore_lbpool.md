@@ -62,7 +62,6 @@ resource "gcore_lbpool" "pl" {
 ### Optional
 
 - `health_monitor` (Block List, Max: 1) (see [below for nested schema](#nestedblock--health_monitor))
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `listener_id` (String)
 - `loadbalancer_id` (String)
@@ -72,6 +71,10 @@ resource "gcore_lbpool" "pl" {
 - `region_name` (String)
 - `session_persistence` (Block List, Max: 1) (see [below for nested schema](#nestedblock--session_persistence))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--health_monitor"></a>
 ### Nested Schema for `health_monitor`
@@ -87,9 +90,12 @@ Optional:
 
 - `expected_codes` (String)
 - `http_method` (String)
-- `id` (String) The ID of this resource.
 - `max_retries_down` (Number)
 - `url_path` (String)
+
+Read-Only:
+
+- `id` (String) The ID of this resource.
 
 
 <a id="nestedblock--session_persistence"></a>

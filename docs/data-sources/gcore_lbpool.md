@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `listener_id` (String)
 - `loadbalancer_id` (String)
 - `project_id` (Number)
@@ -56,6 +55,7 @@ output "view" {
 ### Read-Only
 
 - `health_monitor` (List of Object) (see [below for nested schema](#nestedatt--health_monitor))
+- `id` (String) The ID of this resource.
 - `lb_algorithm` (String) Available values is 'ROUND_ROBIN', 'LEAST_CONNECTIONS', 'SOURCE_IP', 'SOURCE_IP_PORT'
 - `protocol` (String) Available values is 'HTTP' (currently work, other do not work on ed-8), 'HTTPS', 'TCP', 'UDP'
 - `session_persistence` (List of Object) (see [below for nested schema](#nestedatt--session_persistence))

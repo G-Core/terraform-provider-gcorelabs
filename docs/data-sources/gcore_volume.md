@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -53,6 +52,7 @@ output "view" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `size` (Number)
 - `type_name` (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard
 

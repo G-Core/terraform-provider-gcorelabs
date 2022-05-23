@@ -38,13 +38,13 @@ output "kp" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 
 ### Read-Only
 
 - `fingerprint` (String)
+- `id` (String) The ID of this resource.
 - `sshkey_id` (String)
 
 

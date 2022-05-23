@@ -27,7 +27,6 @@ data "gcore_storage_sftp" "example_sftp" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `name` (String) A name of storage resource.
 - `storage_id` (Number) An id of storage resource.
 
@@ -38,6 +37,7 @@ data "gcore_storage_sftp" "example_sftp" {
 - `generated_sftp_endpoint` (String) A ssh sftp entry point for new storage resource.
 - `http_expires_header_value` (String) A expires date of storage resource.
 - `http_servername_alias` (String) An alias of storage resource.
+- `id` (String) The ID of this resource.
 - `location` (String) A location of new storage resource. One of (ams, sin, fra, mia)
 - `ssh_key_id` (List of Number) An ssh keys IDs to link with new sftp storage resource only. https://storage.gcorelabs.com/ssh-key/list
 

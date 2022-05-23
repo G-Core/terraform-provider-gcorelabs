@@ -62,12 +62,15 @@ resource "gcore_subnet" "subnet" {
 - `enable_dhcp` (Boolean)
 - `gateway_ip` (String)
 - `host_routes` (Block List) (see [below for nested schema](#nestedblock--host_routes))
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
 - `region_name` (String)
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--host_routes"></a>
 ### Nested Schema for `host_routes`

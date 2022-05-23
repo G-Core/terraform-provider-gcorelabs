@@ -29,7 +29,7 @@ data "gcore_region" "rg" {
 
 - `name` (String) Displayed region name
 
-### Optional
+### Read-Only
 
 - `id` (String) The ID of this resource.
 

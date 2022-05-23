@@ -36,7 +36,6 @@ resource "gcore_network" "network" {
 ### Optional
 
 - `create_router` (Boolean) Create external router to the network, default true
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `mtu` (Number)
 - `project_id` (Number)
@@ -44,6 +43,10 @@ resource "gcore_network" "network" {
 - `region_id` (Number)
 - `region_name` (String)
 - `type` (String) 'vlan' or 'vxlan' network type is allowed. Default value is 'vxlan'
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 
