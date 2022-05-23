@@ -33,7 +33,10 @@ resource "gcore_storage_sftp_key" "terraform_test_key" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `key_id` (Number) An id of of new storage key resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

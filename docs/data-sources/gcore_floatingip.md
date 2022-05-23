@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `port_id` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -55,6 +54,7 @@ output "view" {
 ### Read-Only
 
 - `fixed_ip_address` (String)
+- `id` (String) The ID of this resource.
 - `router_id` (String)
 - `status` (String)
 

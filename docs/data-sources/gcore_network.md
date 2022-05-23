@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -54,6 +53,7 @@ output "view" {
 ### Read-Only
 
 - `external` (Boolean)
+- `id` (String) The ID of this resource.
 - `mtu` (Number)
 - `shared` (Boolean)
 - `type` (String) 'vlan' or 'vxlan' network type is allowed. Default value is 'vxlan'

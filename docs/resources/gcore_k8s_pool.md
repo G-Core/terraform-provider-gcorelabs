@@ -46,7 +46,6 @@ resource "gcore_k8s_pool" "v" {
 
 - `docker_volume_size` (Number)
 - `docker_volume_type` (String) Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'.
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -57,6 +56,7 @@ resource "gcore_k8s_pool" "v" {
 ### Read-Only
 
 - `created_at` (String)
+- `id` (String) The ID of this resource.
 - `stack_id` (String)
 
 <a id="nestedblock--timeouts"></a>

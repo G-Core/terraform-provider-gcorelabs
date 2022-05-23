@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -54,6 +53,7 @@ output "view" {
 ### Read-Only
 
 - `description` (String)
+- `id` (String) The ID of this resource.
 - `security_group_rules` (Set of Object) Firewall rules control what inbound(ingress) and outbound(egress) traffic is allowed to enter or leave a Instance. At least one 'egress' rule should be set (see [below for nested schema](#nestedatt--security_group_rules))
 
 <a id="nestedatt--security_group_rules"></a>

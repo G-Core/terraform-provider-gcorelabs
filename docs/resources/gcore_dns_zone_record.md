@@ -113,8 +113,11 @@ resource "gcore_dns_zone_record" "subdomain_examplezone_caa" {
 ### Optional
 
 - `filter` (Block Set) (see [below for nested schema](#nestedblock--filter))
-- `id` (String) The ID of this resource.
 - `ttl` (Number) A ttl of DNS Zone Record resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--resource_record"></a>
 ### Nested Schema for `resource_record`

@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -58,6 +57,7 @@ output "view" {
 - `content_types` (Map of String)
 - `created` (String) Datetime when the secret was created. The format is 2025-12-28T19:14:44.180394
 - `expiration` (String) Datetime when the secret will expire. The format is 2025-12-28T19:14:44.180394
+- `id` (String) The ID of this resource.
 - `mode` (String)
 - `status` (String)
 

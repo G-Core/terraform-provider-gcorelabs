@@ -31,7 +31,7 @@ data "gcore_storage_s3_bucket" "example_s3_bucket" {
 - `name` (String) A name of storage bucket resource.
 - `storage_id` (Number) An id of existing storage resource.
 
-### Optional
+### Read-Only
 
 - `id` (String) The ID of this resource.
 

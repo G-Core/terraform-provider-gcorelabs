@@ -45,7 +45,6 @@ output "view" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `network_id` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -60,6 +59,7 @@ output "view" {
 - `enable_dhcp` (Boolean)
 - `gateway_ip` (String)
 - `host_routes` (List of Object) (see [below for nested schema](#nestedatt--host_routes))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--host_routes"></a>
 ### Nested Schema for `host_routes`

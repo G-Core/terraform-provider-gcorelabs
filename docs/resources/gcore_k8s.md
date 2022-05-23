@@ -49,7 +49,6 @@ resource "gcore_k8s" "v" {
 
 - `auto_healing_enabled` (Boolean)
 - `external_dns_enabled` (Boolean)
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `master_lb_floating_ip_enabled` (Boolean)
 - `pods_ip_pool` (String)
@@ -70,6 +69,7 @@ resource "gcore_k8s" "v" {
 - `faults` (Map of String)
 - `health_status` (String)
 - `health_status_reason` (Map of String)
+- `id` (String) The ID of this resource.
 - `master_addresses` (List of String)
 - `master_flavor_id` (String)
 - `node_addresses` (List of String)

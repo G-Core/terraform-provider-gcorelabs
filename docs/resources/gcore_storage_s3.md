@@ -39,7 +39,10 @@ resource "gcore_storage_s3" "example_s3" {
 - `generated_http_endpoint` (String) A http s3 entry point for new storage resource.
 - `generated_s3_endpoint` (String) A s3 endpoint for new storage resource.
 - `generated_secret_key` (String) A s3 secret key for new storage resource.
-- `id` (String) The ID of this resource.
 - `storage_id` (Number) An id of new storage resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

@@ -71,17 +71,18 @@ resource "gcore_cdn_resource" "cdn_example_com" {
 
 - `active` (Boolean) The setting allows to enable or disable a CDN Resource
 - `description` (String) Custom client description of the resource.
-- `id` (String) The ID of this resource.
 - `options` (Block List, Max: 1) Each option in CDN resource settings. Each option added to CDN resource settings should have the following mandatory request fields: enabled, value. (see [below for nested schema](#nestedblock--options))
 - `origin` (String) A domain name or IP of your origin source. Specify a port if custom. You can use either 'origin' parameter or 'originGroup' in the resource definition.
 - `origin_group` (Number) ID of the Origins Group. Use one of your Origins Group or create a new one. You can use either 'origin' parameter or 'originGroup' in the resource definition.
 - `origin_protocol` (String) This option defines the protocol that will be used by CDN servers to request content from an origin source. If not specified, we will use HTTP to connect to an origin server. Possible values are: HTTPS, HTTP, MATCH.
 - `secondary_hostnames` (Set of String) List of additional CNAMEs.
+- `ssl_automated` (Boolean) generate LE certificate automatically.
 - `ssl_data` (Number) Specify the SSL Certificate ID which should be used for the CDN Resource.
 - `ssl_enabled` (Boolean) Use HTTPS protocol for content delivery.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `status` (String) Status of a CDN resource content availability. Possible values are: Active, Suspended, Processed.
 
 <a id="nestedblock--options"></a>

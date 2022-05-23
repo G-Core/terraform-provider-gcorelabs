@@ -29,7 +29,7 @@ resource "gcore_dns_zone" "example_zone" {
 
 - `name` (String) A name of DNS Zone resource.
 
-### Optional
+### Read-Only
 
 - `id` (String) The ID of this resource.
 

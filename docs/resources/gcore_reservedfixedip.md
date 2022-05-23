@@ -35,8 +35,8 @@ resource "gcore_reservedfixedip" "fixed_ip" {
 
 ### Optional
 
+- `allowed_address_pairs` (Block List) Group of IP addresses that share the current IP as VIP (see [below for nested schema](#nestedblock--allowed_address_pairs))
 - `fixed_ip_address` (String)
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `network_id` (String)
 - `project_id` (Number)
@@ -47,14 +47,14 @@ resource "gcore_reservedfixedip" "fixed_ip" {
 
 ### Read-Only
 
-- `allowed_address_pairs` (List of Object) Group of IP addresses that share the current IP as VIP (see [below for nested schema](#nestedatt--allowed_address_pairs))
+- `id` (String) The ID of this resource.
 - `port_id` (String) ID of the port_id underlying the reserved fixed IP
 - `status` (String)
 
-<a id="nestedatt--allowed_address_pairs"></a>
+<a id="nestedblock--allowed_address_pairs"></a>
 ### Nested Schema for `allowed_address_pairs`
 
-Read-Only:
+Optional:
 
 - `ip_address` (String)
 - `mac_address` (String)

@@ -55,7 +55,6 @@ resource "gcore_lifecyclepolicy" "lp" {
 ### Optional
 
 - `action` (String)
-- `id` (String) The ID of this resource.
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -66,6 +65,7 @@ resource "gcore_lifecyclepolicy" "lp" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `user_id` (Number)
 
 <a id="nestedblock--schedule"></a>
@@ -127,12 +127,9 @@ Optional:
 <a id="nestedblock--volume"></a>
 ### Nested Schema for `volume`
 
-Required:
-
-- `id` (String) The ID of this resource.
-
 Read-Only:
 
+- `id` (String) The ID of this resource.
 - `name` (String)
 
 ## Import

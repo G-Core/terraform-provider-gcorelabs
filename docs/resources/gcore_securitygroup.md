@@ -57,12 +57,15 @@ resource "gcore_securitygroup" "sg" {
 ### Optional
 
 - `description` (String)
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
 - `region_name` (String)
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--security_group_rules"></a>
 ### Nested Schema for `security_group_rules`

@@ -40,7 +40,6 @@ resource "gcore_snapshot" "snapshot" {
 ### Optional
 
 - `description` (String)
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `metadata` (Map of String)
 - `project_id` (Number)
@@ -50,6 +49,7 @@ resource "gcore_snapshot" "snapshot" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `size` (Number)
 - `status` (String)
 

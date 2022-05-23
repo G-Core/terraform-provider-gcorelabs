@@ -45,7 +45,6 @@ resource "gcore_loadbalancer" "lb" {
 ### Optional
 
 - `flavor` (String)
-- `id` (String) The ID of this resource.
 - `last_updated` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -57,6 +56,7 @@ resource "gcore_loadbalancer" "lb" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `vip_address` (String) Load balancer IP address
 
 <a id="nestedblock--listener"></a>

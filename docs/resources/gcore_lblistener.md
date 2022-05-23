@@ -46,7 +46,6 @@ resource "gcore_lblistener" "listener" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `insert_x_forwarded` (Boolean) Insert *-forwarded headers
 - `last_updated` (String)
 - `project_id` (Number)
@@ -59,6 +58,7 @@ resource "gcore_lblistener" "listener" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `operating_status` (String)
 - `pool_count` (Number)
 - `provisioning_status` (String)

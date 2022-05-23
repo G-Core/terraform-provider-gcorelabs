@@ -40,10 +40,13 @@ resource "gcore_storage_sftp" "example_sftp" {
 - `generated_sftp_endpoint` (String) A ssh sftp entry point for new storage resource.
 - `http_expires_header_value` (String) A expires date of storage resource.
 - `http_servername_alias` (String) An alias of storage resource.
-- `id` (String) The ID of this resource.
 - `password` (String) A sftp password for new storage resource.
 - `ssh_key_id` (List of Number) An ssh keys IDs to link with new sftp storage resource only. https://storage.gcorelabs.com/ssh-key/list
 - `storage_id` (Number) An id of new storage resource.
 - `update_after_create` (Boolean) A temporary flag. An internal cheat, to skip update ssh keys. Skip it.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

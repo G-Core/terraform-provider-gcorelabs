@@ -29,12 +29,9 @@ data "gcore_storage_sftp_key" "example_key" {
 
 - `name` (String) A name of storage key resource.
 
-### Optional
-
-- `id` (String) The ID of this resource.
-
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `key_id` (Number) An id of of storage key resource.
 
 
