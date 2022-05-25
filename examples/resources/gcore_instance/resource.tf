@@ -63,16 +63,12 @@ resource "gcore_instance" "instance" {
     type       = "subnet"
     network_id = gcore_network.network.id
     subnet_id  = gcore_subnet.subnet.id
+    security_groups = ["d75db0b2-58f1-4a11-88c6-a932bb897310"]
+  }
     //port_id = null
     //ip_address = null
     //fip_source = null
     //existing_fip_id = null
-  }
-
-
-  security_group {
-    id   = "d75db0b2-58f1-4a11-88c6-a932bb897310"
-    name = "default"
   }
 
   //deprecated, use metadata_map instead
@@ -135,16 +131,13 @@ resource "gcore_instance" "v" {
     volume_id  = gcore_volume.first_volume.id
     boot_index = 0
   }
-  security_group {
-    id   = "ada84751-fcca-4491-9249-2dfceb321616"
-    name = "default"
-  }
 
   interface {
     type            = "reserved_fixed_ip"
     port_id         = gcore_reservedfixedip.fixed_ip.port_id
     fip_source      = "existing"
     existing_fip_id = gcore_floatingip.fip.id
+    security_groups = ["ada84751-fcca-4491-9249-2dfceb321616"]
   }
 }
 
