@@ -732,3 +732,13 @@ func extractListenerIntoMap(listener *listeners.Listener) map[string]interface{}
 	l["sni_secret_id"] = listener.SNISecretID
 	return l
 }
+
+func getUniqueID(d *schema.ResourceData) string {
+	return fmt.Sprintf(
+		"%d%d%s%s",
+		d.Get("region_id").(int),
+		d.Get("project_id").(int),
+		d.Get("region_name").(string),
+		d.Get("project_name").(string),
+	)
+}
