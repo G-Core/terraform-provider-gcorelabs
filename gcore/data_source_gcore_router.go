@@ -90,7 +90,23 @@ func dataSourceRouter() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"port_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"network_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"ip_address": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -176,12 +192,18 @@ func dataSourceRouterRead(ctx context.Context, d *schema.ResourceData, m interfa
 		d.Set("external_gateway_info", egilst)
 	}
 
-	ifs := make([]map[string]string, len(router.Interfaces))
-	for i, iface := range router.Interfaces {
-		smap := make(map[string]string, 2)
-		smap["type"] = "subnet"
-		smap["subnet_id"] = iface.IPAssignments[0].SubnetID
-		ifs[i] = smap
+	ifs := make([]map[string]interface{}, 0, len(router.Interfaces))
+	for _, iface := range router.Interfaces {
+		for _, subnet := range iface.IPAssignments {
+			smap := make(map[string]interface{}, 6)
+			smap["port_id"] = iface.PortID
+			smap["network_id"] = iface.NetworkID
+			smap["mac_address"] = iface.MacAddress.String()
+			smap["type"] = "subnet"
+			smap["subnet_id"] = subnet.SubnetID
+			smap["ip_address"] = subnet.IPAddress.String()
+			ifs = append(ifs, smap)
+		}
 	}
 	d.Set("interfaces", ifs)
 

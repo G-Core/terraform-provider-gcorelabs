@@ -82,6 +82,10 @@ Read-Only:
 
 Read-Only:
 
+- `ip_address` (String)
+- `mac_address` (String)
+- `network_id` (String)
+- `port_id` (String)
 - `subnet_id` (String)
 - `type` (String)
 

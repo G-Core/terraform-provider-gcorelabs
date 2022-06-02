@@ -136,6 +136,22 @@ func resourceRouter() *schema.Resource {
 							Description: "Subnet for router interface must have a gateway IP",
 							Required:    true,
 						},
+						"port_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"network_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"ip_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -287,12 +303,18 @@ func resourceRouterRead(ctx context.Context, d *schema.ResourceData, m interface
 		d.Set("external_gateway_info", egilst)
 	}
 
-	ifs := make([]interface{}, len(router.Interfaces))
-	for i, iface := range router.Interfaces {
-		smap := make(map[string]interface{}, 2)
-		smap["type"] = "subnet"
-		smap["subnet_id"] = iface.IPAssignments[0].SubnetID
-		ifs[i] = smap
+	ifs := make([]interface{}, 0, len(router.Interfaces))
+	for _, iface := range router.Interfaces {
+		for _, subnet := range iface.IPAssignments {
+			smap := make(map[string]interface{}, 6)
+			smap["port_id"] = iface.PortID
+			smap["network_id"] = iface.NetworkID
+			smap["mac_address"] = iface.MacAddress.String()
+			smap["type"] = "subnet"
+			smap["subnet_id"] = subnet.SubnetID
+			smap["ip_address"] = subnet.IPAddress.String()
+			ifs = append(ifs, smap)
+		}
 	}
 	if err := d.Set("interfaces", schema.NewSet(routerInterfaceUniqueID, ifs)); err != nil {
 		return diag.FromErr(err)
