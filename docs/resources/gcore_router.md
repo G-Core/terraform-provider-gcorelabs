@@ -106,6 +106,13 @@ Required:
 - `subnet_id` (String) Subnet for router interface must have a gateway IP
 - `type` (String) must be 'subnet'
 
+Read-Only:
+
+- `ip_address` (String)
+- `mac_address` (String)
+- `network_id` (String)
+- `port_id` (String)
+
 
 <a id="nestedblock--routes"></a>
 ### Nested Schema for `routes`
