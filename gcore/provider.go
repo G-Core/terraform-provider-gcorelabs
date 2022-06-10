@@ -143,6 +143,8 @@ func Provider() *schema.Provider {
 			"gcore_k8s_pool":          resourceK8sPool(),
 			"gcore_secret":            resourceSecret(),
 			"gcore_laas_topic":        resourceLaaSTopic(),
+			"gcore_faas_namespace":    resourceFaaSNamespace(),
+			"gcore_faas_function":     resourceFaaSFunction(),
 			"gcore_storage_s3":        resourceStorageS3(),
 			"gcore_storage_s3_bucket": resourceStorageS3Bucket(),
 			DNSZoneResource:           resourceDNSZone(),
@@ -181,6 +183,8 @@ func Provider() *schema.Provider {
 			"gcore_secret":            dataSourceSecret(),
 			"gcore_laas_hosts":        dataSourceLaaSHosts(),
 			"gcore_laas_status":       dataSourceLaaSStatus(),
+			"gcore_faas_namespace":    dataSourceFaaSNamespace(),
+			"gcore_faas_function":     dataSourceFaaSFunction(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
