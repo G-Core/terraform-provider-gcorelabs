@@ -40,7 +40,7 @@ func Run(evt functions.Event, ctx functions.Context) (string, error) {
 EOF
         timeout = 5
         flavor = "80mCPU-128MB"
-        main_method = "main"
+        main_method = "Run"
         min_instances = 1
         max_instances = 2
 }

@@ -33,7 +33,7 @@ Represent FaaS function
 - `build_status` (String)
 - `code_text` (String)
 - `created_at` (String)
-- `deploy_status` (Map of String)
+- `deploy_status` (Map of Number)
 - `description` (String)
 - `endpoint` (String)
 - `envs` (Map of String)
