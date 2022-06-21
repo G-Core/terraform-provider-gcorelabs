@@ -18,6 +18,7 @@ import (
 	gcdn "github.com/G-Core/gcorelabscdn-go"
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	gc "github.com/G-Core/gcorelabscloud-go/gcore"
+	"github.com/G-Core/gcorelabscloud-go/gcore/ddos/v1/ddos"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/instances"
 	"github.com/G-Core/gcorelabscloud-go/gcore/instance/v1/types"
 	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/lbpools"
@@ -731,6 +732,48 @@ func extractListenerIntoMap(listener *listeners.Listener) map[string]interface{}
 	l["secret_id"] = listener.SecretID
 	l["sni_secret_id"] = listener.SNISecretID
 	return l
+}
+
+func StringToRawJsonHookFunc() mapstructure.DecodeHookFuncType {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{}) (interface{}, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+
+		if t == reflect.TypeOf(json.RawMessage{}) {
+			s := data.(string)
+			return json.RawMessage(s), nil
+		}
+
+		return data, nil
+	}
+}
+
+func extractProfileFieldsMap(fs []interface{}) ([]ddos.ProfileField, error) {
+	config := &mapstructure.DecoderConfig{
+		TagName:    "json",
+		DecodeHook: StringToRawJsonHookFunc(),
+	}
+	fields := make([]ddos.ProfileField, len(fs))
+	for i, f := range fs {
+		m := f.(map[string]interface{})
+		var field ddos.ProfileField
+		err := MapStructureDecoder(&field, &m, config)
+		if err != nil {
+			return nil, err
+		}
+		// Ignore all non-mutable fields
+		fields[i] = ddos.ProfileField{
+			Value:      field.Value,
+			BaseField:  field.BaseField,
+			FieldValue: field.FieldValue,
+		}
+	}
+
+	return fields, nil
 }
 
 func getUniqueID(d *schema.ResourceData) string {
