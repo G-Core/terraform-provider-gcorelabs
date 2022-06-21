@@ -178,7 +178,7 @@ func resourceServerGroupDelete(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	err = servergroups.Delete(client, d.Id()).ExtractErr()
+	err = servergroups.Delete(client, d.Id()).Err
 	if err != nil {
 		return diag.FromErr(err)
 	}
