@@ -686,7 +686,7 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if d.HasChange("name") {
 		nameTemplates := d.Get("name_templates").([]interface{})
-		nameTemplate := d.Get("name_template").([]interface{})
+		nameTemplate := d.Get("name_template").(string)
 		if len(nameTemplate) == 0 && len(nameTemplates) == 0 {
 			opts := instances.RenameInstanceOpts{
 				Name: d.Get("name").(string),

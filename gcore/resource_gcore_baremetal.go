@@ -321,9 +321,17 @@ func resourceBmInstanceCreate(ctx context.Context, d *schema.ResourceData, m int
 		opts.Names = []string{name}
 	}
 
-	nameTpl := d.Get("name_templates").(string)
-	if len(nameTpl) > 0 {
-		opts.NameTemplates = []string{nameTpl}
+	if nameTemplatesRaw, ok := d.GetOk("name_templates"); ok {
+		nameTemplates := nameTemplatesRaw.([]interface{})
+		if len(nameTemplates) > 0 {
+			NameTemp := make([]string, len(nameTemplates))
+			for i, nametemp := range nameTemplates {
+				NameTemp[i] = nametemp.(string)
+			}
+			opts.NameTemplates = NameTemp
+		}
+	} else if nameTemplate, ok := d.GetOk("name_template"); ok {
+		opts.NameTemplates = []string{nameTemplate.(string)}
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
@@ -562,8 +570,9 @@ func resourceBmInstanceUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	if d.HasChange("name") {
-		nameTemplate := d.Get("name_templates").(string)
-		if len(nameTemplate) == 0 {
+		nameTemplates := d.Get("name_templates").([]interface{})
+		nameTemplate := d.Get("name_template").(string)
+		if len(nameTemplate) == 0 && len(nameTemplates) == 0 {
 			opts := instances.RenameInstanceOpts{
 				Name: d.Get("name").(string),
 			}
