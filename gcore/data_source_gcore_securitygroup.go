@@ -57,6 +57,37 @@ func dataSourceSecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"security_group_rules": &schema.Schema{
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -126,7 +157,20 @@ func dataSourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	name := d.Get("name").(string)
-	sgs, err := securitygroups.ListAll(client)
+	metaOpts := &securitygroups.ListOpts{}
+
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		metaOpts.MetadataK = metadataK.(string)
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		typedMetadataKV := make(map[string]string, len(metadataRaw.(map[string]interface{})))
+		for k, v := range metadataRaw.(map[string]interface{}) {
+			typedMetadataKV[k] = v.(string)
+		}
+		metaOpts.MetadataKV = typedMetadataKV
+	}
+	sgs, err := securitygroups.ListAll(client, *metaOpts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,6 +195,20 @@ func dataSourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m 
 	d.Set("name", sg.Name)
 	d.Set("description", sg.Description)
 
+	metadataReadOnly := make([]map[string]interface{}, 0, len(sg.Metadata))
+	if len(sg.Metadata) > 0 {
+		for _, metadataItem := range sg.Metadata {
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 	newSgRules := make([]interface{}, len(sg.SecurityGroupRules))
 	for i, sgr := range sg.SecurityGroupRules {
 		r := make(map[string]interface{})

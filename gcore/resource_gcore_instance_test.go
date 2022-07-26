@@ -137,7 +137,7 @@ func TestAccInstance(t *testing.T) {
 		},
 	}}
 
-	sgs, err := securitygroups.ListAll(clientSec)
+	sgs, err := securitygroups.ListAll(clientSec, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

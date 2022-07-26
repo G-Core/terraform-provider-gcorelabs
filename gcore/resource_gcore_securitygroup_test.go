@@ -15,11 +15,31 @@ import (
 func TestAccSecurityGroup(t *testing.T) {
 	fullName := "gcore_securitygroup.acctest"
 
-	ipTemplate := fmt.Sprintf(`
+	ipTemplate1 := fmt.Sprintf(`
 			resource "gcore_securitygroup" "acctest" {
 			  %s
               %s
 			  name = "test"
+			  metadata_map = {
+				key1 = "val1"
+				key2 = "val2"
+			  }
+			  security_group_rules {
+			  	direction = "egress"
+			    ethertype = "IPv4"
+				protocol = "vrrp"
+			  }
+			}
+		`, projectInfo(), regionInfo())
+
+	ipTemplate2 := fmt.Sprintf(`
+			resource "gcore_securitygroup" "acctest" {
+			  %s
+              %s
+			  name = "test"
+			  metadata_map = {
+				key3 = "val3"
+			  }
 			  security_group_rules {
 			  	direction = "egress"
 			    ethertype = "IPv4"
@@ -34,9 +54,31 @@ func TestAccSecurityGroup(t *testing.T) {
 		CheckDestroy:      testAccSecurityGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: ipTemplate,
+				Config: ipTemplate1,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "metadata_map.key1", "val1"),
+					resource.TestCheckResourceAttr(fullName, "metadata_map.key2", "val2"),
+					testAccCheckMetadata(fullName, true, map[string]interface{}{
+						"key1": "val1",
+						"key2": "val2",
+					}),
+				),
+			},
+			{
+				Config: ipTemplate2,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "metadata_map.key3", "val3"),
+					testAccCheckMetadata(fullName, true, map[string]interface{}{
+						"key3": "val3",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]interface{}{
+						"key1": "val1",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]interface{}{
+						"key2": "val2",
+					}),
 				),
 			},
 		},
