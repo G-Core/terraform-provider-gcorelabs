@@ -5,14 +5,14 @@ package gcore
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/G-Core/gcorelabscloud-go/gcore/securitygroup/v1/securitygroups"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"testing"
 )
 
 const (
-	securityGroupTestName = "test-sg"
+	securityGroup1TestName = "test-sg1"
+	securityGroup2TestName = "test-sg2"
 )
 
 func TestAccSecurityGroupDataSource(t *testing.T) {
@@ -26,41 +26,82 @@ func TestAccSecurityGroupDataSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	opts := securitygroups.CreateOpts{
+	opts1 := securitygroups.CreateOpts{
 		SecurityGroup: securitygroups.CreateSecurityGroupOpts{
-			Name:               securityGroupTestName,
+			Name:               securityGroup1TestName,
 			SecurityGroupRules: []securitygroups.CreateSecurityGroupRuleOpts{},
+			Metadata:           map[string]interface{}{"key1": "val1", "key2": "val2"},
 		},
 	}
 
-	sg, err := securitygroups.Create(client, opts).Extract()
+	sg1, err := securitygroups.Create(client, opts1).Extract()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer securitygroups.Delete(client, sg.ID)
+	opts2 := securitygroups.CreateOpts{
+		SecurityGroup: securitygroups.CreateSecurityGroupOpts{
+			Name:               securityGroup2TestName,
+			SecurityGroupRules: []securitygroups.CreateSecurityGroupRuleOpts{},
+			Metadata:           map[string]interface{}{"key1": "val1", "key3": "val3"},
+		},
+	}
+
+	sg2, err := securitygroups.Create(client, opts2).Extract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer securitygroups.Delete(client, sg1.ID)
+	defer securitygroups.Delete(client, sg2.ID)
 
 	fullName := "data.gcore_securitygroup.acctest"
-	tpl := func(name string) string {
+
+	tpl1 := func(name string) string {
+		return fmt.Sprintf(`
+			data "gcore_securitygroup" "acctest" {
+			  %s
+	         %s
+	         name = "%s"
+			  metadata_k="key1"
+			}
+		`, projectInfo(), regionInfo(), name)
+	}
+
+	tpl2 := func(name string) string {
 		return fmt.Sprintf(`
 			data "gcore_securitygroup" "acctest" {
 			  %s
               %s
               name = "%s"
+			  metadata_kv={
+				  key3 = "val3"
+			  }
 			}
 		`, projectInfo(), regionInfo(), name)
 	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tpl(sg.Name),
+				Config: tpl1(sg1.Name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "name", sg.Name),
-					resource.TestCheckResourceAttr(fullName, "id", sg.ID),
+					resource.TestCheckResourceAttr(fullName, "name", sg1.Name),
+					resource.TestCheckResourceAttr(fullName, "id", sg1.ID),
+					testAccCheckMetadata(fullName, true, map[string]interface{}{
+						"key1": "val1", "key2": "val2"}),
+				),
+			},
+			{
+				Config: tpl2(sg2.Name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "name", sg2.Name),
+					resource.TestCheckResourceAttr(fullName, "id", sg2.ID),
+					testAccCheckMetadata(fullName, true, map[string]interface{}{
+						"key3": "val3",
+					}),
 				),
 			},
 		},

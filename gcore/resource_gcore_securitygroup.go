@@ -86,6 +86,33 @@ func resourceSecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"metadata_map": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"security_group_rules": &schema.Schema{
 				Type:        schema.TypeSet,
 				Required:    true,
@@ -224,11 +251,16 @@ func resourceSecurityGroupCreate(ctx context.Context, d *schema.ResourceData, m 
 		rules[i] = sgrOpts
 	}
 
+	createSecurityGroupOpts := &securitygroups.CreateSecurityGroupOpts{}
+	createSecurityGroupOpts.Name = d.Get("name").(string)
+	createSecurityGroupOpts.SecurityGroupRules = rules
+
+	if metadataRaw, ok := d.GetOk("metadata_map"); ok {
+		createSecurityGroupOpts.Metadata = metadataRaw.(map[string]interface{})
+	}
+
 	opts := securitygroups.CreateOpts{
-		SecurityGroup: securitygroups.CreateSecurityGroupOpts{
-			Name:               d.Get("name").(string),
-			SecurityGroupRules: rules,
-		},
+		SecurityGroup: *createSecurityGroupOpts,
 	}
 	descr := d.Get("description").(string)
 	if descr != "" {
@@ -267,6 +299,27 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 	d.Set("region_id", sg.RegionID)
 	d.Set("name", sg.Name)
 	d.Set("description", sg.Description)
+
+	metadataMap := make(map[string]string)
+	metadataReadOnly := make([]map[string]interface{}, 0, len(sg.Metadata))
+
+	if len(sg.Metadata) > 0 {
+		for _, metadataItem := range sg.Metadata {
+			metadataMap[metadataItem.Key] = metadataItem.Value
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_map", metadataMap); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 
 	newSgRules := make([]interface{}, len(sg.SecurityGroupRules))
 	for i, sgr := range sg.SecurityGroupRules {
@@ -344,12 +397,13 @@ func resourceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	gid := d.Id()
+
 	if d.HasChange("security_group_rules") {
 		oldRulesRaw, newRulesRaw := d.GetChange("security_group_rules")
 		oldRules := oldRulesRaw.(*schema.Set)
 		newRules := newRulesRaw.(*schema.Set)
 
-		gid := d.Id()
 		changedRule := make(map[string]bool)
 		for _, r := range newRules.List() {
 			rule := r.(map[string]interface{})
@@ -386,6 +440,15 @@ func resourceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, m 
 				time.Sleep(time.Second * 2)
 				continue
 			}
+		}
+	}
+
+	if d.HasChange("metadata_map") {
+		_, nmd := d.GetChange("metadata_map")
+
+		err := securitygroups.MetadataReplace(clientCreate, gid, nmd.(map[string]interface{})).Err
+		if err != nil {
+			return diag.Errorf("cannot update metadata. Error: %s", err)
 		}
 	}
 

@@ -7,7 +7,7 @@ require (
 	github.com/G-Core/gcore-dns-sdk-go v0.2.3
 	github.com/G-Core/gcore-storage-sdk-go v0.1.34
 	github.com/G-Core/gcorelabscdn-go v0.1.24
-	github.com/G-Core/gcorelabscloud-go v0.5.7
+	github.com/G-Core/gcorelabscloud-go v0.5.8
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/mitchellh/mapstructure v1.5.0
@@ -71,7 +71,7 @@ require (
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210402141018-6c239bbf2bb1 // indirect
