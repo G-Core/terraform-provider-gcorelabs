@@ -119,6 +119,7 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	name := d.Get("name").(string)
+
 	metaOpts := &networks.ListOpts{}
 
 	if metadataK, ok := d.GetOk("metadata_k"); ok {
@@ -134,6 +135,7 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	nets, err := networks.ListAll(client, *metaOpts)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
