@@ -11,8 +11,10 @@ import (
 )
 
 const (
-	imagesPoint   = "images"
-	bmImagesPoint = "bmimages"
+	imagesPoint        = "images"
+	bmImagesPoint      = "bmimages"
+	downloadImagePoint = "downloadimage"
+	ImageUploadTimeout = 1200
 )
 
 func dataSourceImage() *schema.Resource {
@@ -82,6 +84,37 @@ func dataSourceImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -102,7 +135,21 @@ func dataSourceImageRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	allImages, err := images.ListAll(client, images.ListOpts{})
+	listOpts := &images.ListOpts{}
+
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		listOpts.MetadataK = metadataK.(string)
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		typedMetadataKV := make(map[string]string, len(metadataRaw.(map[string]interface{})))
+		for k, v := range metadataRaw.(map[string]interface{}) {
+			typedMetadataKV[k] = v.(string)
+		}
+		listOpts.MetadataKV = typedMetadataKV
+	}
+
+	allImages, err := images.ListAll(client, *listOpts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -130,6 +177,20 @@ func dataSourceImageRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("os_version", image.OsVersion)
 	d.Set("description", image.Description)
 
+	metadataReadOnly := make([]map[string]interface{}, 0, len(image.Metadata))
+	if len(image.Metadata) > 0 {
+		for _, metadataItem := range image.Metadata {
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 	log.Println("[DEBUG] Finish Image reading")
 	return nil
 }
