@@ -18,6 +18,12 @@ import (
 const (
 	subnetTestName = "test-subnet"
 	cidr           = "192.168.42.0/24"
+
+	subnet1TestName = "test-subnet1"
+	cidr1           = "192.168.41.0/24"
+
+	subnet2TestName = "test-subnet2"
+	cidr2           = "192.168.43.0/24"
 )
 
 func TestAccSubnetDataSource(t *testing.T) {
@@ -47,47 +53,91 @@ func TestAccSubnetDataSource(t *testing.T) {
 
 	defer deleteTestNetwork(clientNet, networkID)
 
-	optsSubnet := subnets.CreateOpts{
-		Name:      subnetTestName,
+	optsSubnet1 := subnets.CreateOpts{
+		Name:      subnet1TestName,
 		NetworkID: networkID,
+		Metadata:  map[string]string{"key1": "val1", "key2": "val2"},
 	}
 
-	subnetID, err := CreateTestSubnet(clientSubnet, optsSubnet)
+	subnet1ID, err := CreateTestSubnet(clientSubnet, optsSubnet1, cidr1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	optsSubnet2 := subnets.CreateOpts{
+		Name:      subnet2TestName,
+		NetworkID: networkID,
+		Metadata:  map[string]string{"key1": "val1", "key3": "val3"},
+	}
+
+	subnet2ID, err := CreateTestSubnet(clientSubnet, optsSubnet2, cidr2)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	fullName := "data.gcore_subnet.acctest"
-	tpl := func(name string) string {
+	tpl1 := func(name string) string {
 		return fmt.Sprintf(`
 			data "gcore_subnet" "acctest" {
-			  %s
-              %s
-              name = "%s"
+  			%s
+			%s
+			name = "%s"
+			metadata_k="key1"
 			}
 		`, projectInfo(), regionInfo(), name)
 	}
 
+	tpl2 := func(name string) string {
+		return fmt.Sprintf(`
+			data "gcore_subnet" "acctest" {
+			%s
+			%s
+ 			name = "%s"
+				metadata_kv={
+					key3 = "val3"
+			  	}
+			}
+		`, projectInfo(), regionInfo(), name)
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tpl(optsSubnet.Name),
+				Config: tpl1(optsSubnet1.Name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "name", optsSubnet.Name),
-					resource.TestCheckResourceAttr(fullName, "id", subnetID),
+					resource.TestCheckResourceAttr(fullName, "name", optsSubnet1.Name),
+					resource.TestCheckResourceAttr(fullName, "id", subnet1ID),
 					resource.TestCheckResourceAttr(fullName, "network_id", networkID),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key1": "val1", "key2": "val2"}),
+				),
+			},
+			{
+				Config: tpl2(optsSubnet2.Name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "name", optsSubnet2.Name),
+					resource.TestCheckResourceAttr(fullName, "id", subnet2ID),
+					//resource.TestCheckResourceAttr(fullName, "network_id", networkID),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key3": "val3",
+					}),
 				),
 			},
 		},
 	})
 }
 
-func CreateTestSubnet(client *gcorecloud.ServiceClient, opts subnets.CreateOpts) (string, error) {
+func CreateTestSubnet(client *gcorecloud.ServiceClient, opts subnets.CreateOpts, extra ...string) (string, error) {
+	subCidr := cidr
+	if extra != nil {
+		subCidr = extra[0]
+	}
+
 	var gccidr gcorecloud.CIDR
-	_, netIPNet, err := net.ParseCIDR(cidr)
+	_, netIPNet, err := net.ParseCIDR(subCidr)
 	if err != nil {
 		return "", err
 	}

@@ -10,26 +10,33 @@ import (
 
 func normalizeMetadata(metadata interface{}, defaults ...bool) (map[string]interface{}, error) {
 	normalizedMetadata := map[string]interface{}{}
+	readOnly := false
+
+	if len(defaults) > 0 {
+		readOnly = defaults[0]
+	}
 
 	switch metadata.(type) {
 	default:
-		return nil, fmt.Errorf("Unexpected type %T", metadata)
+		return nil, fmt.Errorf("unexpected type %T", metadata)
 	case []map[string]interface{}:
 		for _, v := range metadata.([]map[string]interface{}) {
 			normalizedMetadata[v["key"].(string)] = v
 		}
 	case map[string]interface{}:
-		read_only := false
-
-		if len(defaults) > 0 {
-			read_only = defaults[0]
-		}
-
 		for k, v := range metadata.(map[string]interface{}) {
 			normalizedMetadata[k] = map[string]interface{}{
 				"key":       k,
 				"value":     v,
-				"read_only": read_only,
+				"read_only": readOnly,
+			}
+		}
+	case map[string]string:
+		for k, v := range metadata.(map[string]string) {
+			normalizedMetadata[k] = map[string]interface{}{
+				"key":       k,
+				"value":     v,
+				"read_only": readOnly,
 			}
 		}
 	}

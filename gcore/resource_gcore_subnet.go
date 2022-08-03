@@ -3,6 +3,8 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils/metadata"
 	"log"
 	"net"
 	"regexp"
@@ -136,6 +138,33 @@ func resourceSubnet() *schema.Resource {
 					return diag.FromErr(fmt.Errorf("%q must be a valid ip, got: %s", key, v))
 				},
 			},
+			"metadata_map": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"last_updated": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -200,6 +229,14 @@ func resourceSubnetCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		createOpts.ConnectToNetworkRouter = false
 	} else {
 		createOpts.GatewayIP = &gw
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_map"); ok {
+		meta, err := utils.MapInterfaceToMapString(metadataRaw)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createOpts.Metadata = meta
 	}
 
 	log.Printf("Create subnet ops: %+v", createOpts)
@@ -284,6 +321,26 @@ func resourceSubnetRead(ctx context.Context, d *schema.ResourceData, m interface
 		d.Set("gateway_ip", "disable")
 	}
 
+	metadataMap := make(map[string]string)
+	metadataReadOnly := make([]map[string]interface{}, 0, len(subnet.Metadata))
+	if len(subnet.Metadata) > 0 {
+		for _, metadataItem := range subnet.Metadata {
+			metadataMap[metadataItem.Key] = metadataItem.Value
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_map", metadataMap); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
+
 	log.Println("[DEBUG] Finish subnet reading")
 	return diags
 }
@@ -339,6 +396,18 @@ func resourceSubnetUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	_, err = subnets.Update(client, subnetID, updateOpts).Extract()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("metadata_map") {
+		_, nmd := d.GetChange("metadata_map")
+		meta, err := utils.MapInterfaceToMapString(nmd)
+		if err != nil {
+			return diag.Errorf("metadata wrong fmt. Error: %s", err)
+		}
+		err = metadata.MetadataReplace(client, subnetID, meta).Err
+		if err != nil {
+			return diag.Errorf("cannot update metadata. Error: %s", err)
+		}
 	}
 
 	d.Set("last_updated", time.Now().Format(time.RFC850))

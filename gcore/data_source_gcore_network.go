@@ -68,6 +68,37 @@ func dataSourceNetwork() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -88,7 +119,21 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	name := d.Get("name").(string)
-	nets, err := networks.ListAll(client)
+	metaOpts := &networks.ListOpts{}
+
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		metaOpts.MetadataK = metadataK.(string)
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		typedMetadataKV := make(map[string]string, len(metadataRaw.(map[string]interface{})))
+		for k, v := range metadataRaw.(map[string]interface{}) {
+			typedMetadataKV[k] = v.(string)
+		}
+		metaOpts.MetadataKV = typedMetadataKV
+	}
+
+	nets, err := networks.ListAll(client, *metaOpts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -126,6 +171,21 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	d.Set("project_id", rawNetwork["project_id"])
 	d.Set("external", rawNetwork["external"])
 	d.Set("shared", rawNetwork["shared"])
+
+	metadataReadOnly := make([]map[string]interface{}, 0, len(network.Metadata))
+	if len(network.Metadata) > 0 {
+		for _, metadataItem := range network.Metadata {
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 
 	log.Println("[DEBUG] Finish Network reading")
 	return diags

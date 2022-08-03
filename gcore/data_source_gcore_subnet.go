@@ -94,6 +94,37 @@ func dataSourceSubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -111,7 +142,20 @@ func dataSourceSubnetRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	name := d.Get("name").(string)
 	networkID := d.Get("network_id").(string)
-	snets, err := subnets.ListAll(client, subnets.ListOpts{NetworkID: networkID})
+	subnetsOpts := &subnets.ListOpts{NetworkID: networkID}
+
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		subnetsOpts.MetadataK = metadataK.(string)
+	}
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		typedMetadataKV := make(map[string]string, len(metadataRaw.(map[string]interface{})))
+		for k, v := range metadataRaw.(map[string]interface{}) {
+			typedMetadataKV[k] = v.(string)
+		}
+		subnetsOpts.MetadataKV = typedMetadataKV
+	}
+
+	snets, err := subnets.ListAll(client, *subnetsOpts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,6 +179,21 @@ func dataSourceSubnetRead(ctx context.Context, d *schema.ResourceData, m interfa
 	d.Set("enable_dhcp", subnet.EnableDHCP)
 	d.Set("cidr", subnet.CIDR.String())
 	d.Set("network_id", subnet.NetworkID)
+
+	metadataReadOnly := make([]map[string]interface{}, 0, len(subnet.Metadata))
+	if len(subnet.Metadata) > 0 {
+		for _, metadataItem := range subnet.Metadata {
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 
 	dns := make([]string, len(subnet.DNSNameservers))
 	for i, ns := range subnet.DNSNameservers {

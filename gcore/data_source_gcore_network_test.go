@@ -14,6 +14,9 @@ import (
 )
 
 const (
+	network1TestName = "test-network1"
+	network2TestName = "test-network2"
+	// Used in other modules
 	networkTestName = "test-network"
 )
 
@@ -28,38 +31,75 @@ func TestAccNetworkDataSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	opts := networks.CreateOpts{
-		Name: networkTestName,
+	opts1 := networks.CreateOpts{
+		Name:     network1TestName,
+		Metadata: map[string]string{"key1": "val1", "key2": "val2"},
 	}
 
-	networkID, err := createTestNetwork(client, opts)
+	network1ID, err := createTestNetwork(client, opts1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	opts2 := networks.CreateOpts{
+		Name:     network2TestName,
+		Metadata: map[string]string{"key1": "val1", "key3": "val3"},
+	}
+
+	network2ID, err := createTestNetwork(client, opts2)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer deleteTestNetwork(client, networkID)
+	defer deleteTestNetwork(client, network1ID)
+	defer deleteTestNetwork(client, network2ID)
 
 	fullName := "data.gcore_network.acctest"
-	tpl := func(name string) string {
+	tpl1 := func(name string) string {
 		return fmt.Sprintf(`
 			data "gcore_network" "acctest" {
 			  %s
               %s
               name = "%s"
+              metadata_k="key1"
 			}
 		`, projectInfo(), regionInfo(), name)
 	}
-
+	tpl2 := func(name string) string {
+		return fmt.Sprintf(`
+			data "gcore_network" "acctest" {
+			  %s
+              %s
+              name = "%s"
+ 			  metadata_kv={
+                  key3 = "val3"
+			  }
+			}
+		`, projectInfo(), regionInfo(), name)
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tpl(opts.Name),
+				Config: tpl1(opts1.Name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "name", opts.Name),
-					resource.TestCheckResourceAttr(fullName, "id", networkID),
+					resource.TestCheckResourceAttr(fullName, "name", opts1.Name),
+					resource.TestCheckResourceAttr(fullName, "id", network1ID),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key1": "val1", "key2": "val2",
+					}),
+				),
+			},
+			{
+				Config: tpl2(opts2.Name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "name", opts2.Name),
+					resource.TestCheckResourceAttr(fullName, "id", network2ID),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key3": "val3",
+					}),
 				),
 			},
 		},

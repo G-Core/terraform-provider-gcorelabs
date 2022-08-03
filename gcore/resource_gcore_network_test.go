@@ -18,19 +18,28 @@ import (
 func TestAccNetwork(t *testing.T) {
 
 	type Params struct {
-		Name string
-		Type string
-		Mtu  int
+		Name        string
+		Type        string
+		Mtu         int
+		MetadataMap string
 	}
 
-	create := Params{
+	paramsCreate := Params{
 		Name: "create_test",
 		Mtu:  1450,
 		Type: "vxlan",
+		MetadataMap: `{
+				key1 = "val1"
+				key2 = "val2"
+			}`,
 	}
 
-	update_name := Params{
-		Name: "update_test"}
+	paramsUpdate := Params{
+		Name: "update_test",
+		MetadataMap: `{
+				key3 = "val3"
+			  }`,
+	}
 
 	fullName := "gcore_network.acctest"
 	importStateIDPrefix := fmt.Sprintf("%s:%s:", os.Getenv("TEST_PROJECT_ID"), os.Getenv("TEST_REGION_ID"))
@@ -39,9 +48,10 @@ func TestAccNetwork(t *testing.T) {
 		template := fmt.Sprintf(`
 		resource "gcore_network" "acctest" {
 			name = "%s"
+	  		metadata_map = %s
 			%s
 			%s
-		`, params.Name, regionInfo(), projectInfo())
+		`, params.Name, params.MetadataMap, regionInfo(), projectInfo())
 
 		if params.Mtu != 0 {
 			template += fmt.Sprintf("mtu = %d\n", params.Mtu)
@@ -59,21 +69,36 @@ func TestAccNetwork(t *testing.T) {
 		CheckDestroy:      testAccNetworkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: NetworkTemplate(&create),
+				Config: NetworkTemplate(&paramsCreate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "name", create.Name),
-					resource.TestCheckResourceAttr(fullName, "type", create.Type),
-					resource.TestCheckResourceAttr(fullName, "mtu", strconv.Itoa(create.Mtu)),
+					resource.TestCheckResourceAttr(fullName, "name", paramsCreate.Name),
+					resource.TestCheckResourceAttr(fullName, "type", paramsCreate.Type),
+					resource.TestCheckResourceAttr(fullName, "mtu", strconv.Itoa(paramsCreate.Mtu)),
+					resource.TestCheckResourceAttr(fullName, "metadata_map.key1", "val1"),
+					resource.TestCheckResourceAttr(fullName, "metadata_map.key2", "val2"),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key1": "val1",
+						"key2": "val2",
+					}),
 				),
 			},
 			{
-				Config: NetworkTemplate(&update_name),
+				Config: NetworkTemplate(&paramsUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "name", update_name.Name),
-					resource.TestCheckResourceAttr(fullName, "type", create.Type),
-					resource.TestCheckResourceAttr(fullName, "mtu", strconv.Itoa(create.Mtu)),
+					resource.TestCheckResourceAttr(fullName, "name", paramsUpdate.Name),
+					resource.TestCheckResourceAttr(fullName, "type", paramsCreate.Type),
+					resource.TestCheckResourceAttr(fullName, "mtu", strconv.Itoa(paramsCreate.Mtu)),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key3": "val3",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]string{
+						"key1": "val1",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]string{
+						"key2": "val2",
+					}),
 				),
 			},
 			{
