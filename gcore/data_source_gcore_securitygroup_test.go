@@ -60,8 +60,8 @@ func TestAccSecurityGroupDataSource(t *testing.T) {
 		return fmt.Sprintf(`
 			data "gcore_securitygroup" "acctest" {
 			  %s
-	         %s
-	         name = "%s"
+              %s
+	          name = "%s"
 			  metadata_k="key1"
 			}
 		`, projectInfo(), regionInfo(), name)

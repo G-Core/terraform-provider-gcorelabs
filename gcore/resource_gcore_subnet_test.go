@@ -89,12 +89,13 @@ func TestAccSubnet(t *testing.T) {
 	}
 
 	type Params struct {
-		Name    string
-		CIDR    string
-		DNS     []string
-		HRoutes []map[string]string
-		DHCP    string
-		Gateway string
+		Name        string
+		CIDR        string
+		DNS         []string
+		HRoutes     []map[string]string
+		DHCP        string
+		Gateway     string
+		MetadataMap string
 	}
 
 	create := Params{
@@ -105,6 +106,10 @@ func TestAccSubnet(t *testing.T) {
 			{"destination": "10.0.3.0/24", "nexthop": "192.168.10.1"},
 			{"destination": "10.0.4.0/24", "nexthop": "192.168.10.1"},
 		},
+		MetadataMap: `{
+				key1 = "val1"
+				key2 = "val2"
+		}`,
 	}
 
 	update := Params{
@@ -114,6 +119,9 @@ func TestAccSubnet(t *testing.T) {
 		DNS:     []string{},
 		HRoutes: []map[string]string{},
 		Gateway: "disable",
+		MetadataMap: `{
+				key3 = "val3"
+	  	}`,
 	}
 
 	SubnetTemplate := func(params *Params) string {
@@ -161,11 +169,13 @@ func TestAccSubnet(t *testing.T) {
 					destination = hr.value.destination
 					nexthop = hr.value.nexthop
 				  }
-			  }
+			  }	
+			metadata_map = %s
             %[1]s
 			%[2]s
+	
 
-		`, regionInfo(), projectInfo(), params.Name, params.CIDR)
+		`, regionInfo(), projectInfo(), params.Name, params.CIDR, params.MetadataMap)
 
 		if params.DHCP != "" {
 			template += fmt.Sprintf("enable_dhcp = %s\n", params.DHCP)
@@ -190,6 +200,10 @@ func TestAccSubnet(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					checkSubnetAttrs(fullName, &createFixt),
+					testAccCheckMetadata(fullName, true, map[string]interface{}{
+						"key1": "val1",
+						"key2": "val2",
+					}),
 				),
 			},
 			{
