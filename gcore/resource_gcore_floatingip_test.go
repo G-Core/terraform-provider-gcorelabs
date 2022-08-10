@@ -15,12 +15,15 @@ import (
 func TestAccFloatingIP(t *testing.T) {
 	fullName := "gcore_floatingip.acctest"
 
-	ipTemplate := fmt.Sprintf(`
+	tpl := func(metadataMap string) string {
+		return fmt.Sprintf(`
 			resource "gcore_floatingip" "acctest" {
 			  %s
               %s
+ 	          metadata_map = %s
 			}
-		`, projectInfo(), regionInfo())
+		`, projectInfo(), regionInfo(), metadataMap)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -28,11 +31,39 @@ func TestAccFloatingIP(t *testing.T) {
 		CheckDestroy:      testAccFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: ipTemplate,
+				Config: tpl(`{
+					key1 = "val1"
+					key2 = "val2"
+				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "fixed_ip_address", ""),
 					resource.TestCheckResourceAttr(fullName, "port_id", ""),
+					resource.TestCheckResourceAttr(fullName, "metadata_map.key1", "val1"),
+					resource.TestCheckResourceAttr(fullName, "metadata_map.key2", "val2"),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key1": "val1",
+						"key2": "val2",
+					}),
+				),
+			},
+			{
+				Config: tpl(`{
+					key3 = "val3"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "fixed_ip_address", ""),
+					resource.TestCheckResourceAttr(fullName, "port_id", ""),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key3": "val3",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]string{
+						"key1": "val1",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]interface{}{
+						"key2": "val2",
+					}),
 				),
 			},
 		},
