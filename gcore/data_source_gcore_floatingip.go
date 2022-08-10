@@ -3,6 +3,7 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
 	"log"
 	"net"
 
@@ -78,6 +79,37 @@ func dataSourceFloatingIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -94,7 +126,21 @@ func dataSourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	ipAddr := d.Get("floating_ip_address").(string)
-	ips, err := floatingips.ListAll(client)
+	metaOpts := &floatingips.ListOpts{}
+
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		metaOpts.MetadataK = metadataK.(string)
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		meta, err := utils.MapInterfaceToMapString(metadataRaw)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		metaOpts.MetadataKV = meta
+	}
+
+	ips, err := floatingips.ListAll(client, *metaOpts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -126,6 +172,21 @@ func dataSourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m int
 	d.Set("port_id", floatingIP.PortID)
 	d.Set("router_id", floatingIP.RouterID)
 	d.Set("floating_ip_address", floatingIP.FloatingIPAddress.String())
+
+	metadataReadOnly := make([]map[string]interface{}, 0, len(floatingIP.Metadata))
+	if len(floatingIP.Metadata) > 0 {
+		for _, metadataItem := range floatingIP.Metadata {
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 
 	log.Println("[DEBUG] Finish FloatingIP reading")
 	return diags

@@ -5,11 +5,11 @@ package gcore
 
 import (
 	"fmt"
-	"testing"
-
+	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/floatingip/v1/floatingips"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"testing"
 )
 
 func TestAccFloatingIPDataSource(t *testing.T) {
@@ -23,11 +23,82 @@ func TestAccFloatingIPDataSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	opts := floatingips.CreateOpts{}
+	opts1 := floatingips.CreateOpts{
+		Metadata: map[string]string{"key1": "val1", "key2": "val2"},
+	}
 
-	res, err := floatingips.Create(client, opts).Extract()
+	floatingIPID1, err := createTestFloatingIP(client, opts1)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	opts2 := floatingips.CreateOpts{
+		Metadata: map[string]string{"key1": "val1", "key3": "val3"},
+	}
+
+	floatingIPID2, err := createTestFloatingIP(client, opts2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer floatingips.Delete(client, floatingIPID1)
+	defer floatingips.Delete(client, floatingIPID2)
+
+	fip1, err := floatingips.Get(client, floatingIPID1).Extract()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fip2, err := floatingips.Get(client, floatingIPID2).Extract()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fullName := "data.gcore_floatingip.acctest"
+	tpl := func(ip string, metaQuery string) string {
+		return fmt.Sprintf(`
+			data "gcore_floatingip" "acctest" {
+			  %s
+              %s
+              floating_ip_address = "%s"
+			  %s
+			}
+		`, projectInfo(), regionInfo(), ip, metaQuery)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tpl(fip1.FloatingIPAddress.String(), `metadata_k="key1"`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "id", floatingIPID1),
+					resource.TestCheckResourceAttr(fullName, "floating_ip_address", fip1.FloatingIPAddress.String()),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key1": "val1", "key2": "val2"}),
+				),
+			},
+			{
+				Config: tpl(fip2.FloatingIPAddress.String(), `metadata_kv={key3 = "val3"}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists(fullName),
+					resource.TestCheckResourceAttr(fullName, "id", floatingIPID2),
+					resource.TestCheckResourceAttr(fullName, "floating_ip_address", fip2.FloatingIPAddress.String()),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key3": "val3",
+					}),
+				),
+			},
+		},
+	})
+}
+
+func createTestFloatingIP(client *gcorecloud.ServiceClient, opts floatingips.CreateOpts) (string, error) {
+	res, err := floatingips.Create(client, opts).Extract()
+	if err != nil {
+		return "", err
 	}
 
 	taskID := res.Tasks[0]
@@ -42,40 +113,9 @@ func TestAccFloatingIPDataSource(t *testing.T) {
 		}
 		return floatingIPID, nil
 	})
+
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
-
-	defer floatingips.Delete(client, floatingIPID.(string))
-
-	fip, err := floatingips.Get(client, floatingIPID.(string)).Extract()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fullName := "data.gcore_floatingip.acctest"
-	tpl := func(ip string) string {
-		return fmt.Sprintf(`
-			data "gcore_floatingip" "acctest" {
-			  %s
-              %s
-              floating_ip_address = "%s"
-			}
-		`, projectInfo(), regionInfo(), ip)
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: tpl(fip.FloatingIPAddress.String()),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResourceExists(fullName),
-					resource.TestCheckResourceAttr(fullName, "id", floatingIPID.(string)),
-					resource.TestCheckResourceAttr(fullName, "floating_ip_address", fip.FloatingIPAddress.String()),
-				),
-			},
-		},
-	})
+	return floatingIPID.(string), nil
 }
