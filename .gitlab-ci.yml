@@ -1,0 +1,42 @@
+default:
+  tags:
+    - k8sn
+  image: $CI_REGISTRY/$CI_IMAGE
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+
+stages:
+  - prepare_cred
+  - prepare_project_id
+  - test
+
+get_cred:
+  stage: prepare_cred
+  script:
+    - VAULT_TOKEN=$(vault write -address=${VAULT_ADDR} -field=token auth/jwt/login role=${VAULT_ROLE} jwt=${CI_JOB_JWT})
+    - export VAULT_TOKEN
+    - echo "GCORE_USERNAME=$(vault kv get -field=GCORE_USERNAME ${USER_PATH})" > cred.env
+    - echo "GCORE_PASSWORD=$(vault kv get -field=GCORE_PASSWORD ${PASS_PATH})" >> cred.env
+  artifacts:
+    reports:
+      dotenv: cred.env
+    expire_in: 5 minutes
+
+get_project_id:
+  stage: prepare_project_id
+  script:
+    - BEARER_TOKEN=$(curl -s --location --show-error --request POST $API_C --header Content-Type:application/json --data-raw "{\"username\":\"${GCORE_USERNAME}\",\"password\":\"${GCORE_PASSWORD}\"}" | jq -r .access)
+    - echo "TEST_PROJECT_ID=$(curl -s --location --show-error  --request GET $API_P --header "Accept:application/json" --header "Authorization:Bearer ${BEARER_TOKEN}" | jq .results[].id)" > project_id.env
+  artifacts:
+    reports:
+      dotenv: project_id.env
+    expire_in: 5 minutes
+
+terraform_test:
+  stage: test
+  image: golang:1.17
+  script:
+    - go test -v -count=1 ./gcore/...
+
