@@ -39,4 +39,3 @@ terraform_test:
   image: golang:1.17
   script:
     - go test -v -count=1 -tags=cloud ./... -timeout=120m -short
-
