@@ -5,7 +5,7 @@ default:
 
 workflow:
   rules:
-    - if: $CI_COMMIT_BRANCH == "master"
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
 
 stages:
   - prepare_cred
@@ -38,5 +38,4 @@ terraform_test:
   stage: test
   image: golang:1.17
   script:
-    - go test -v -count=1 ./gcore/...
-
+    - go test -v -count=1 -tags=cloud ./... -timeout=120m -short
