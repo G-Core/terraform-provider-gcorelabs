@@ -3,10 +3,6 @@ default:
     - k8sn
   image: $CI_REGISTRY/$CI_IMAGE
 
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-
 stages:
   - prepare_cred
   - prepare_project_id
@@ -23,6 +19,7 @@ get_cred:
     reports:
       dotenv: cred.env
     expire_in: 5 minutes
+
 
 get_project_id:
   stage: prepare_project_id
