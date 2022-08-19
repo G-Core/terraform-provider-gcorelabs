@@ -2,10 +2,11 @@ package gcore
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"reflect"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func normalizeMetadata(metadata interface{}, defaults ...bool) (map[string]interface{}, error) {
@@ -113,6 +114,9 @@ func testAccCheckMetadata(name string, isMetaExists bool, metadataForCheck inter
 		}
 
 		instanceMetadata, err := getMetadataFromResourceAttributes("metadata_read_only", &is.Attributes)
+		if err != nil {
+			return err
+		}
 
 		mt1, err := normalizeMetadata(metadataForCheck)
 

@@ -102,7 +102,7 @@ func dataSourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	name := d.Get("name").(string)
-	lbs, err := loadbalancers.ListAll(client)
+	lbs, err := loadbalancers.ListAll(client, nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}

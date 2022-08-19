@@ -3,9 +3,10 @@ package gcore
 import (
 	"context"
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
 	"log"
 	"net"
+
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
 
 	"github.com/G-Core/gcorelabscloud-go/gcore/floatingip/v1/floatingips"
 	"github.com/hashicorp/go-cty/cty"

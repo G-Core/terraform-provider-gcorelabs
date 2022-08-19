@@ -3,8 +3,6 @@ package gcore
 import (
 	"context"
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
-	"github.com/G-Core/gcorelabscloud-go/gcore/utils/metadata"
 	"log"
 	"net"
 	"regexp"
@@ -13,6 +11,8 @@ import (
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/subnet/v1/subnets"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils/metadata"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

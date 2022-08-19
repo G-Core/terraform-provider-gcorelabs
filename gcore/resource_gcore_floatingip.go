@@ -3,11 +3,12 @@ package gcore
 import (
 	"context"
 	"fmt"
-	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
-	"github.com/G-Core/gcorelabscloud-go/gcore/utils/metadata"
 	"log"
 	"net"
 	"time"
+
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils/metadata"
 
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/floatingip/v1/floatingips"
