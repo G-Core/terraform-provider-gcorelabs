@@ -18,24 +18,32 @@ import (
 func TestAccVolume(t *testing.T) {
 
 	type Params struct {
-		Name       string
-		Size       int
-		Type       string
-		Source     string
-		SnapshotID string
-		ImageID    string
+		Name        string
+		Size        int
+		Type        string
+		Source      string
+		SnapshotID  string
+		ImageID     string
+		MetadataMap string
 	}
 
 	create := Params{
 		Name: "test",
 		Size: 1,
 		Type: "standard",
+		MetadataMap: `{
+			key1 = "val1"
+			key2 = "val2"
+		}`,
 	}
 
 	update := Params{
 		Name: "test2",
 		Size: 2,
 		Type: "ssd_hiiops",
+		MetadataMap: `{
+			key3 = "val3"
+		}`,
 	}
 
 	fullName := "gcore_volume.acctest"
@@ -57,7 +65,8 @@ func TestAccVolume(t *testing.T) {
 			size = %d
 			type_name = "%s"
 			%s
-		`, params.Name, params.Size, params.Type, additional)
+ 			metadata_map = %s
+		`, params.Name, params.Size, params.Type, additional, params.MetadataMap)
 
 		return template + "\n}"
 	}
@@ -74,6 +83,10 @@ func TestAccVolume(t *testing.T) {
 					resource.TestCheckResourceAttr(fullName, "size", strconv.Itoa(create.Size)),
 					resource.TestCheckResourceAttr(fullName, "type_name", create.Type),
 					resource.TestCheckResourceAttr(fullName, "name", create.Name),
+					testAccCheckMetadata(fullName, true, map[string]interface{}{
+						"key1": "val1",
+						"key2": "val2",
+					}),
 				),
 			},
 			{
@@ -83,6 +96,15 @@ func TestAccVolume(t *testing.T) {
 					resource.TestCheckResourceAttr(fullName, "size", strconv.Itoa(update.Size)),
 					resource.TestCheckResourceAttr(fullName, "type_name", update.Type),
 					resource.TestCheckResourceAttr(fullName, "name", update.Name),
+					testAccCheckMetadata(fullName, true, map[string]interface{}{
+						"key3": "val3",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]interface{}{
+						"key1": "val1",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]interface{}{
+						"key2": "val2",
+					}),
 				),
 			},
 			{
@@ -107,7 +129,7 @@ func testAccVolumeDestroy(s *terraform.State) error {
 
 		_, err := networks.Get(client, rs.Primary.ID).Extract()
 		if err == nil {
-			return fmt.Errorf("Volume still exists")
+			return fmt.Errorf("volume still exists")
 		}
 	}
 
