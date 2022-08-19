@@ -6,6 +6,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils/metadata"
+
 	gcorecloud "github.com/G-Core/gcorelabscloud-go"
 	"github.com/G-Core/gcorelabscloud-go/gcore/task/v1/tasks"
 	"github.com/G-Core/gcorelabscloud-go/gcore/volume/v1/volumes"
@@ -118,6 +121,34 @@ func resourceVolume() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"metadata_map": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -168,6 +199,26 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return diags
 }
 
+func PrepareMetadata(apiMetadata []metadata.Metadata) (metadataMap map[string]string, metadataReadOnly []map[string]interface{}) {
+	metadataMap = make(map[string]string)
+	metadataReadOnly = make([]map[string]interface{}, 0, len(apiMetadata))
+
+	if len(apiMetadata) > 0 {
+		for _, metadataItem := range apiMetadata {
+			if !metadataItem.ReadOnly {
+				metadataMap[metadataItem.Key] = metadataItem.Value
+			}
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	return
+}
+
 func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Start volume reading")
 	log.Printf("[DEBUG] Start volume reading%s", d.State())
@@ -192,6 +243,16 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 	d.Set("type_name", volume.VolumeType)
 	d.Set("region_id", volume.RegionID)
 	d.Set("project_id", volume.ProjectID)
+
+	metadataMap, metadataReadOnly := PrepareMetadata(volume.Metadata)
+
+	if err = d.Set("metadata_map", metadataMap); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 
 	fields := []string{"image_id", "snapshot_id"}
 	revertState(d, &fields)
@@ -252,6 +313,20 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		_, err = volumes.Retype(client, volumeID, opts).Extract()
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("metadata_map") {
+		_, nmd := d.GetChange("metadata_map")
+
+		meta, err := utils.MapInterfaceToMapString(nmd.(map[string]interface{}))
+		if err != nil {
+			return diag.Errorf("cannot get metadata. Error: %s", err)
+		}
+
+		err = metadata.MetadataReplace(client, d.Id(), meta).Err
+		if err != nil {
+			return diag.Errorf("cannot update metadata. Error: %s", err)
 		}
 	}
 
@@ -331,6 +406,15 @@ func getVolumeData(d *schema.ResourceData) (*volumes.CreateOpts, error) {
 			return nil, err
 		}
 		volumeData.TypeName = *modifiedTypeName
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_map"); ok {
+		meta, err := utils.MapInterfaceToMapString(metadataRaw)
+		if err != nil {
+			return nil, err
+		}
+
+		volumeData.Metadata = meta
 	}
 
 	return &volumeData, nil

@@ -211,6 +211,15 @@ func TestAccSubnet(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					checkSubnetAttrs(fullName, &updateFixt),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key3": "val3",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]string{
+						"key1": "val1",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]string{
+						"key2": "val2",
+					}),
 				),
 			},
 		},

@@ -59,6 +59,37 @@ func dataSourceVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Available value is 'standard', 'ssd_hiiops', 'cold', 'ultra'. Defaults to standard",
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -75,7 +106,20 @@ func dataSourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	name := d.Get("name").(string)
-	vols, err := volumes.ListAll(client, volumes.ListOpts{})
+	volumeOpts := &volumes.ListOpts{}
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		volumeOpts.MetadataK = metadataK.(string)
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		typedMetadataKV := make(map[string]string, len(metadataRaw.(map[string]interface{})))
+		for k, v := range metadataRaw.(map[string]interface{}) {
+			typedMetadataKV[k] = v.(string)
+		}
+		volumeOpts.MetadataKV = typedMetadataKV
+	}
+
+	vols, err := volumes.ListAll(client, volumeOpts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,6 +145,20 @@ func dataSourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interfa
 	d.Set("region_id", volume.RegionID)
 	d.Set("project_id", volume.ProjectID)
 
+	metadataReadOnly := make([]map[string]interface{}, 0, len(volume.Metadata))
+	if len(volume.Metadata) > 0 {
+		for _, metadataItem := range volume.Metadata {
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 	log.Println("[DEBUG] Finish Volume reading")
 	return diags
 }
