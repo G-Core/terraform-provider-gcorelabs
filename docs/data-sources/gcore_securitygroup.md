@@ -45,6 +45,8 @@ output "view" {
 
 ### Optional
 
+- `metadata_k` (String)
+- `metadata_kv` (Map of String)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -54,7 +56,18 @@ output "view" {
 
 - `description` (String)
 - `id` (String) The ID of this resource.
+- `metadata_read_only` (List of Object) (see [below for nested schema](#nestedatt--metadata_read_only))
 - `security_group_rules` (Set of Object) Firewall rules control what inbound(ingress) and outbound(egress) traffic is allowed to enter or leave a Instance. At least one 'egress' rule should be set (see [below for nested schema](#nestedatt--security_group_rules))
+
+<a id="nestedatt--metadata_read_only"></a>
+### Nested Schema for `metadata_read_only`
+
+Read-Only:
+
+- `key` (String)
+- `read_only` (Boolean)
+- `value` (String)
+
 
 <a id="nestedatt--security_group_rules"></a>
 ### Nested Schema for `security_group_rules`

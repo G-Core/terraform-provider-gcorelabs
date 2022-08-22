@@ -63,6 +63,7 @@ resource "gcore_subnet" "subnet" {
 - `gateway_ip` (String)
 - `host_routes` (Block List) (see [below for nested schema](#nestedblock--host_routes))
 - `last_updated` (String)
+- `metadata_map` (Map of String)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -71,6 +72,7 @@ resource "gcore_subnet" "subnet" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `metadata_read_only` (List of Object) (see [below for nested schema](#nestedatt--metadata_read_only))
 
 <a id="nestedblock--host_routes"></a>
 ### Nested Schema for `host_routes`
@@ -79,6 +81,16 @@ Required:
 
 - `destination` (String)
 - `nexthop` (String) IPv4 address to forward traffic to if it's destination IP matches 'destination' CIDR
+
+
+<a id="nestedatt--metadata_read_only"></a>
+### Nested Schema for `metadata_read_only`
+
+Read-Only:
+
+- `key` (String)
+- `read_only` (Boolean)
+- `value` (String)
 
 ## Import
 

@@ -58,6 +58,7 @@ resource "gcore_securitygroup" "sg" {
 
 - `description` (String)
 - `last_updated` (String)
+- `metadata_map` (Map of String)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -66,6 +67,7 @@ resource "gcore_securitygroup" "sg" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `metadata_read_only` (List of Object) (see [below for nested schema](#nestedatt--metadata_read_only))
 
 <a id="nestedblock--security_group_rules"></a>
 ### Nested Schema for `security_group_rules`
@@ -74,7 +76,7 @@ Required:
 
 - `direction` (String) Available value is 'ingress', 'egress'
 - `ethertype` (String) Available value is 'IPv4', 'IPv6'
-- `protocol` (String) Available value is udp,tcp,any,icmp,ah,dccp,egp,esp,gre,igmp,ospf,pgm,rsvp,sctp,udplite,vrrp,51,50,112,0,4,ipip
+- `protocol` (String) Available value is udp,tcp,any,icmp,ah,dccp,egp,esp,gre,igmp,ospf,pgm,rsvp,sctp,udplite,vrrp,51,50,112,0,4,ipip,ipencap
 
 Optional:
 
@@ -88,6 +90,16 @@ Read-Only:
 - `created_at` (String)
 - `id` (String) The ID of this resource.
 - `updated_at` (String)
+
+
+<a id="nestedatt--metadata_read_only"></a>
+### Nested Schema for `metadata_read_only`
+
+Read-Only:
+
+- `key` (String)
+- `read_only` (Boolean)
+- `value` (String)
 
 ## Import
 

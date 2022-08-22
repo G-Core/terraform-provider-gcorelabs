@@ -45,6 +45,8 @@ output "view" {
 
 ### Optional
 
+- `metadata_k` (String)
+- `metadata_kv` (Map of String)
 - `network_id` (String)
 - `project_id` (Number)
 - `project_name` (String)
@@ -60,6 +62,7 @@ output "view" {
 - `gateway_ip` (String)
 - `host_routes` (List of Object) (see [below for nested schema](#nestedatt--host_routes))
 - `id` (String) The ID of this resource.
+- `metadata_read_only` (List of Object) (see [below for nested schema](#nestedatt--metadata_read_only))
 
 <a id="nestedatt--host_routes"></a>
 ### Nested Schema for `host_routes`
@@ -68,5 +71,15 @@ Read-Only:
 
 - `destination` (String)
 - `nexthop` (String)
+
+
+<a id="nestedatt--metadata_read_only"></a>
+### Nested Schema for `metadata_read_only`
+
+Read-Only:
+
+- `key` (String)
+- `read_only` (Boolean)
+- `value` (String)
 
 
