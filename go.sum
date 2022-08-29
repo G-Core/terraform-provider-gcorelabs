@@ -87,6 +87,8 @@ github.com/G-Core/gcorelabscdn-go v0.1.24 h1:3RZgU2rNxLum61FKQNND/XbFDj7vka2Q/Bz
 github.com/G-Core/gcorelabscdn-go v0.1.24/go.mod h1:iSGXaTvZBzDHQW+rKFS918BgFVpONcyLEijwh8WsXpE=
 github.com/G-Core/gcorelabscloud-go v0.5.12 h1:qx8Le2OvkEl0vf9kBoz2JE0rYO45Vp47QGhVCrHkKFU=
 github.com/G-Core/gcorelabscloud-go v0.5.12/go.mod h1:EFyllSaVpPPIXnU35ALXXXQJhPRmwjShgOGHqHnb2Xk=
+github.com/G-Core/gcorelabscloud-go v0.5.13 h1:c/FAxwkRL2pFYnPbQL3JOVxhBD2JLWU79Xm/Ka5w/bw=
+github.com/G-Core/gcorelabscloud-go v0.5.13/go.mod h1:EFyllSaVpPPIXnU35ALXXXQJhPRmwjShgOGHqHnb2Xk=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/semver v1.5.0 h1:H65muMkzWKEuNDnfl9d70GUjFniHKHRbFPGBuZ3QEww=
