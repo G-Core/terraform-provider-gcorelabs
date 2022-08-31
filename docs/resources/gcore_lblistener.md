@@ -41,7 +41,7 @@ resource "gcore_lblistener" "listener" {
 
 - `loadbalancer_id` (String)
 - `name` (String)
-- `protocol` (String) Available values is 'HTTP', 'HTTPS', 'TCP', 'UDP'
+- `protocol` (String) Available values is 'HTTP', 'HTTPS', 'TCP', 'UDP', 'TERMINATED_HTTPS'
 - `protocol_port` (Number)
 
 ### Optional
