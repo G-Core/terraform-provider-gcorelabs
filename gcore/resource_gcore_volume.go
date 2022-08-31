@@ -222,12 +222,11 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 	d.Set("region_id", volume.RegionID)
 	d.Set("project_id", volume.ProjectID)
 
-	metadataMap := make(map[string]string)
+	//metadataMap := make(map[string]string)
 	metadataReadOnly := make([]map[string]interface{}, 0, len(volume.Metadata))
 
 	if len(volume.Metadata) > 0 {
 		for _, metadataItem := range volume.Metadata {
-			metadataMap[metadataItem.Key] = metadataItem.Value
 			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
 				"key":       metadataItem.Key,
 				"value":     metadataItem.Value,
@@ -236,9 +235,6 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 		}
 	}
 
-	if err := d.Set("metadata_map", metadataMap); err != nil {
-		return diag.FromErr(err)
-	}
 	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
 		return diag.FromErr(err)
 	}
