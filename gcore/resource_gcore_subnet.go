@@ -325,7 +325,9 @@ func resourceSubnetRead(ctx context.Context, d *schema.ResourceData, m interface
 	metadataReadOnly := make([]map[string]interface{}, 0, len(subnet.Metadata))
 	if len(subnet.Metadata) > 0 {
 		for _, metadataItem := range subnet.Metadata {
-			metadataMap[metadataItem.Key] = metadataItem.Value
+			if !metadataItem.ReadOnly {
+				metadataMap[metadataItem.Key] = metadataItem.Value
+			}
 			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
 				"key":       metadataItem.Key,
 				"value":     metadataItem.Value,

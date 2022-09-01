@@ -248,7 +248,9 @@ func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	if len(floatingIP.Metadata) > 0 {
 		for _, metadataItem := range floatingIP.Metadata {
-			metadataMap[metadataItem.Key] = metadataItem.Value
+			if !metadataItem.ReadOnly {
+				metadataMap[metadataItem.Key] = metadataItem.Value
+			}
 			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
 				"key":       metadataItem.Key,
 				"value":     metadataItem.Value,
