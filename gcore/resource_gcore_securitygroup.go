@@ -305,7 +305,9 @@ func resourceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m in
 
 	if len(sg.Metadata) > 0 {
 		for _, metadataItem := range sg.Metadata {
-			metadataMap[metadataItem.Key] = metadataItem.Value
+			if !metadataItem.ReadOnly {
+				metadataMap[metadataItem.Key] = metadataItem.Value
+			}
 			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
 				"key":       metadataItem.Key,
 				"value":     metadataItem.Value,
