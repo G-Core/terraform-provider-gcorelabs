@@ -3,6 +3,7 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
 	"log"
 
 	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/listeners"
@@ -86,6 +87,37 @@ func dataSourceLoadBalancer() *schema.Resource {
 					},
 				},
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -102,7 +134,22 @@ func dataSourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	name := d.Get("name").(string)
-	lbs, err := loadbalancers.ListAll(client, nil)
+
+	metaOpts := &loadbalancers.ListOpts{}
+
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		metaOpts.MetadataK = metadataK.(string)
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		meta, err := utils.MapInterfaceToMapString(metadataRaw)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		metaOpts.MetadataKV = meta
+	}
+	lbs, err := loadbalancers.ListAll(client, *metaOpts)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -127,6 +174,21 @@ func dataSourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m i
 	d.Set("name", lb.Name)
 	d.Set("vip_address", lb.VipAddress.String())
 	d.Set("vip_port_id", lb.VipPortID)
+
+	metadataReadOnly := make([]map[string]interface{}, 0, len(lb.Metadata))
+	if len(lb.Metadata) > 0 {
+		for _, metadataItem := range lb.Metadata {
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
+	}
 
 	listenersClient, err := CreateClient(provider, d, LBListenersPoint, versionPointV1)
 	if err != nil {

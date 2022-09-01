@@ -14,12 +14,18 @@ import (
 
 func TestAccLoadBalancer(t *testing.T) {
 	type Params struct {
-		Name string
+		Name        string
+		MetadataMap string
 	}
 
-	create := Params{"test"}
+	create := Params{"test", `{
+					key1 = "val1"
+					key2 = "val2"
+				}`}
 
-	update := Params{"test1"}
+	update := Params{"test1", `{
+					key3 = "val3"
+				}`}
 
 	fullName := "gcore_loadbalancerv2.acctest"
 
@@ -30,8 +36,9 @@ func TestAccLoadBalancer(t *testing.T) {
               %s
 			  name = "%s"
 			  flavor = "lb1-1-2"
+    		  metadata_map = %s
 			}
-		`, projectInfo(), regionInfo(), params.Name)
+		`, projectInfo(), regionInfo(), params.Name, params.MetadataMap)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -44,6 +51,10 @@ func TestAccLoadBalancer(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", create.Name),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key1": "val1",
+						"key2": "val2",
+					}),
 				),
 			},
 			{
@@ -51,6 +62,15 @@ func TestAccLoadBalancer(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists(fullName),
 					resource.TestCheckResourceAttr(fullName, "name", update.Name),
+					testAccCheckMetadata(fullName, true, map[string]string{
+						"key3": "val3",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]string{
+						"key1": "val1",
+					}),
+					testAccCheckMetadata(fullName, false, map[string]interface{}{
+						"key2": "val2",
+					}),
 				),
 			},
 		},

@@ -3,6 +3,8 @@ package gcore
 import (
 	"context"
 	"fmt"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils/metadata"
 	"log"
 	"time"
 
@@ -191,6 +193,33 @@ func resourceLoadBalancer() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"metadata_map": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -255,6 +284,29 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 	}
 	if err := d.Set("listener", []interface{}{currentL}); err != nil {
 		diag.FromErr(err)
+	}
+
+	metadataMap := make(map[string]string)
+	metadataReadOnly := make([]map[string]interface{}, 0, len(lb.Metadata))
+
+	if len(lb.Metadata) > 0 {
+		for _, metadataItem := range lb.Metadata {
+			if !metadataItem.ReadOnly {
+				metadataMap[metadataItem.Key] = metadataItem.Value
+			}
+			metadataReadOnly = append(metadataReadOnly, map[string]interface{}{
+				"key":       metadataItem.Key,
+				"value":     metadataItem.Value,
+				"read_only": metadataItem.ReadOnly,
+			})
+		}
+	}
+
+	if err := d.Set("metadata_map", metadataMap); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("metadata_read_only", metadataReadOnly); err != nil {
+		return diag.FromErr(err)
 	}
 
 	log.Println("[DEBUG] Finish LoadBalancer reading")
@@ -371,6 +423,20 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			if _, err := listeners.Update(client, listenerID, opts).Extract(); err != nil {
 				return diag.FromErr(err)
 			}
+		}
+	}
+
+	if d.HasChange("metadata_map") {
+		_, nmd := d.GetChange("metadata_map")
+
+		meta, err := utils.MapInterfaceToMapString(nmd.(map[string]interface{}))
+		if err != nil {
+			return diag.Errorf("cannot get metadata. Error: %s", err)
+		}
+
+		err = metadata.MetadataReplace(client, d.Id(), meta).Err
+		if err != nil {
+			return diag.Errorf("cannot update metadata. Error: %s", err)
 		}
 	}
 
