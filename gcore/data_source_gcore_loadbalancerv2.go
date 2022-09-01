@@ -2,6 +2,7 @@ package gcore
 
 import (
 	"context"
+	"github.com/G-Core/gcorelabscloud-go/gcore/utils"
 	"log"
 
 	"github.com/G-Core/gcorelabscloud-go/gcore/loadbalancer/v1/loadbalancers"
@@ -57,6 +58,37 @@ func dataSourceLoadBalancerV2() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"metadata_k": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"metadata_kv": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata_read_only": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -73,7 +105,23 @@ func dataSourceLoadBalancerV2Read(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	name := d.Get("name").(string)
-	lbs, err := loadbalancers.ListAll(client, nil)
+
+	metaOpts := &loadbalancers.ListOpts{}
+
+	if metadataK, ok := d.GetOk("metadata_k"); ok {
+		metaOpts.MetadataK = metadataK.(string)
+	}
+
+	if metadataRaw, ok := d.GetOk("metadata_kv"); ok {
+		meta, err := utils.MapInterfaceToMapString(metadataRaw)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		metaOpts.MetadataKV = meta
+	}
+
+	lbs, err := loadbalancers.ListAll(client, *metaOpts)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
