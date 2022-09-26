@@ -38,7 +38,6 @@ resource "gcore_network" "network" {
 - `create_router` (Boolean) Create external router to the network, default true
 - `last_updated` (String)
 - `metadata_map` (Map of String)
-- `mtu` (Number)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -49,6 +48,7 @@ resource "gcore_network" "network" {
 
 - `id` (String) The ID of this resource.
 - `metadata_read_only` (List of Object) (see [below for nested schema](#nestedatt--metadata_read_only))
+- `mtu` (Number)
 
 <a id="nestedatt--metadata_read_only"></a>
 ### Nested Schema for `metadata_read_only`

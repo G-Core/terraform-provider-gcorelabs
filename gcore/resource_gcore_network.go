@@ -81,7 +81,6 @@ func resourceNetwork() *schema.Resource {
 			},
 			"mtu": &schema.Schema{
 				Type:     schema.TypeInt,
-				Optional: true,
 				Computed: true,
 			},
 			"type": &schema.Schema{
@@ -145,7 +144,6 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	createOpts := networks.CreateOpts{
 		Name:         d.Get("name").(string),
-		Mtu:          d.Get("mtu").(int),
 		Type:         d.Get("type").(string),
 		CreateRouter: d.Get("create_router").(bool),
 	}

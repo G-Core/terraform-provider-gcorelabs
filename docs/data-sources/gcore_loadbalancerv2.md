@@ -45,6 +45,8 @@ output "view" {
 
 ### Optional
 
+- `metadata_k` (String)
+- `metadata_kv` (Map of String)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -53,7 +55,17 @@ output "view" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `metadata_read_only` (List of Object) (see [below for nested schema](#nestedatt--metadata_read_only))
 - `vip_address` (String)
 - `vip_port_id` (String)
+
+<a id="nestedatt--metadata_read_only"></a>
+### Nested Schema for `metadata_read_only`
+
+Read-Only:
+
+- `key` (String)
+- `read_only` (Boolean)
+- `value` (String)
 
 

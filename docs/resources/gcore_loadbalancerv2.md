@@ -36,6 +36,7 @@ resource "gcore_loadbalancerv2" "lb" {
 
 - `flavor` (String)
 - `last_updated` (String)
+- `metadata_map` (Map of String)
 - `project_id` (Number)
 - `project_name` (String)
 - `region_id` (Number)
@@ -47,6 +48,7 @@ resource "gcore_loadbalancerv2" "lb" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `metadata_read_only` (List of Object) (see [below for nested schema](#nestedatt--metadata_read_only))
 - `vip_address` (String) Load balancer IP address
 
 <a id="nestedblock--timeouts"></a>
@@ -56,6 +58,16 @@ Optional:
 
 - `create` (String)
 - `delete` (String)
+
+
+<a id="nestedatt--metadata_read_only"></a>
+### Nested Schema for `metadata_read_only`
+
+Read-Only:
+
+- `key` (String)
+- `read_only` (Boolean)
+- `value` (String)
 
 ## Import
 
