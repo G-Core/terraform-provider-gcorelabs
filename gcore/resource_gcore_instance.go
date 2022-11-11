@@ -107,7 +107,7 @@ func resourceInstance() *schema.Resource {
 			},
 			"volume": &schema.Schema{
 				Type:     schema.TypeSet,
-				Required: true,
+				Optional: true,
 				Set:      volumeUniqueID,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -582,7 +582,7 @@ func resourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 			var orderedIOpts OrderedInterfaceOpts
 			var ok bool
 			// we need to match our interfaces with api's interfaces
-			// but with don't have any unique value, that's why we use exactly that list of keys
+			// but we don't have any unique values, that's why we use exactly that list of keys
 			for _, k := range []string{subnetID, iface.PortID, iface.NetworkID, types.ExternalInterfaceType.String()} {
 				if orderedIOpts, ok = interfaces[k]; ok {
 					iOpts = orderedIOpts.InterfaceOpts

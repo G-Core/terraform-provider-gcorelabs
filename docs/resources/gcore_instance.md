@@ -164,7 +164,6 @@ resource "gcore_instance" "v" {
 
 - `flavor_id` (String)
 - `interface` (Block List, Min: 1) (see [below for nested schema](#nestedblock--interface))
-- `volume` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--volume))
 
 ### Optional
 
@@ -190,6 +189,7 @@ resource "gcore_instance" "v" {
 - `userdata` (String, Deprecated) **Deprecated**
 - `username` (String)
 - `vm_state` (String) Current vm state, use stopped to stop vm and active to start
+- `volume` (Block Set) (see [below for nested schema](#nestedblock--volume))
 
 ### Read-Only
 
