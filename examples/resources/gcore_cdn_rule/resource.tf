@@ -7,6 +7,7 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_1" {
   name        = "All PNG images"
   rule        = "/folder/images/*.png"
   rule_type   = 0
+  weight      = 0
 
   options {
     edge_cache_settings {
@@ -44,6 +45,7 @@ resource "gcore_cdn_rule" "cdn_example_com_rule_2" {
   name            = "All JS scripts"
   rule            = "/folder/images/*.js"
   rule_type       = 0
+  weight          = 0
   origin_protocol = "HTTP"
 
   options {

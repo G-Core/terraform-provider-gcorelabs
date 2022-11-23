@@ -43,6 +43,7 @@ resource "gcore_cdn_rule" "acctest" {
   name = "%s"
   rule = "%s"
   rule_type = 0
+  weight = 0
   %s
 }
 		`, GCORE_CDN_RESOURCE_ID, params.Name, params.Pattern, params.RawPart)
