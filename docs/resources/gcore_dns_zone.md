@@ -29,9 +29,21 @@ resource "gcore_dns_zone" "example_zone" {
 
 - `name` (String) A name of DNS Zone resource.
 
+### Optional
+
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String)
+- `delete` (String)
 
 ## Import
 

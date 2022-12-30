@@ -113,6 +113,7 @@ resource "gcore_dns_zone_record" "subdomain_examplezone_caa" {
 ### Optional
 
 - `filter` (Block Set) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `ttl` (Number) A ttl of DNS Zone Record resource.
 
 ### Read-Only
@@ -157,6 +158,15 @@ Optional:
 
 - `limit` (Number) A DNS Zone Record filter option that describe how many records will be percolated.
 - `strict` (Boolean) A DNS Zone Record filter option that describe possibility to return answers if no records were percolated through filter.
+
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String)
+- `delete` (String)
 
 ## Import
 

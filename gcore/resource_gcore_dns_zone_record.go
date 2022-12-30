@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 
 	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 	"github.com/hashicorp/go-cty/cty"
@@ -231,6 +232,10 @@ func resourceDNSZoneRecord() *schema.Resource {
 				},
 				Description: "An array of contents with meta of DNS Zone Record resource.",
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 		CreateContext: checkDNSDependency(resourceDNSZoneRecordCreate),
 		UpdateContext: checkDNSDependency(resourceDNSZoneRecordUpdate),

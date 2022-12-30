@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,6 +33,10 @@ func resourceDNSZone() *schema.Resource {
 				},
 				Description: "A name of DNS Zone resource.",
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 		CreateContext: checkDNSDependency(resourceDNSZoneCreate),
 		ReadContext:   checkDNSDependency(resourceDNSZoneRead),
