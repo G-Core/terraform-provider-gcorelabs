@@ -841,23 +841,9 @@ func resourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 			taskID := results.Tasks[0]
 			log.Printf("[DEBUG] attach interface taskID: %s", taskID)
-			_, err = tasks.WaitTaskAndReturnResult(client, taskID, true, InstanceCreatingTimeout, func(task tasks.TaskID) (interface{}, error) {
-				taskInfo, err := tasks.Get(client, string(task)).Extract()
-				if err != nil {
-					return nil, fmt.Errorf("cannot get task with ID: %s. Error: %w, task: %+v", task, err, taskInfo)
-				}
-				portID, err := instances.ExtractInstancePortIDFromTask(taskInfo)
-				if err != nil {
-					return nil, fmt.Errorf("cannot retrieve instance port ID from task info: %w", err)
-				}
-				return portID, nil
-			},
-			)
-
-			if err != nil {
+			if err = tasks.WaitForStatus(client, string(taskID), tasks.TaskStateFinished, InstanceCreatingTimeout, true); err != nil {
 				return diag.FromErr(err)
 			}
-
 		}
 	}
 
