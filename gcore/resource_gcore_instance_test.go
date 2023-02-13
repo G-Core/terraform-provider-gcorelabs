@@ -248,8 +248,8 @@ func TestAccInstance(t *testing.T) {
                 existing_fip_id = null
                 port_id = null
                 ip_address = null
-				
-			},`, params.Interfaces[i]["type"], params.Interfaces[i]["network_id"], params.Interfaces[i]["subnet_id"])
+				security_groups = ["%s"]
+			},`, params.Interfaces[i]["type"], params.Interfaces[i]["network_id"], params.Interfaces[i]["subnet_id"], params.SecurityGroups[0]["id"])
 
 		}
 		template += fmt.Sprint(`]
@@ -324,6 +324,7 @@ func TestAccInstance(t *testing.T) {
 				existing_fip_id = ifaces.value.existing_fip_id
                 port_id = ifaces.value.port_id
                 ip_address = ifaces.value.ip_address
+                security_groups = ifaces.value.security_groups
 				}
 			}
 
