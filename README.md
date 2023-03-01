@@ -1,3 +1,8 @@
+# DEPRECATED
+
+### New URL: https://github.com/G-Core/terraform-provider-gcore
+
+
 Terraform G-Core Labs Provider
 ------------------------------
 - Terraform provider page: https://registry.terraform.io/providers/G-Core/gcorelabs 
